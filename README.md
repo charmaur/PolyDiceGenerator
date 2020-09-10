@@ -2,12 +2,14 @@
 
 A customizable **Polyhedral Dice Generator** for OpenSCAD.
 
-![Image of dice](images/dice_render.png)
+![Image of dice](images/render_v0.26.0.png)
 
 ## Requirements
 
 - OpenSCAD <http://www.openscad.org>
-- The BOSL2 library <https://github.com/revarbat/BOSL2>
+- The BOSL2 library <https://github.com/revarbat/BOSL2#installation>
+
+  ***Note:** Due to recent BOSL2 updates v2.0.402 is currently required. It can be found here: <https://github.com/revarbat/BOSL2/tree/e56f953c1cd8db7e7e198e6d7d49650f133ab92a>*
 
 ## Number Distribution Options
 
@@ -98,8 +100,11 @@ Distributions are set by creating a list (numbers, underscores, symbols, and rot
 
 |Variable Name       |Description|
 |---                 |---        |
-|`edge_rounding`     |Edge rounding adjustment for all dice. `0` to disable.|
-|`d6_corner_rounding`|Corner rounding adjustment for the `d6` only. `0` to disable.|
+|`edge_rounding`     |Edge rounding adjustment for all dice.|
+|`corner_rounding`   |Corner are rounded using a circumscribed sphere.|
+|`corner_clipping`   |Corners are clipped using each die's dual polyhedron.|
+
+***Note:** Only one rounding type is possible at a time. `corner_rounding` and `corner_clipping` are not compatible with `d10` or `d00` `length_mod` adjustments.*
 
 ### Standard Variables for all Dice
 
@@ -118,7 +123,8 @@ Distributions are set by creating a list (numbers, underscores, symbols, and rot
 |`d(n)_symbol_h_push`  |Horizontal offset adjustment for symbols.|
 |`d(n)_custom_under`   |User-defined list for adding underscores.|
 |`d(n)_under_size`     |Size adjustment for underscores.|
-|`d(n)_under_push`     |Vertical offset adjustment for underscores.|
+|`d(n)_under_v_push`   |Vertical offset adjustment for underscores.|
+|`d(n)_under_h_push`   |Horizontal offset adjustment for underscores.|
 |`d(n)_custom_rotate`  |User-defined list of angles for adjusting an elements rotation.|
 
 ### d4 Tetrahedron
