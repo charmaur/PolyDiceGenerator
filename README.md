@@ -166,7 +166,9 @@ Distributions are set by creating a list (numbers, underscores, symbols, and rot
 |`d00_length_mod`   |Point length adjustment for the `d00`.|
 |`d00_angle_numbers`|Angle `d00` numbers by `90` degrees.|
 |`d00_0_size`       |Size adjustment for the `d00` 2nd digit `"0"`. Only applies when `d00_angle_numbers` is `checked` or set to `true`.|
-|`d00_0_padding`    |Spacing adjustment between the `d10` 1st digit number and 2nd digit `"0"`. Only applies when `d00_angle_numbers` is `checked` or set to `true`.|
+|`d00_0_padding`    |Spacing adjustment between the `d00` 1st digit number and 2nd digit `"0"`. Only applies when `d00_angle_numbers` is `checked` or set to `true`.|
+|`d00_10_h_push`    |Horizontal push adjustment for `d00` `#10`. Only applies when `d00_angle_numbers` is `checked` or set to `true`.|
+|`d00_10_0_padding` |Spacing adjustment for `d00` `#10` 2nd digit `"0"`. Only applies when `d00_angle_numbers` is `checked` or set to `true`.|
 
 ### d12 Dodecahedron
 

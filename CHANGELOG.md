@@ -2,6 +2,10 @@
 
 A customizable **Polyhedral Dice Generator** for OpenSCAD.
 
+## PolyDiceGenerator v0.26.1
+
+- Added d00 #10 horizontal push and padding adjustments if using angled numbers
+
 ## PolyDiceGenerator v0.26.0
 
 - Changed edge rounding and number spacing to sliders allowing decimal values in Customizer

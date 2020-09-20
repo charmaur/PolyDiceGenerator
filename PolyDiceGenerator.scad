@@ -1,5 +1,5 @@
 //------------------------------------------
-// PolyDiceGenerator v0.26.0
+// PolyDiceGenerator v0.26.1
 //   A customizable Polyhedral Dice Generator for OpenSCAD.
 //   https://github.com/charmaur/PolyDiceGenerator
 //
@@ -153,6 +153,8 @@ d00_length_mod=0;
 d00_angle_numbers=true; //angle d00 text
 d00_0_size=65; //"0" undersize if d00_angle_numbers=true
 d00_0_padding=50; //"0" padding if d00_angle_numbers=true
+d00_10_h_push=-4; //horizontal push for "10" if d00_angle_numbers=true
+d00_10_0_padding=50; //"0" padding for "10" if d00_angle_numbers=true
 d00_custom_dist=["90","10","70","50","30","60","20","40","00","80"];
 d00_symbols=[undef,undef,undef,undef,undef,undef,undef,undef,undef,undef];
 d00_symbol_size=48;
@@ -710,9 +712,16 @@ module drawd00(){
                 text(d00_merged[$faceindex][0],size=sym_mult,font=symbol_font,halign="center",valign="center");
             else //a double digit number
                 if(d00_angle_numbers) { //downsize "0" if text is angled
-                    text(d00_merged[$faceindex][0],size=num_mult,font=number_font,halign="center",valign="center");
-                    right(num_mult*d00_0_padding/100)
-                    text(" 0",size=num_mult*d00_0_size/100,font=number_font,halign="center",valign="center");
+                    if(d00_merged[$faceindex]=="10") {
+                        right(d00_10_h_push*d00_size/100)
+                        text(d00_merged[$faceindex][0],size=num_mult,font=number_font,halign="center",valign="center");
+                        right(num_mult*d00_10_0_padding/100)
+                        text(" 0",size=num_mult*d00_0_size/100,font=number_font,halign="center",valign="center");
+                    } else {
+                        text(d00_merged[$faceindex][0],size=num_mult,font=number_font,halign="center",valign="center");
+                        right(num_mult*d00_0_padding/100)
+                        text(" 0",size=num_mult*d00_0_size/100,font=number_font,halign="center",valign="center");
+                    }               
                 } else {
                     right(space_mult)
                     text(d00_merged[$faceindex],size=num_mult,font=number_font,spacing=d00_number_spacing,halign="center",valign="center");
@@ -720,7 +729,6 @@ module drawd00(){
         }
     }
 }
-
 
 module pentagonal_antiprism(size){
     C0=(1+sqrt(5))/4; //midradius ≈0.80901699437
