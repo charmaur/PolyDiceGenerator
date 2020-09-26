@@ -2,6 +2,13 @@
 
 A customizable **Polyhedral Dice Generator** for OpenSCAD.
 
+## PolyDiceGenerator v0.26.2
+
+- Added d2 - a two sided coin
+- Added rotation adjustment for pip symbols
+- Added d4c pips and pip symbol option
+- Fixed d00 hard coded "0" bug
+
 ## PolyDiceGenerator v0.26.1
 
 - Added d00 #10 horizontal push and padding adjustments if using angled numbers

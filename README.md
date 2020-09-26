@@ -2,7 +2,7 @@
 
 A customizable **Polyhedral Dice Generator** for OpenSCAD.
 
-![Image of dice](images/render_v0.26.0.png)
+![Image of dice](images/render_v0.26.2.png)
 
 ## Requirements
 
@@ -127,27 +127,40 @@ Distributions are set by creating a list (numbers, underscores, symbols, and rot
 |`d(n)_under_h_push`   |Horizontal offset adjustment for underscores.|
 |`d(n)_custom_rotate`  |User-defined list of angles for adjusting an elements rotation.|
 
+### d2 Coin
+
+|Variable Name|Description|
+|---          |---        |
+|`d2_height`  |Height adjustment for `d2`. |
+
 ### d4 Tetrahedron
 
 - Standard Variables Only (see above)
 
 ### d4c Crystal
 
-|Variable Name     |Description|
-|---               |---        |
-|`d4c_body_length` |Body length adjustment for `d4c`. |
-|`d4c_point_length`|Point length adjustment for `d4c`.|
+|Variable Name          |Description|
+|---                    |---        |
+|`d4c_body_length`      |Body length adjustment for `d4c`. |
+|`d4c_point_length`     |Point length adjustment for `d4c`.|
+|`d4c_pip_dist`         |User-defined list for adding and distributing pips to the `d4c`.|
+|`d4c_pip_size`         |Size adjustment for `d4c` pips.|
+|`d4c_pip_offset`       |Adjustment for distance between `d4c` pips.|
+|`d4c_pip_symbol_dist`  |User-defined list for setting up symbol distribution in pip patterns on the `d4c`. The list should contain numbers `"1"` thru `"4"`, the order of which will likely mimic those set in `d4c_custom_dist`.|
+|`d4c_pip_symbols`      |User-defined list for adding symbols in place of `d4c` pips.|
+|`d4c_pip_symbol_rotate`|User-defined list of angles for adjusting `d4c` pip symbol rotation.|
 
 ### d6 Cube
 
-|Variable Name       |Description|
-|---                 |---        |
-|`d6_angle_numbers`  |Angle `d6` numbers by 45 degrees.|
-|`d6_pip_dist`       |User-defined list for adding and distributing pips to the `d6`.|
-|`d6_pip_size`       |Size adjustment for `d6` pips.|
-|`d6_pip_offset`     |Adjustment for distance between `d6` pips.|
-|`d6_pip_symbol_dist`|User-defined list for setting up symbol distribution in pip patterns on the `d6`. The list should contain numbers `"1"` thru `"6"`, the order of which will likely mimic those set in `d6_custom_dist`.|
-|`d6_pip_symbols`    |User-defined list for adding symbols in place of `d6` pips.|
+|Variable Name         |Description|
+|---                   |---        |
+|`d6_angle_numbers`    |Angle `d6` numbers by 45 degrees.|
+|`d6_pip_dist`         |User-defined list for adding and distributing pips to the `d6`.|
+|`d6_pip_size`         |Size adjustment for `d6` pips.|
+|`d6_pip_offset`       |Adjustment for distance between `d6` pips.|
+|`d6_pip_symbol_dist`  |User-defined list for setting up symbol distribution in pip patterns on the `d6`. The list should contain numbers `"1"` thru `"6"`, the order of which will likely mimic those set in `d6_custom_dist`.|
+|`d6_pip_symbols`      |User-defined list for adding symbols in place of `d6` pips.|
+|`d6_pip_symbol_rotate`|User-defined list of angles for adjusting `d6` pip symbol rotation.|
 
 ### d8 Octahedron
 
