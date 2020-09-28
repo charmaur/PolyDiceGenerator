@@ -60,7 +60,25 @@ Distributions are set by creating a list (numbers, underscores, symbols, and rot
   - Bracket enclosed `[]` non-quoted numbers (in degrees) seperated by commas `,`.
   - A zero value `0` will use the default rotation for that element.
 
-***Note:** Some dice will not utilize all 4 lists. The d4, for example, has no need for underscores, so that list is not avaliable.*
+- **Adjust Vertical Push** - A list for altering the vertical offset of individual elements. In this example the number `3` will be pushed up by `2`.
+
+  ***Example:*** `d6_adj_v_push=[0,2,0,0,0,0];`
+  - Bracket enclosed `[]` non-quoted numbers seperated by commas `,`.
+  - The values entered here will be added to the die's existing `d(n)_number_v_push` value.
+
+- **Adjust Horizontal Push** - A list for altering the horizontal offset of individual elements. In this example the number `3` will be pushed to the right by `2`.
+
+  ***Example:*** `d6_adj_v_push=[0,2,0,0,0,0];`
+  - Bracket enclosed `[]` non-quoted numbers seperated by commas `,`.
+  - The values entered here will be added to the die's existing `d(n)_number_h_push` value.
+
+- **Adjust Depth** - A list for altering the depth of individual elements. In this example the number `5` will be extruded by an assitional `0.5`mm.
+
+  ***Example:*** `d6_adj_depth=[0,0,0.5,0,0,0];`
+  - Bracket enclosed `[]` non-quoted numbers seperated by commas `,`.
+  - The values entered here will be added to the global `number_depth` value.
+
+***Note:** Some dice will not utilize all lists. The d4, for example, has no need for underscores, so that list is not avaliable.*
 
 ## Variables
 
@@ -126,6 +144,9 @@ Distributions are set by creating a list (numbers, underscores, symbols, and rot
 |`d(n)_under_v_push`   |Vertical offset adjustment for underscores.|
 |`d(n)_under_h_push`   |Horizontal offset adjustment for underscores.|
 |`d(n)_custom_rotate`  |User-defined list of angles for adjusting an elements rotation.|
+|`d(n)_adj_v_push`     |User-defined list allowing vertical offset adjustment of individual elements.|
+|`d(n)_adj_h_push`     |User-defined list allowing horizontal offset adjustment of individual elements.|
+|`d(n)_adj_depth`      |User-defined list allowing depth adjustment of individual elements.|
 
 ### d2 Coin
 

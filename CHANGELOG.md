@@ -2,6 +2,10 @@
 
 A customizable **Polyhedral Dice Generator** for OpenSCAD.
 
+## PolyDiceGenerator v0.26.3
+
+- Added per-die vertical push, horizontal push, and depth arrays alllowing adjustment of individual elements
+
 ## PolyDiceGenerator v0.26.2
 
 - Added d2 - a two sided coin

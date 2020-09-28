@@ -1,5 +1,5 @@
 //------------------------------------------
-// PolyDiceGenerator v0.26.2
+// PolyDiceGenerator v0.26.3
 //   A customizable Polyhedral Dice Generator for OpenSCAD.
 //   https://github.com/charmaur/PolyDiceGenerator
 //
@@ -67,6 +67,9 @@ d2_symbol_size=34;
 d2_symbol_v_push=0;
 d2_symbol_h_push=0;
 d2_custom_rotate=[0,0];
+d2_adj_v_push=[0,0];
+d2_adj_h_push=[0,0];
+d2_adj_depth=[0,0];
 
 /* [d4 Tetrahedron] */
 d4_distribution=1; //[1:Standard N+1,2:DiceLab,3:Custom]
@@ -80,6 +83,9 @@ d4_symbol_size=34;
 d4_symbol_v_push=0;
 d4_symbol_h_push=0;
 d4_custom_rotate=[0,0,0,0 ,0,0,0,0 ,0,0,0,0];
+d4_adj_v_push=[0,0,0,0 ,0,0,0,0 ,0,0,0,0];
+d4_adj_h_push=[0,0,0,0 ,0,0,0,0 ,0,0,0,0];
+d4_adj_depth=[0,0,0,0 ,0,0,0,0 ,0,0,0,0];
 
 /* [d4c Crystal] */
 d4c_distribution=1; //[1:Standard N+1,2:DiceLab,3:Custom]
@@ -101,6 +107,9 @@ d4c_pip_offset=2.5;
 d4c_pip_symbol_dist=["1","2"," "," ","3","4"];
 d4c_pip_symbols=[undef,undef,undef,undef,undef,undef]; //symbols for pips
 d4c_pip_symbol_rotate=[0,0,0,0,0,0];
+d4c_adj_v_push=[0,0,0,0,0,0];
+d4c_adj_h_push=[0,0,0,0,0,0];
+d4c_adj_depth=[0,0,0,0,0,0];
 
 /* [d6 Cube] */
 d6_distribution=1; //[1:Standard N+1,2:DiceLab,3:Custom]
@@ -126,6 +135,9 @@ d6_pip_offset=2.5;
 d6_pip_symbol_dist=["1","3","5","2","4","6"];
 d6_pip_symbols=[undef,undef,undef,undef,undef,undef]; //symbols for pips
 d6_pip_symbol_rotate=[0,0,0,0,0,0];
+d6_adj_v_push=[0,0,0,0,0,0];
+d6_adj_h_push=[0,0,0,0,0,0];
+d6_adj_depth=[0,0,0,0,0,0];
 
 /* [d8 Octahedron] */
 d8_distribution=1; //[1:Standard N+1,2:DiceLab,3:Custom]
@@ -144,6 +156,9 @@ d8_under_size=42;
 d8_under_v_push=-26;
 d8_under_h_push=0;
 d8_custom_rotate=[0,0,0,0,0,0,0,0];
+d8_adj_v_push=[0,0,0,0,0,0,0,0];
+d8_adj_h_push=[0,0,0,0,0,0,0,0];
+d8_adj_depth=[0,0,0,0,0,0,0,0];
 
 /* [d10 Trapezohedron] */
 d10_distribution=1; //[1:Standard N+1,2:DiceLab,3:Custom]
@@ -163,6 +178,9 @@ d10_under_size=37;
 d10_under_v_push=-17;
 d10_under_h_push=0;
 d10_custom_rotate=[0,0,0,0,0,0,0,0,0,0];
+d10_adj_v_push=[0,0,0,0,0,0,0,0,0,0];
+d10_adj_h_push=[0,0,0,0,0,0,0,0,0,0];
+d10_adj_depth=[0,0,0,0,0,0,0,0,0,0];
 
 /* [d00 Trapezohedron] */
 d00_distribution=1; //[1:Standard N+1,2:DiceLab,3:Custom]
@@ -182,6 +200,9 @@ d00_symbol_size=48;
 d00_symbol_v_push=0;
 d00_symbol_h_push=0;
 d00_custom_rotate=[0,0,0,0,0,0,0,0,0,0];
+d00_adj_v_push=[0,0,0,0,0,0,0,0,0,0];
+d00_adj_h_push=[0,0,0,0,0,0,0,0,0,0];
+d00_adj_depth=[0,0,0,0,0,0,0,0,0,0];
 
 /* [d12 Dodecahedron] */
 d12_distribution=1; //[1:Standard N+1,2:DiceLab,3:Custom]
@@ -200,6 +221,9 @@ d12_under_size=28;
 d12_under_v_push=-19;
 d12_under_h_push=0;
 d12_custom_rotate=[0,0,0,0,0,0,0,0,0,0,0,0];
+d12_adj_v_push=[0,0,0,0,0,0,0,0,0,0,0,0];
+d12_adj_h_push=[0,0,0,0,0,0,0,0,0,0,0,0];
+d12_adj_depth=[0,0,0,0,0,0,0,0,0,0,0,0];
 
 /* [d20 Icosahedron] */
 d20_distribution=1; //[1:Standard N+1,2:DiceLab,3:Custom]
@@ -218,6 +242,9 @@ d20_under_size=18;
 d20_under_v_push=-12;
 d20_under_h_push=0;
 d20_custom_rotate=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+d20_adj_v_push=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+d20_adj_h_push=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+d20_adj_depth=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 
 //------------------------------------------
 // Hidden variables
@@ -296,7 +323,7 @@ if(d10) move(x=-d10_size/2-spacing,y=d10_size/2+spacing) drawd10();
 if(d00) left(d00_size/2+spacing) drawd00();
 if(d12) move(x=d12_size/2+spacing,y=d12_size/2+spacing) drawd12();
 if(d20) right(d20_size/2+spacing) drawd20();
-
+    
 function fix_undef(x)=[for (i=x) if(i=="undef" || i==undef) undef else i];
 
 function merge_symbols(dist,sym)=[for (a=[0:len(dist)-1]) if(sym[a]=="undef" || sym[a]==undef) dist[a] else [sym[a]]];
@@ -326,8 +353,10 @@ module drawd2(){
         for(i=[0,1])
             rotate([180,0,0]) rotate([180*i,0,0])
             translate([0,0,d2_height*i+edge_rounding*2*i])
-            down(number_depth) linear_extrude(height=2*number_depth)
-            move(x=d2_number_h_push*d2_size/100,y=d2_number_v_push*d2_size/100)
+            down(number_depth+d2_adj_depth[i])
+            linear_extrude(height=2*number_depth+d2_adj_depth[i])
+            move(x=(d2_number_h_push+d2_adj_h_push[i])*d2_size/100,
+                 y=(d2_number_v_push+d2_adj_v_push[i])*d2_size/100)
             if(is_list(d2_merged[i])) //a symbol
                 move(x=d2_symbol_h_push*d2_size/100,y=d2_symbol_v_push*d2_size/100)
                 zrot(d2_rotate[i]+base_rotate[i])
@@ -371,8 +400,10 @@ module drawd4(){
             for(i=[0,1,2])
                 regular_polyhedron("tetrahedron",side=d4_side,anchor=BOTTOM,draw=false)
                 zrot(d4_rotate[$faceindex+i*4]+base_rotate[$faceindex+i*4])
-                down(number_depth) linear_extrude(height=2*number_depth)
-                move(x=d4_number_h_push*d4_size/100,y=d4_number_v_push*d4_size/100)
+                down(number_depth+d4_adj_depth[$faceindex+i*4])
+                linear_extrude(height=2*number_depth+d4_adj_depth[$faceindex+i*4])
+                move(x=(d4_number_h_push+d4_adj_h_push[$faceindex+i*4])*d4_size/100,
+                     y=(d4_number_v_push+d4_adj_v_push[$faceindex+i*4])*d4_size/100)
                 if(is_list(d4_merged[$faceindex+i*4])) //a symbol
                     move(x=d4_symbol_h_push*d4_size/100,y=d4_symbol_v_push*d4_size/100)
                     text(d4_merged[$faceindex+i*4][0],size=sym_mult,font=symbol_font,halign="center",valign="center");
@@ -431,8 +462,10 @@ module drawd4c(){
             //render numbers & symbols
             regular_polyhedron("cube",side=d4c_size,anchor=BOTTOM,draw=false)
             zrot(d4c_rotate[$faceindex]+base_rotate[$faceindex])
-            down(number_depth) linear_extrude(height=2*number_depth)
-            move(x=d4c_number_h_push*d4c_size/100,y=d4c_number_v_push*d4c_size/100)
+            down(number_depth+d4c_adj_depth[$faceindex])
+            linear_extrude(height=2*number_depth+d4c_adj_depth[$faceindex])
+            move(x=(d4c_number_h_push+d4c_adj_h_push[$faceindex])*d4c_size/100,
+                 y=(d4c_number_v_push+d4c_adj_v_push[$faceindex])*d4c_size/100)
             if(is_list(d4c_merged[$faceindex])) //a symbol
                 move(x=d4c_symbol_h_push*d4c_size/100,y=d4c_symbol_v_push*d4c_size/100)
                 text(d4c_merged[$faceindex][0],size=sym_mult,font=symbol_font,halign="center",valign="center");
@@ -445,13 +478,13 @@ module drawd4c(){
             //render pips
             regular_polyhedron("cube",side=d4c_size,anchor=BOTTOM,draw=false)
             zrot(d4c_rotate[$faceindex]+base_rotate[$faceindex])
-            drwapips("d4c",d4c_pip_dist[$faceindex]);
+            drwapips("d4c",d4c_pip_dist[$faceindex],d4c_adj_depth[$faceindex]);
             
             //render pip symbols
             d4c_pip_symbols=fix_undef(d4c_pip_symbols);
             regular_polyhedron("cube",side=d4c_size,anchor=BOTTOM,draw=false)
             zrot(d4c_rotate[$faceindex]+base_rotate[$faceindex])
-            drwapipsymbols("d4c",d4c_pip_symbol_dist[$faceindex],d4c_pip_symbols[$faceindex],d4c_pip_symbol_rotate[$faceindex]);
+            drwapipsymbols("d4c",d4c_pip_symbol_dist[$faceindex],d4c_pip_symbols[$faceindex],d4c_pip_symbol_rotate[$faceindex],d4c_adj_depth[$faceindex]);
         }
     }
 }
@@ -490,8 +523,10 @@ module drawd6(){
             //render numbers & symbols
             regular_polyhedron("cube",side=d6_size,anchor=BOTTOM,draw=false)
             zrot(d6_rotate[$faceindex]+base_rotate[$faceindex]+rotate_mod)
-            down(number_depth) linear_extrude(height=2*number_depth)
-            move(x=d6_number_h_push*d6_size/100,y=d6_number_v_push*d6_size/100)
+            down(number_depth+d6_adj_depth[$faceindex])
+            linear_extrude(height=2*number_depth+d6_adj_depth[$faceindex])
+            move(x=(d6_number_h_push+d6_adj_h_push[$faceindex])*d6_size/100,
+                 y=(d6_number_v_push+d6_adj_v_push[$faceindex])*d6_size/100)
             if(is_list(d6_merged[$faceindex])) //a symbol
                 move(x=d6_symbol_h_push*d6_size/100,y=d6_symbol_v_push*d6_size/100)
                 text(d6_merged[$faceindex][0],size=sym_mult,font=symbol_font,halign="center",valign="center");
@@ -507,20 +542,21 @@ module drawd6(){
             //render underscore
             regular_polyhedron("cube",side=d6_size,anchor=BOTTOM,draw=false)
             zrot(d6_rotate[$faceindex]+base_rotate[$faceindex]+rotate_mod)
-            down(number_depth) linear_extrude(height=2*number_depth)
+            down(number_depth+d6_adj_depth[$faceindex])
+            linear_extrude(height=2*number_depth+d6_adj_depth[$faceindex])
             move(x=d6_under_h_push*d6_size/100,y=d6_under_v_push*d6_size/100)
             text(d6_under[$faceindex],size=under_mult,font=underscore_font,halign="center",valign="center");
             
             //render pips
             regular_polyhedron("cube",side=d6_size,anchor=BOTTOM,draw=false)
             zrot(d6_rotate[$faceindex]+base_rotate[$faceindex])
-            drwapips("d6",d6_pip_dist[$faceindex]);
+            drwapips("d6",d6_pip_dist[$faceindex],d6_adj_depth[$faceindex]);
             
             //render pip symbols
             d6_pip_symbols=fix_undef(d6_pip_symbols);
             regular_polyhedron("cube",side=d6_size,anchor=BOTTOM,draw=false)
             zrot(d6_rotate[$faceindex]+base_rotate[$faceindex])
-            drwapipsymbols("d6",d6_pip_symbol_dist[$faceindex],d6_pip_symbols[$faceindex],d6_pip_symbol_rotate[$faceindex]);
+            drwapipsymbols("d6",d6_pip_symbol_dist[$faceindex],d6_pip_symbols[$faceindex],d6_pip_symbol_rotate[$faceindex],d6_adj_depth[$faceindex]);
         }
     }
 }
@@ -559,8 +595,10 @@ module drawd8(){
             //render numbers & symbols
             regular_polyhedron("octahedron",side=d8_side,anchor=BOTTOM,draw=false)
             zrot(d8_rotate[$faceindex]+base_rotate[$faceindex])
-            down(number_depth) linear_extrude(height=2*number_depth)
-            move(x=d8_number_h_push*d8_size/100,y=d8_number_v_push*d8_size/100)
+            down(number_depth+d8_adj_depth[$faceindex])
+            linear_extrude(height=2*number_depth+d8_adj_depth[$faceindex])
+            move(x=(d8_number_h_push+d8_adj_h_push[$faceindex])*d8_size/100,
+                 y=(d8_number_v_push+d8_adj_v_push[$faceindex])*d8_size/100)
             if(is_list(d8_merged[$faceindex])) //a symbol
                 move(x=d8_symbol_h_push*d8_size/100,y=d8_symbol_v_push*d8_size/100)
                 text(d8_merged[$faceindex][0],size=sym_mult,font=symbol_font,halign="center",valign="center");
@@ -576,7 +614,8 @@ module drawd8(){
             //render underscore
             regular_polyhedron("octahedron",side=d8_side,anchor=BOTTOM,draw=false)
             zrot(d8_rotate[$faceindex]+base_rotate[$faceindex])
-            down(number_depth) linear_extrude(height=2*number_depth)
+            down(number_depth+d8_adj_depth[$faceindex])
+            linear_extrude(height=2*number_depth+d8_adj_depth[$faceindex])
             move(x=d8_under_h_push*d8_size/100,y=d8_under_v_push*d8_size/100)
             text(d8_under[$faceindex],size=under_mult,font=underscore_font,halign="center",valign="center");
         }
@@ -624,8 +663,10 @@ module drawd10(){
             //render numbers & symbols
             regular_polyhedron("trapezohedron",faces=10,side=d10_sside,longside=d10_size,anchor=BOTTOM,draw=false)
             zrot(d10_rotate[$faceindex]+base_rotate[$faceindex])
-            down(number_depth) linear_extrude(height=2*number_depth)
-            move(x=d10_number_h_push*d10_size/100,y=d10_number_v_push*d10_size/100)
+            down(number_depth+d10_adj_depth[$faceindex])
+            linear_extrude(height=2*number_depth+d10_adj_depth[$faceindex])
+            move(x=(d10_number_h_push+d10_adj_h_push[$faceindex])*d10_size/100,
+                 y=(d10_number_v_push+d10_adj_v_push[$faceindex])*d10_size/100)
             if(is_list(d10_merged[$faceindex])) //a symbol
                 move(x=d10_symbol_h_push*d10_size/100,y=d10_symbol_v_push*d10_size/100)
                 text(d10_merged[$faceindex][0],size=sym_mult,font=symbol_font,halign="center",valign="center");
@@ -641,7 +682,8 @@ module drawd10(){
             //render underscore
             regular_polyhedron("trapezohedron",faces=10,side=d10_sside,longside=d10_size,anchor=BOTTOM,draw=false)
             zrot(d10_rotate[$faceindex]+base_rotate[$faceindex])
-            down(number_depth) linear_extrude(height=2*number_depth)
+            down(number_depth+d10_adj_depth[$faceindex])
+            linear_extrude(height=2*number_depth+d10_adj_depth[$faceindex])
             move(x=d10_under_h_push*d10_size/100,y=d10_under_v_push*d10_size/100)
             text(d10_under[$faceindex],size=under_mult,font=underscore_font,halign="center",valign="center");
         }
@@ -688,8 +730,10 @@ module drawd00(){
             //render numbers & symbols
             regular_polyhedron("trapezohedron",faces=10,side=d00_sside,longside=d00_size,anchor=BOTTOM,draw=false)
             zrot(d00_rotate[$faceindex]+base_rotate[$faceindex]+rotate_mod)
-            down(number_depth) linear_extrude(height=2*number_depth)
-            move(x=d00_number_h_push*d00_size/100,y=d00_number_v_push*d00_size/100)
+            down(number_depth+d00_adj_depth[$faceindex])
+            linear_extrude(height=2*number_depth+d00_adj_depth[$faceindex])
+            move(x=(d00_number_h_push+d00_adj_h_push[$faceindex])*d00_size/100,
+                 y=(d00_number_v_push+d00_adj_v_push[$faceindex])*d00_size/100)
             if(is_list(d00_merged[$faceindex])) //a symbol
                 move(x=d00_symbol_h_push*d00_size/100,y=d00_symbol_v_push*d00_size/100)
                 text(d00_merged[$faceindex][0],size=sym_mult,font=symbol_font,halign="center",valign="center");
@@ -747,8 +791,10 @@ module drawd12(){
             //render numbers & symbols
             regular_polyhedron("dodecahedron",ir=d12_size/2,anchor=BOTTOM,draw=false)
             zrot(d12_rotate[$faceindex]+base_rotate[$faceindex])
-            down(number_depth) linear_extrude(height=2*number_depth)
-            move(x=d12_number_h_push*d12_size/100,y=d12_number_v_push*d12_size/100)
+            down(number_depth+d12_adj_depth[$faceindex])
+            linear_extrude(height=2*number_depth+d12_adj_depth[$faceindex])
+            move(x=(d12_number_h_push+d12_adj_h_push[$faceindex])*d12_size/100,
+                 y=(d12_number_v_push+d12_adj_v_push[$faceindex])*d12_size/100)
             if(is_list(d12_merged[$faceindex])) //a symbol
                 move(x=d12_symbol_h_push*d12_size/100,y=d12_symbol_v_push*d12_size/100)
                 text(d12_merged[$faceindex][0],size=sym_mult,font=symbol_font,halign="center",valign="center");
@@ -764,7 +810,8 @@ module drawd12(){
             //render underscore
             regular_polyhedron("dodecahedron",ir=d12_size/2,anchor=BOTTOM,draw=false)
             zrot(d12_rotate[$faceindex]+base_rotate[$faceindex])
-            down(number_depth) linear_extrude(height=2*number_depth)
+            down(number_depth+d12_adj_depth[$faceindex])
+            linear_extrude(height=2*number_depth+d12_adj_depth[$faceindex])
             move(x=d12_under_h_push*d12_size/100,y=d12_under_v_push*d12_size/100)
             text(d12_under[$faceindex],size=under_mult,font=underscore_font,halign="center",valign="center");
         }
@@ -805,8 +852,10 @@ module drawd20(){
             //render numbers & symbols
             regular_polyhedron("icosahedron",ir=d20_size/2,anchor=BOTTOM,draw=false)
             zrot(d20_rotate[$faceindex]+base_rotate[$faceindex])
-            down(number_depth) linear_extrude(height=2*number_depth)
-            move(x=d20_number_h_push*d20_size/100,y=d20_number_v_push*d20_size/100)
+            down(number_depth+d20_adj_depth[$faceindex])
+            linear_extrude(height=2*number_depth+d20_adj_depth[$faceindex])
+            move(x=(d20_number_h_push+d20_adj_h_push[$faceindex])*d20_size/100,
+                 y=(d20_number_v_push+d20_adj_v_push[$faceindex])*d20_size/100)
             if(is_list(d20_merged[$faceindex])) //a symbol
                 move(x=d20_symbol_h_push*d20_size/100,y=d20_symbol_v_push*d20_size/100)
                 text(d20_merged[$faceindex][0],size=sym_mult,font=symbol_font,halign="center",valign="center");
@@ -822,92 +871,93 @@ module drawd20(){
             //render underscore
             regular_polyhedron("icosahedron",ir=d20_size/2,anchor=BOTTOM,draw=false)
             zrot(d20_rotate[$faceindex]+base_rotate[$faceindex])
-            down(number_depth) linear_extrude(height=2*number_depth)
+            down(number_depth+d20_adj_depth[$faceindex])
+            linear_extrude(height=2*number_depth+d20_adj_depth[$faceindex])
             move(x=d20_under_h_push*d20_size/100,y=d20_under_v_push*d20_size/100)
             text(d20_under[$faceindex],size=under_mult,font=underscore_font,halign="center",valign="center");
         }
     }
 }
 
-module drwapips(die,num){
+module drwapips(die,num,adj_depth){
     pip_mult=die=="d6" ? d6_pip_size*d6_size/100 : d4c_pip_size*d4c_size/100;
     pipr=pip_mult/2;
     pip_offset=die=="d6" ? d6_pip_offset : d4c_pip_offset;
 
     if(num=="1"){
-        down(number_depth) cylinder(r=pipr,h=2*number_depth);
+        down(number_depth+adj_depth) cylinder(r=pipr,h=2*number_depth+adj_depth);
     }
     if(num=="2"){
         translate([-pipr*pip_offset,pipr*pip_offset,0])
-        down(number_depth) cylinder(r=pipr,h=2*number_depth);
+        down(number_depth+adj_depth) cylinder(r=pipr,h=2*number_depth+adj_depth);
         translate([pipr*pip_offset,-pipr*pip_offset,0])
-        down(number_depth) cylinder(r=pipr,h=2*number_depth);
+        down(number_depth+adj_depth) cylinder(r=pipr,h=2*number_depth+adj_depth);
     }
     if(num=="3"){
-        drwapips(die,"1");
-        drwapips(die,"2");
+        drwapips(die,"1",adj_depth);
+        drwapips(die,"2",adj_depth);
     }
     if(num=="4"){
-        drwapips(die,"2");
+        drwapips(die,"2",adj_depth);
         translate([pipr*pip_offset,pipr*pip_offset,0])
-        down(number_depth) cylinder(r=pipr,h=2*number_depth);
+        down(number_depth+adj_depth) cylinder(r=pipr,h=2*number_depth+adj_depth);
         translate([-pipr*pip_offset,-pipr*pip_offset,0])
-        down(number_depth) cylinder(r=pipr,h=2*number_depth);
+        down(number_depth+adj_depth) cylinder(r=pipr,h=2*number_depth+adj_depth);
     }
     if(num=="5" && die=="d6"){
-        drwapips(die,"1");
-        drwapips(die,"4");
+        drwapips(die,"1",adj_depth);
+        drwapips(die,"4",adj_depth);
     }
     if(num=="6" && die=="d6"){
-        drwapips(die,"4");
+        drwapips(die,"4",adj_depth);
         translate([pipr*pip_offset,0,0])
-        down(number_depth) cylinder(r=pipr,h=2*number_depth);
+        down(number_depth+adj_depth) cylinder(r=pipr,h=2*number_depth+adj_depth);
         translate([-pipr*pip_offset,0,0])
-        down(number_depth) cylinder(r=pipr,h=2*number_depth);
+        down(number_depth+adj_depth) cylinder(r=pipr,h=2*number_depth+adj_depth);
     }
 }
 
-module drwapipsymbols(die,num,pipsymbol,rot){
+module drwapipsymbols(die,num,pipsymbol,rot,adj_depth){
     pip_mult=die=="d6" ? d6_pip_size*d6_size/100 : d4c_pip_size*d4c_size/100;
     pipr=pip_mult/2;
     pip_offset=die=="d6" ? d6_pip_offset : d4c_pip_offset;
 
     if(num=="1"){
-        zrot(rot) down(number_depth) linear_extrude(height=2*number_depth)
+        zrot(rot) down(number_depth+adj_depth) linear_extrude(height=2*number_depth+adj_depth)
         text(pipsymbol,size=pip_mult,font=symbol_font,halign="center",valign="center");
     }
     if(num=="2"){
         translate([-pipr*pip_offset,pipr*pip_offset,0])
-        zrot(rot) down(number_depth) linear_extrude(height=2*number_depth)
+        zrot(rot) down(number_depth+adj_depth) linear_extrude(height=2*number_depth+adj_depth)
         text(pipsymbol,size=pip_mult,font=symbol_font,halign="center",valign="center");
         translate([pipr*pip_offset,-pipr*pip_offset,0])
-        zrot(rot) down(number_depth) linear_extrude(height=2*number_depth)
+        zrot(rot) down(number_depth+adj_depth) linear_extrude(height=2*number_depth+adj_depth)
         text(pipsymbol,size=pip_mult,font=symbol_font,halign="center",valign="center");
     }
     if(num=="3"){
-        drwapipsymbols(die,"1",pipsymbol,rot);
-        drwapipsymbols(die,"2",pipsymbol,rot);
+        drwapipsymbols(die,"1",pipsymbol,rot,adj_depth);
+        drwapipsymbols(die,"2",pipsymbol,rot,adj_depth);
     }
     if(num=="4"){
-        drwapipsymbols(die,"2",pipsymbol,rot);
+        drwapipsymbols(die,"2",pipsymbol,rot,adj_depth);
         translate([pipr*pip_offset,pipr*pip_offset,0])
-        zrot(rot) down(number_depth) linear_extrude(height=2*number_depth)
+        zrot(rot) down(number_depth+adj_depth) linear_extrude(height=2*number_depth+adj_depth)
         text(pipsymbol,size=pip_mult,font=symbol_font,halign="center",valign="center");
         translate([-pipr*pip_offset,-pipr*pip_offset,0])
-        zrot(rot) down(number_depth) linear_extrude(height=2*number_depth)
+        zrot(rot) down(number_depth+adj_depth) linear_extrude(height=2*number_depth+adj_depth)
         text(pipsymbol,size=pip_mult,font=symbol_font,halign="center",valign="center");
     }
     if(num=="5" && die=="d6"){
-        drwapipsymbols(die,"1",pipsymbol,rot);
-        drwapipsymbols(die,"4",pipsymbol,rot);
+        drwapipsymbols(die,"1",pipsymbol,rot,adj_depth);
+        drwapipsymbols(die,"4",pipsymbol,rot,adj_depth);
     }
     if(num=="6" && die=="d6"){
-        drwapipsymbols(die,"4",pipsymbol,rot);
+        drwapipsymbols(die,"4",pipsymbol,rot,adj_depth);
         translate([pipr*pip_offset,0,0])
-        zrot(rot) down(number_depth) linear_extrude(height=2*number_depth)
+        zrot(rot) down(number_depth+adj_depth) linear_extrude(height=2*number_depth+adj_depth)
         text(pipsymbol,size=pip_mult,font=symbol_font,halign="center",valign="center");
         translate([-pipr*pip_offset,0,0])
-        zrot(rot) down(number_depth) linear_extrude(height=2*number_depth)
+        zrot(rot) down(number_depth+adj_depth) linear_extrude(height=2*number_depth+adj_depth)
         text(pipsymbol,size=pip_mult,font=symbol_font,halign="center",valign="center");
     }
 }
