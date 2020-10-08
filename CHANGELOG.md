@@ -2,6 +2,12 @@
 
 A customizable **Polyhedral Dice Generator** for OpenSCAD.
 
+## PolyDiceGenerator v0.26.4
+
+- Added alternatvie shapes for d2 coin
+- Added d4p a pyramid shaped d4
+- Added BOSL2 library v2.0.402
+
 ## PolyDiceGenerator v0.26.3
 
 - Added per-die vertical push, horizontal push, and depth arrays allowing adjustment of individual elements

@@ -2,7 +2,7 @@
 
 A customizable **Polyhedral Dice Generator** for OpenSCAD.
 
-![Image of dice](images/render_v0.26.2.png)
+![Image of dice](images/render_v0.26.4.png)
 
 ## Requirements
 
@@ -170,6 +170,13 @@ Distributions are set by creating a list (numbers, underscores, symbols, and rot
 |`d4c_pip_symbol_dist`  |User-defined list for setting up symbol distribution in pip patterns on the `d4c`. The list should contain numbers `"1"` thru `"4"`, the order of which will likely mimic those set in `d4c_custom_dist`.|
 |`d4c_pip_symbols`      |User-defined list for adding symbols in place of `d4c` pips.|
 |`d4c_pip_symbol_rotate`|User-defined list of angles for adjusting `d4c` pip symbol rotation.|
+
+### d4p Pyramid
+
+|Variable Name          |Description|
+|---                    |---        |
+|`d4p_body_length`      |Body length adjustment for `d4p`. |
+|`d4p_base_length`      |Base length adjustment for `d4p`.|
 
 ### d6 Cube
 
