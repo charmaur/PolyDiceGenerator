@@ -152,7 +152,8 @@ Distributions are set by creating a list (numbers, underscores, symbols, and rot
 
 |Variable Name|Description|
 |---          |---        |
-|`d2_height`  |Height adjustment for `d2`. |
+|`d2_sides`   |Number of sides adjustment for `d2`.|
+|`d2_height`  |Height adjustment for `d2`.|
 
 ### d4 Tetrahedron
 
