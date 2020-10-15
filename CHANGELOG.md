@@ -2,6 +2,13 @@
 
 A customizable **Polyhedral Dice Generator** for OpenSCAD.
 
+## PolyDiceGenerator v0.26.5
+
+- Added per-die size adjustment of each individual text element
+- Removed pre-built distributions for simplification
+- DiceLab distribution values can be found in Hidden variables section
+- Variable names have changed, existing Customizer presets will be affected
+
 ## PolyDiceGenerator v0.26.4
 
 - Added alternative shapes for d2 coin

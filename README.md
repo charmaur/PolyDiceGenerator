@@ -11,14 +11,6 @@ A customizable **Polyhedral Dice Generator** for OpenSCAD.
 
   ***Note:** Due to recent BOSL2 updates v2.0.402 is currently required. It can be found here: <https://github.com/revarbat/BOSL2/tree/e56f953c1cd8db7e7e198e6d7d49650f133ab92a>*
 
-## Number Distribution Options
-
-- **Standard N+1** - The typical N+1 distribution where opposing sides of the die add up to N (number of sides of the die) +1. This is the default.
-- **DiceLab** - A balanced distribution of numbers optimized for fairness by <http://thedicelab.com>.
-- **Custom** - Selecting "Custom" allows user-defined distributions to be created for numbers, symbols, underscores, and rotation.
-
-***Note:** It is possible to add symbols to the "Standard N+1" and "DiceLab" distributions without first selecting "Custom." However, altering distributions for numbers, underscores, or rotations will require selecting "Custom" first.*
-
 ## Custom Distributions
 
 Distributions are set by creating a list (numbers, underscores, symbols, and rotation angles) of values (aka elements). The elements are rendered in the same order that the sides of the die are generated and is controlled by the BOSL2 library. Distributing elements to specific sides of each die is done by reordering the elements within each list.
@@ -31,12 +23,12 @@ Distributions are set by creating a list (numbers, underscores, symbols, and rot
 
 ### Distribution Lists
 
-- **Numbers** - Consists of numbers, letters, or properly escaped unicode characters within the defined font (e.g., `"\u263C"` will produce ☼). If you'd like to use periods instead of underscores, that can be done in this list (e.g., `"6."` and `"9."`). The following example shows the `Standard N+1` number distribution for the d6.
+- **Text** - Consists of numbers, letters, or properly escaped unicode characters within the defined font (e.g., `"\u263C"` will produce ☼). If you'd like to use periods instead of underscores, that can be done in this list (e.g., `"6."` and `"9."`). The following example shows the standard number distribution for the d6.
 
-  ***Example:*** `d6_custom_dist=["1","3","5","2","4","6"];`
+  ***Example:*** `d6_text=["1","3","5","2","4","6"];`
   - Bracket enclosed `[]` quoted `" "` elements seperated by commas `,`.
   - Blanking out an element `" "` will prevent it from being rendered.
-  - The number font is set using the `number_font`variable.
+  - The font is set using the `text_font`variable.
 
 - **Symbols** - A list for adding symbols. In the following example the symbol mapped to the letter `"K"` will be rendered in place of the number 4.
 
@@ -49,34 +41,40 @@ Distributions are set by creating a list (numbers, underscores, symbols, and rot
 
 - **Underscores** - A list for adding underscores. In the following example an underscore will be rendered under the number 6.
 
-  ***Example:*** `d6_custom_under=[" "," "," "," "," ","_"];`
+  ***Example:*** `d6_underscores=[" "," "," "," "," ","_"];`
   - Bracket enclosed `[]` quoted `" "` underscores seperated by commas `,`.
   - Blanking out an element `" "` will prevent an underscore from being rendered.
   - Underscores are rendered using the `underscore_font` variable.
 
 - **Rotation** - A list for altering the default rotation of a particular element. In this example the number `5` will be rotated 90 degrees.
 
-  ***Example:*** `d6_custom_rotate=[0,0,90,0,0,0];`
+  ***Example:*** `d6_rotate=[0,0,90,0,0,0];`
   - Bracket enclosed `[]` non-quoted numbers (in degrees) seperated by commas `,`.
   - A zero value `0` will use the default rotation for that element.
+
+- **Adjust Text Size** - A list for altering the text size of individual elements. In this example the size of number `1` will be increased.
+
+  ***Example:*** `d6_adj_size=[15,0,0,0,0,0];`
+  - Bracket enclosed `[]` non-quoted numbers seperated by commas `,`.
+  - The values entered here will be added to the die's existing `d(n)_text_size` value.
 
 - **Adjust Vertical Push** - A list for altering the vertical offset of individual elements. In this example the number `3` will be pushed up by `2`.
 
   ***Example:*** `d6_adj_v_push=[0,2,0,0,0,0];`
   - Bracket enclosed `[]` non-quoted numbers seperated by commas `,`.
-  - The values entered here will be added to the die's existing `d(n)_number_v_push` value.
+  - The values entered here will be added to the die's existing `d(n)_text_v_push` value.
 
 - **Adjust Horizontal Push** - A list for altering the horizontal offset of individual elements. In this example the number `3` will be pushed to the right by `2`.
 
   ***Example:*** `d6_adj_v_push=[0,2,0,0,0,0];`
   - Bracket enclosed `[]` non-quoted numbers seperated by commas `,`.
-  - The values entered here will be added to the die's existing `d(n)_number_h_push` value.
+  - The values entered here will be added to the die's existing `d(n)_text_h_push` value.
 
 - **Adjust Depth** - A list for altering the depth of individual elements. In this example the number `5` will be extruded by an assitional `0.5`mm.
 
   ***Example:*** `d6_adj_depth=[0,0,0.5,0,0,0];`
   - Bracket enclosed `[]` non-quoted numbers seperated by commas `,`.
-  - The values entered here will be added to the global `number_depth` value.
+  - The values entered here will be added to the global `text_depth` value.
 
 ***Note:** Some dice will not utilize all lists. The d4, for example, has no need for underscores, so that list is not avaliable.*
 
@@ -86,7 +84,7 @@ Distributions are set by creating a list (numbers, underscores, symbols, and rot
 
 |Variable Name    |Description|
 |---              |---        |
-|`number_font`    |Name of font to use for numbers.    |
+|`text_font`      |Name of font to use for numbers.    |
 |`underscore_font`|Name of font to use for underscores.|
 |`symbol_font`    |Name of font to use for symbols.    |
 
@@ -108,45 +106,45 @@ Distributions are set by creating a list (numbers, underscores, symbols, and rot
 
 ***Note:** Variables are converted into a percentage of the die's size. This allows them to uniformally scale while increasing or decreasing its size.*
 
-### Number Depth
+### Text Depth
 
-|Variable Name |Description|
-|---           |---        |
-|`number_depth`|Extrusion depth (in millimeters) for numbers, underscores, and symbols.|
+|Variable Name|Description|
+|---          |---        |
+|`text_depth` |Extrusion depth (in millimeters) for numbers, underscores, and symbols.|
 
 ### Rounding
 
-|Variable Name       |Description|
-|---                 |---        |
-|`edge_rounding`     |Edge rounding adjustment for all dice.|
-|`corner_rounding`   |Corner are rounded using a circumscribed sphere.|
-|`corner_clipping`   |Corners are clipped using each die's dual polyhedron.|
+|Variable Name    |Description|
+|---              |---        |
+|`edge_rounding`  |Edge rounding adjustment for all dice.|
+|`corner_rounding`|Corner are rounded using a circumscribed sphere.|
+|`corner_clipping`|Corners are clipped using each die's dual polyhedron.|
 
 ***Note:** Only one rounding type is possible at a time. `corner_rounding` and `corner_clipping` are not compatible with `d10` or `d00` `length_mod` adjustments.*
 
 ### Standard Variables for all Dice
 
-|Variable Name         |Description|
-|---                   |---        |
-|`d(n)_distribution`   |Select between a pre-built number distribution (`Standard N+1` and `DiceLab`) or a `Custom` option that allows user-defined values.|
-|`d(n)_number_size`    |Size adjustment for numbers.|
-|`d(n)_number_v_push`  |Vertical offset adjustment for numbers.|
-|`d(n)_number_h_push`  |Horizontal offset adjustment for numbers.|
-|`d(n)_number_spacing` |Spacing adjustment for numbers with multiple characters (e.g., double digit numbers, or say a 6 with a period like `"6."`). Think of this as a kerning adjustment.|
-|`d(n)_number_4_h_push`|Horizontal offset adjustment for the number `"4"`.|
-|`d(n)_custom_dist`    |User-defined list for number distribution. The order of elements in this list can be referenced when adding symbols, underscores, and rotation.|
-|`d(n)_symbols`        |User-defined list for adding symbols.|
-|`d(n)_symbol_size`    |Size adjustment for symbols.|
-|`d(n)_symbol_v_push`  |Vertical offset adjustment for symbols.|
-|`d(n)_symbol_h_push`  |Horizontal offset adjustment for symbols.|
-|`d(n)_custom_under`   |User-defined list for adding underscores.|
-|`d(n)_under_size`     |Size adjustment for underscores.|
-|`d(n)_under_v_push`   |Vertical offset adjustment for underscores.|
-|`d(n)_under_h_push`   |Horizontal offset adjustment for underscores.|
-|`d(n)_custom_rotate`  |User-defined list of angles for adjusting an elements rotation.|
-|`d(n)_adj_v_push`     |User-defined list allowing vertical offset adjustment of individual elements.|
-|`d(n)_adj_h_push`     |User-defined list allowing horizontal offset adjustment of individual elements.|
-|`d(n)_adj_depth`      |User-defined list allowing depth adjustment of individual elements.|
+|Variable Name       |Description|
+|---                 |---        |
+|`d(n)_text_size`    |Size adjustment for numbers.|
+|`d(n)_text_v_push`  |Vertical offset adjustment for numbers.|
+|`d(n)_text_h_push`  |Horizontal offset adjustment for numbers.|
+|`d(n)_text_spacing` |Spacing adjustment for numbers with multiple characters (e.g., double digit numbers, or say a 6 with a period like `"6."`). Think of this as a kerning adjustment.|
+|`d(n)_num_4_h_push` |Horizontal offset adjustment for the number `"4"`.|
+|`d(n)_text`         |User-defined list for distributing numbers. The order of elements in this list can be referenced when adding symbols, underscores, and rotation.|
+|`d(n)_symbols`      |User-defined list for adding symbols.|
+|`d(n)_symbol_size`  |Size adjustment for symbols.|
+|`d(n)_symbol_v_push`|Vertical offset adjustment for symbols.|
+|`d(n)_symbol_h_push`|Horizontal offset adjustment for symbols.|
+|`d(n)_custom_under` |User-defined list for adding underscores.|
+|`d(n)_under_size`   |Size adjustment for underscores.|
+|`d(n)_under_v_push` |Vertical offset adjustment for underscores.|
+|`d(n)_under_h_push` |Horizontal offset adjustment for underscores.|
+|`d(n)_custom_rotate`|User-defined list of angles for adjusting an elements rotation.|
+|`d(n)_adj_size`     |User-defined list allowing size adjustment of individual text elements.|
+|`d(n)_adj_v_push`   |User-defined list allowing vertical offset adjustment of individual text elements.|
+|`d(n)_adj_h_push`   |User-defined list allowing horizontal offset adjustment of individual text elements.|
+|`d(n)_adj_depth`    |User-defined list allowing depth adjustment of individual text elements.|
 
 ### d2 Coin
 
@@ -174,16 +172,16 @@ Distributions are set by creating a list (numbers, underscores, symbols, and rot
 
 ### d4p Pyramid
 
-|Variable Name          |Description|
-|---                    |---        |
-|`d4p_body_length`      |Body length adjustment for `d4p`. |
-|`d4p_base_length`      |Base length adjustment for `d4p`.|
+|Variable Name    |Description|
+|---              |---        |
+|`d4p_body_length`|Body length adjustment for `d4p`. |
+|`d4p_base_length`|Base length adjustment for `d4p`.|
 
 ### d6 Cube
 
 |Variable Name         |Description|
 |---                   |---        |
-|`d6_angle_numbers`    |Angle `d6` numbers by 45 degrees.|
+|`d6_angle_text`    |Angle `d6` numbers by 45 degrees.|
 |`d6_pip_dist`         |User-defined list for adding and distributing pips to the `d6`.|
 |`d6_pip_size`         |Size adjustment for `d6` pips.|
 |`d6_pip_offset`       |Adjustment for distance between `d6` pips.|
@@ -206,11 +204,11 @@ Distributions are set by creating a list (numbers, underscores, symbols, and rot
 |Variable Name      |Description|
 |---                |---        |
 |`d00_length_mod`   |Point length adjustment for the `d00`.|
-|`d00_angle_numbers`|Angle `d00` numbers by `90` degrees.|
-|`d00_0_size`       |Size adjustment for the `d00` 2nd digit `"0"`. Only applies when `d00_angle_numbers` is `checked` or set to `true`.|
-|`d00_0_padding`    |Spacing adjustment between the `d00` 1st digit number and 2nd digit `"0"`. Only applies when `d00_angle_numbers` is `checked` or set to `true`.|
-|`d00_10_h_push`    |Horizontal push adjustment for `d00` `#10`. Only applies when `d00_angle_numbers` is `checked` or set to `true`.|
-|`d00_10_0_padding` |Spacing adjustment for `d00` `#10` 2nd digit `"0"`. Only applies when `d00_angle_numbers` is `checked` or set to `true`.|
+|`d00_angle_text`|Angle `d00` numbers by `90` degrees.|
+|`d00_0_size`       |Size adjustment for the `d00` 2nd digit `"0"`. Only applies when `d00_angle_text` is `checked` or set to `true`.|
+|`d00_0_padding`    |Spacing adjustment between the `d00` 1st digit number and 2nd digit `"0"`. Only applies when `d00_angle_text` is `checked` or set to `true`.|
+|`d00_10_h_push`    |Horizontal push adjustment for `d00` `#10`. Only applies when `d00_angle_text` is `checked` or set to `true`.|
+|`d00_10_0_padding` |Spacing adjustment for `d00` `#10` 2nd digit `"0"`. Only applies when `d00_angle_text` is `checked` or set to `true`.|
 
 ### d12 Dodecahedron
 
