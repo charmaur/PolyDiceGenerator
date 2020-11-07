@@ -11,9 +11,9 @@ A customizable **Polyhedral Dice Generator** for OpenSCAD.
 
   ***Note:** Due to recent BOSL2 updates v2.0.402 is currently required. It can be found here: <https://github.com/revarbat/BOSL2/tree/e56f953c1cd8db7e7e198e6d7d49650f133ab92a>*
 
-## Custom Distributions
+## Adding Text to Dice
 
-Distributions are set by creating a list (numbers, underscores, symbols, and rotation angles) of values (aka elements). The elements are rendered in the same order that the sides of the die are generated and is controlled by the BOSL2 library. Distributing elements to specific sides of each die is done by reordering the elements within each list.
+Text, numbers, underscores, and symbols are added to dice by creating lists of values. The elements within each list are rendered in the same order that the sides of the die are generated and is controlled by the BOSL2 library. Distributing elements to specific sides of each die is done by reordering the elements within each list.
 
 ***Note:** Element positions correlate across all lists, e.g., if the numbers list has `"9"` in the first position, and you want to add an underscore, the `"_"` should also be in the first position in the underscores list.*
 
