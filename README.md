@@ -106,11 +106,13 @@ Text, numbers, underscores, and symbols are added to dice by creating lists of v
 
 ***Note:** Variables are converted into a percentage of the die's size. This allows them to uniformally scale while increasing or decreasing its size.*
 
-### Text Depth
+### Depth and Stroke
 
 |Variable Name|Description|
 |---          |---        |
 |`text_depth` |Extrusion depth (in millimeters) for numbers, underscores, and symbols.|
+|`text_stroke`|Stroke adjustment for numbers, and underscores.|
+|`symbol_stroke`|Stroke adjustment for symbols.|
 
 ### Rounding
 

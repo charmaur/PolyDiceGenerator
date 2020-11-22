@@ -2,6 +2,10 @@
 
 A customizable **Polyhedral Dice Generator** for OpenSCAD.
 
+## PolyDiceGenerator v0.26.7
+
+- Added stroke adjustment for numbers, underscores, and symbols
+
 ## PolyDiceGenerator v0.26.6
 
 - Added fix for quoted font names when copied from Help > Font List
