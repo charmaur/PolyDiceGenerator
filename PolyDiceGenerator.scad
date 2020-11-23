@@ -1,5 +1,5 @@
 //------------------------------------------
-// PolyDiceGenerator v0.26.7
+// PolyDiceGenerator v0.26.8
 //   A customizable Polyhedral Dice Generator for OpenSCAD.
 //   https://github.com/charmaur/PolyDiceGenerator
 //   Please Support PolyDiceGenerator https://ko-fi.com/charmaur
@@ -17,7 +17,7 @@
 
 include <BOSL2/std.scad>
 include <BOSL2/polyhedra.scad>
-echo(pdg_version=[0,26,7]);
+echo(pdg_version=[0,26,8]);
 echo(bosl_version=bosl_version());
 assert(bosl_version()==[2,0,402], "BOSL2 v2.0.402 is required.");
 $fn=$preview ? 24 : 96;
@@ -41,6 +41,7 @@ d8=true;
 d10=true;
 d00=true;
 d12=true;
+d12r=true;
 d20=true;
 
 /* [Dice Size] */
@@ -53,6 +54,7 @@ d8_size=15;
 d10_size=16;
 d00_size=16;
 d12_size=18;
+d12r_size=18;
 d20_size=20;
 
 /* [Depth and Stroke] */
@@ -254,6 +256,27 @@ d12_adj_v_push=[0,0,0,0,0,0,0,0,0,0,0,0];
 d12_adj_h_push=[0,0,0,0,0,0,0,0,0,0,0,0];
 d12_adj_depth=[0,0,0,0,0,0,0,0,0,0,0,0];
 
+/* [d12r Rhombic Dodecahedron] */
+d12r_text_size=34;
+d12r_text_v_push=0;
+d12r_text_h_push=0;
+d12r_text_spacing=1; //[0.5:0.02:1.5]
+d12r_num_4_h_push=-3;
+d12r_text=["1","4","2","8","3","7","6","10","11","5","12","9"];
+d12r_symbols=[undef,undef,undef,undef,undef,undef,undef,undef,undef,undef,undef,undef];
+d12r_symbol_size=34;
+d12r_symbol_v_push=0;
+d12r_symbol_h_push=0;
+d12r_underscores=[" "," "," "," "," "," ","_"," "," "," "," ","_"];
+d12r_underscore_size=28;
+d12r_underscore_v_push=-19;
+d12r_underscore_h_push=0;
+d12r_rotate=[0,0,0,0,0,0,0,0,0,0,0,0];
+d12r_adj_size=[0,0,0,0,0,0,0,0,0,0,0,0];
+d12r_adj_v_push=[0,0,0,0,0,0,0,0,0,0,0,0];
+d12r_adj_h_push=[0,0,0,0,0,0,0,0,0,0,0,0];
+d12r_adj_depth=[0,0,0,0,0,0,0,0,0,0,0,0];
+
 /* [d20 Icosahedron] */
 d20_text_size=23;
 d20_text_v_push=0;
@@ -319,6 +342,10 @@ d12_dl_text=["1","10","7","9","5","11","2","8","6","4","12","3"];
 d12_dl_under=[" "," "," ","_"," "," "," "," ","_"," "," "," "];
 d12_dl_rotate=[-144,144,-144,0,36,72,72,-72,-72,144,-72,0];
 
+d12r_dl_text=["1","4","2","8","3","7","6","10","11","5","12","9"];
+d20r_dl_under=[" "," "," "," "," "," ","_"," "," "," "," ","_"];
+d12r_dl_rotate=[0,180,180,180,180,-70.53,180,70.53,70.53,0,0,-70.53];
+
 //d20
 d20_dl_text=["1","12","11","19","15","13","5","8","17","7","3","6","18","9","14","4","16","20","10","2"];
 d20_dl_under=[" "," "," "," "," "," "," "," "," "," "," ","_"," ","_"," "," "," "," "," "," "];
@@ -339,6 +366,7 @@ if(d8) back(d6_size/2+d8_size/2+spacing) drawd8();
 if(d10) move(x=-d8_size/2-d10_size/2-spacing,y=d6_size/2+d10_size/2+spacing) drawd10();
 if(d00) left(d6_size/2+d00_size/2+spacing) drawd00();
 if(d12) move(x=d8_size/2+d12_size/2+spacing,y=d6_size/2+d12_size/2+spacing) drawd12();
+if(d12r) back(d6_size/2+d8_size/2+d12r_size+spacing*2) drawd12r();
 if(d20) right(d6_size/2+d20_size/2+spacing) drawd20();
 
 txt_font=str_strip(text_font,"\"");
@@ -942,6 +970,70 @@ module drawd12(){
             move(x=d12_underscore_h_push*d12_size/100,y=d12_underscore_v_push*d12_size/100)
             offset(delta=txt_stroke)
             text(d12_underscores[$faceindex],size=under_mult,font=under_font,halign="center",valign="center");
+        }
+    }
+}
+
+module drawd12r(){
+    txt_merged=merge_txt(d12r_text,fix_undef(d12r_symbols));
+    txt_mult=d12r_text_size*d12r_size/100;
+    adj_txt=adj_list(d12r_adj_size,d12r_size/100);
+    txt_stroke=text_stroke*txt_mult;
+    sym_mult=d12r_symbol_size*d12r_size/100;
+    sym_stroke=symbol_stroke*sym_mult;
+    under_mult=d12r_underscore_size*d12r_size/100;
+    space_mult=d12r_text_spacing>1 ? (d12r_text_spacing-1)*txt_mult/3.15 : d12r_text_spacing<1 ? (-1+d12r_text_spacing)*txt_mult/2.8 : 0;
+    base_rotate=[0,180,180,180,180,-70.53,180,70.53,70.53,0,0,-70.53];
+    circumsphere_dia=d12r_size*(1/sqrt(2))*2;
+    corner_round_mult=circumsphere_dia-(corner_rounding*circumsphere_dia/100)/2;
+    corner_clip_mult=circumsphere_dia/2-(corner_clipping*circumsphere_dia/100/2)/2;
+    
+    intersection()
+    {
+        //render clipping objects
+        if(edge_rounding==0 && corner_rounding>0)
+            translate([0,0,d12r_size/2])
+            sphere(d=corner_round_mult,$fn=96);
+        else if(edge_rounding==0 && corner_clipping>0)
+            translate([0,0,d12r_size/2])
+            rotate([0,45,0])
+            regular_polyhedron("cuboctahedron",ir=corner_clip_mult,$fn=96);
+        
+        difference()
+        {
+            //render dodecahedron
+            regular_polyhedron("rhombic dodecahedron",ir=d12r_size/2,anchor=BOTTOM,rounding=edge_rounding);
+            
+            //render numbers & symbols
+            regular_polyhedron("rhombic dodecahedron",ir=d12r_size/2,anchor=BOTTOM,draw=false)
+            zrot(d12r_rotate[$faceindex]+base_rotate[$faceindex])
+            down(text_depth+d12r_adj_depth[$faceindex])
+            linear_extrude(height=2*text_depth+d12r_adj_depth[$faceindex])
+            move(x=(d12r_text_h_push+d12r_adj_h_push[$faceindex])*d12r_size/100,y=(d12r_text_v_push+d12r_adj_v_push[$faceindex])*d12r_size/100)
+            if(is_list(txt_merged[$faceindex])) //a symbol
+                move(x=d12r_symbol_h_push*d12r_size/100,y=d12r_symbol_v_push*d12r_size/100)
+                offset(delta=sym_stroke)
+                text(txt_merged[$faceindex][0],size=sym_mult,font=sym_font,halign="center",valign="center");
+            else if(txt_merged[$faceindex]=="4") //a number 4
+                right(d12r_num_4_h_push*d12r_size/100)
+                offset(delta=txt_stroke)
+                text(txt_merged[$faceindex],size=txt_mult+adj_txt[$faceindex],font=txt_font,halign="center",valign="center");
+            else if(len(txt_merged[$faceindex])==1) //a single digit number that's not 4
+                offset(delta=txt_stroke)
+                text(txt_merged[$faceindex],size=txt_mult+adj_txt[$faceindex],font=txt_font,halign="center",valign="center");
+            else //a double digit number
+                right(space_mult)
+                offset(delta=txt_stroke)
+                text(txt_merged[$faceindex],size=txt_mult+adj_txt[$faceindex],font=txt_font,spacing=d12r_text_spacing,halign="center",valign="center");
+            
+            //render underscore
+            regular_polyhedron("rhombic dodecahedron",ir=d12r_size/2,anchor=BOTTOM,draw=false)
+            zrot(d12r_rotate[$faceindex]+base_rotate[$faceindex])
+            down(text_depth+d12r_adj_depth[$faceindex])
+            linear_extrude(height=2*text_depth+d12r_adj_depth[$faceindex])
+            move(x=d12r_underscore_h_push*d12r_size/100,y=d12r_underscore_v_push*d12r_size/100)
+            offset(delta=txt_stroke)
+            text(d12r_underscores[$faceindex],size=under_mult,font=under_font,halign="center",valign="center");
         }
     }
 }

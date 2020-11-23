@@ -2,7 +2,7 @@
 
 A customizable **Polyhedral Dice Generator** for OpenSCAD.
 
-![Image of dice](images/render_v0.26.4.png)
+![Image of dice](images/render_v0.26.8.png)
 
 ## Requirements
 
@@ -213,6 +213,10 @@ Text, numbers, underscores, and symbols are added to dice by creating lists of v
 |`d00_10_0_padding` |Spacing adjustment for `d00` `#10` 2nd digit `"0"`. Only applies when `d00_angle_text` is `checked` or set to `true`.|
 
 ### d12 Dodecahedron
+
+- Standard Variables Only
+
+### d12r Rhombic Dodecahedron
 
 - Standard Variables Only
 
