@@ -2,7 +2,7 @@
 
 A customizable **Polyhedral Dice Generator** for OpenSCAD.
 
-![Image of dice](images/render_v0.26.8.png)
+![Image of dice](images/render_v0.26.9.png)
 
 ## Requirements
 
@@ -154,6 +154,10 @@ Text, numbers, underscores, and symbols are added to dice by creating lists of v
 |---          |---        |
 |`d2_sides`   |Number of sides adjustment for `d2`.|
 |`d2_height`  |Height adjustment for `d2`.|
+
+### d3 Rounded Triangular Prism
+
+- Standard Variables Only (see above)
 
 ### d4 Tetrahedron
 

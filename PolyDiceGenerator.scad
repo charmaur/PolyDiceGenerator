@@ -1,5 +1,5 @@
 //------------------------------------------
-// PolyDiceGenerator v0.26.8
+// PolyDiceGenerator v0.26.9
 //   A customizable Polyhedral Dice Generator for OpenSCAD.
 //   https://github.com/charmaur/PolyDiceGenerator
 //   Please Support PolyDiceGenerator https://ko-fi.com/charmaur
@@ -17,7 +17,7 @@
 
 include <BOSL2/std.scad>
 include <BOSL2/polyhedra.scad>
-echo(pdg_version=[0,26,8]);
+echo(pdg_version=[0,26,9]);
 echo(bosl_version=bosl_version());
 assert(bosl_version()==[2,0,402], "BOSL2 v2.0.402 is required.");
 $fn=$preview ? 24 : 96;
@@ -33,6 +33,7 @@ symbol_font="SWAstro";
 
 /* [Dice to Draw] */
 d2=true;
+d3=true;
 d4=true;
 d4c=true;
 d4p=true;
@@ -46,6 +47,7 @@ d20=true;
 
 /* [Dice Size] */
 d2_size=24;
+d3_size=16;
 d4_size=20;
 d4c_size=13;
 d4p_size=14;
@@ -68,7 +70,7 @@ corner_rounding=0; //[0:1:60]
 corner_clipping=0; //[0:1:60]
 
 /* [d2 Coin] */
-d2_sides=6; //[0,3,4,5,6,8,10,12]
+d2_sides=10; //[0,3,4,5,6,8,10,12]
 d2_height=3;
 d2_text_size=45;
 d2_text_v_push=0;
@@ -83,6 +85,21 @@ d2_adj_size=[0,0];
 d2_adj_v_push=[0,0];
 d2_adj_h_push=[0,0];
 d2_adj_depth=[0,0];
+
+/* [d3 Rounded Triangular Prism] */
+d3_text_size=36;
+d3_text_v_push=32;
+d3_text_h_push=0;
+d3_text=["1","2","3","1","2","3"];
+d3_symbols=[undef,undef,undef,undef,undef,undef];
+d3_symbol_size=36;
+d3_symbol_v_push=0;
+d3_symbol_h_push=0;
+d3_rotate=[0,0,0,0,0,0];
+d3_adj_size=[0,0,0,0,0,0];
+d3_adj_v_push=[0,0,0,0,0,0];
+d3_adj_h_push=[0,0,0,0,0,0];
+d3_adj_depth=[0,0,0,0,0,0];
 
 /* [d4 Tetrahedron] */
 d4_text_size=34;
@@ -358,6 +375,7 @@ d20_dl_rotate=[0,-120,0,120,-120,0,120,0,0,-120,120,120,-120,120,120,0,-120,0,0,
 spacing=d10_size/2;
 
 if(d2) move(x=d4_size/2+d2_size/2+spacing,y=-d6_size/2-d2_size/2-spacing) drawd2();
+if(d3) left(d6_size/2+d00_size+d3_size/2+spacing*2) drawd3();
 if(d4) fwd(d6_size/2+d4_size/2+spacing) drawd4();
 if(d4c) move(x=-d4_size/2+-d4c_size/2-spacing,y=-d6_size/2-d4c_size/2-d4c_point_length*d4c_size-spacing) drawd4c();
 if(d4p) fwd(d6_size/2+d4_size+d4p_base_length/2+spacing*2) drawd4p();
@@ -422,6 +440,49 @@ module drawd2(){
     }
 }
 
+module drawd3(){
+    txt_merged=merge_txt(d3_text,fix_undef(d3_symbols));
+    txt_mult=d3_text_size*d3_size/100;
+    adj_txt=adj_list(d3_adj_size,d3_size/100);
+    txt_stroke=text_stroke*txt_mult;
+    sym_mult=d3_symbol_size*d3_size/100;
+    sym_stroke=symbol_stroke*sym_mult;
+    base_rotate=[0,180,0,180,0,180];
+    d3_side=d3_size*2/sqrt(3);
+    d3_circum_rad=d3_side*sqrt(3)/3;
+    
+    difference()
+    {
+        //render prism
+        intersection()
+        {
+            translate([0,0,d3_circum_rad/2])
+            sphere(r=d3_circum_rad,$fn=96);
+            translate([0,0,0]) rotate([0,0,90])
+            prismoid(size1=[d3_side,d3_side*1.4],size2=[0,d3_side*1.4],h=d3_size);
+        }
+        
+        //render numbers & symbols
+        for(j=[0:2])
+            translate([0,0,d3_circum_rad/2])
+        for(i=[0:1])
+            rotate([120*j,0,0])
+            translate([0,0,-d3_circum_rad/2])
+            rotate([0,180,0])
+            zrot(d3_rotate[j*2+i]+base_rotate[j*2+i])
+            down(text_depth+d3_adj_depth[j*2+i])
+            linear_extrude(height=2*text_depth+d3_adj_depth[j*2+i])
+            move(x=(d3_text_h_push+d3_adj_h_push[j*2+i])*d3_size/100,y=(d3_text_v_push+d3_adj_v_push[j*2+i])*d3_size/100)
+            if(is_list(txt_merged[j*2+i])) //a symbol
+                move(x=d3_symbol_h_push*d3_size/100,y=d3_symbol_v_push*d3_size/100)
+                offset(delta=sym_stroke)
+                text(txt_merged[j*2+i][0],size=sym_mult,font=sym_font,halign="center",valign="center");
+            else //a number
+                offset(delta=txt_stroke)
+                text(txt_merged[j*2+i],size=txt_mult+adj_txt[j*2+i],font=txt_font,halign="center",valign="center");
+    }
+}
+    
 module drawd4(){
     txt_merged=merge_txt(d4_text,fix_undef(d4_symbols));
     txt_mult=d4_text_size*d4_size/100;

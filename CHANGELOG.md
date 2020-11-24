@@ -2,9 +2,13 @@
 
 A customizable **Polyhedral Dice Generator** for OpenSCAD.
 
+## PolyDiceGenerator v0.26.9
+
+- Added d3 - a rounded triangular prism
+
 ## PolyDiceGenerator v0.26.8
 
-- Added d12r a Rhombic Dodecahedron shaped d12
+- Added d12r - a rhombic dodecahedron
 
 ## PolyDiceGenerator v0.26.7
 
