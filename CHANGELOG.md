@@ -2,6 +2,10 @@
 
 A customizable **Polyhedral Dice Generator** for OpenSCAD.
 
+## PolyDiceGenerator v0.26.10
+
+- Added ability to draw bumpers around specified faces.
+
 ## PolyDiceGenerator v0.26.9
 
 - Added d3 - a rounded triangular prism

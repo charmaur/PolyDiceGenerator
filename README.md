@@ -106,13 +106,15 @@ Text, numbers, underscores, and symbols are added to dice by creating lists of v
 
 ***Note:** Variables are converted into a percentage of the die's size. This allows them to uniformally scale while increasing or decreasing its size.*
 
-### Depth and Stroke
+### Depth, Stroke, and Bumpers
 
-|Variable Name|Description|
-|---          |---        |
-|`text_depth` |Extrusion depth (in millimeters) for numbers, underscores, and symbols.|
-|`text_stroke`|Stroke adjustment for numbers, and underscores.|
+|Variable Name  |Description|
+|---            |---        |
+|`text_depth`   |Extrusion depth (in millimeters) for numbers, underscores, and symbols.|
+|`text_stroke`  |Stroke adjustment for numbers, and underscores.|
 |`symbol_stroke`|Stroke adjustment for symbols.|
+|`add_bumpers`  |If true, bumpers will be drawn around each face set to `true` in the die's d(n)_bumpers list.|
+|`bumper_size`  |Size of bumpers (in millimeters) |
 
 ### Rounding
 
@@ -142,6 +144,7 @@ Text, numbers, underscores, and symbols are added to dice by creating lists of v
 |`d(n)_under_size`   |Size adjustment for underscores.|
 |`d(n)_under_v_push` |Vertical offset adjustment for underscores.|
 |`d(n)_under_h_push` |Horizontal offset adjustment for underscores.|
+|`d(n)_bumpers`      |User-defined list used to add bumpers around each face set to `true`. Enabled by setting `add_bumpers` to `true`.|
 |`d(n)_custom_rotate`|User-defined list of angles for adjusting an elements rotation.|
 |`d(n)_adj_size`     |User-defined list allowing size adjustment of individual text elements.|
 |`d(n)_adj_v_push`   |User-defined list allowing vertical offset adjustment of individual text elements.|

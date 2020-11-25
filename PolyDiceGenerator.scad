@@ -1,5 +1,5 @@
 //------------------------------------------
-// PolyDiceGenerator v0.26.9
+// PolyDiceGenerator v0.26.10
 //   A customizable Polyhedral Dice Generator for OpenSCAD.
 //   https://github.com/charmaur/PolyDiceGenerator
 //   Please Support PolyDiceGenerator https://ko-fi.com/charmaur
@@ -17,7 +17,7 @@
 
 include <BOSL2/std.scad>
 include <BOSL2/polyhedra.scad>
-echo(pdg_version=[0,26,9]);
+echo(pdg_version=[0,26,10]);
 echo(bosl_version=bosl_version());
 assert(bosl_version()==[2,0,402], "BOSL2 v2.0.402 is required.");
 $fn=$preview ? 24 : 96;
@@ -59,10 +59,12 @@ d12_size=18;
 d12r_size=18;
 d20_size=20;
 
-/* [Depth and Stroke] */
+/* [Depth, Stroke, and Bumpers] */
 text_depth=0.6;
 text_stroke=0; //[0:0.01:0.08]
 symbol_stroke=0; //[0:0.01:0.08]
+add_bumpers=false;
+bumper_size=0.3;
 
 /* [Rounding] */
 edge_rounding=0;   //[0:0.1:3]
@@ -111,6 +113,7 @@ d4_symbols=[undef,undef,undef,undef,undef,undef,undef,undef,undef,undef,undef,un
 d4_symbol_size=34;
 d4_symbol_v_push=0;
 d4_symbol_h_push=0;
+d4_bumpers=[true,true,true,false];
 d4_rotate=[0,0,0,0 ,0,0,0,0 ,0,0,0,0];
 d4_adj_size=[0,0,0,0 ,0,0,0,0 ,0,0,0,0];
 d4_adj_v_push=[0,0,0,0 ,0,0,0,0 ,0,0,0,0];
@@ -175,6 +178,7 @@ d6_underscores=[" "," "," "," "," ","_"];
 d6_underscore_size=48;
 d6_underscore_v_push=-32;
 d6_underscore_h_push=0;
+d6_bumpers=[false,true,true,false,false,true];
 d6_rotate=[0,0,0,0,0,0];
 d6_pips=[" "," "," "," "," "," "];
 d6_pip_size=20;
@@ -202,6 +206,7 @@ d8_underscores=[" "," "," "," ","_"," "," "," "];
 d8_underscore_size=42;
 d8_underscore_v_push=-26;
 d8_underscore_h_push=0;
+d8_bumpers=[false,false,false,false,true,true,true,true];
 d8_rotate=[0,0,0,0,0,0,0,0];
 d8_adj_size=[0,0,0,0,0,0,0,0];
 d8_adj_v_push=[0,0,0,0,0,0,0,0];
@@ -224,6 +229,7 @@ d10_underscores=["_"," "," "," "," ","_"," "," "," "," "];
 d10_underscore_size=37;
 d10_underscore_v_push=-17;
 d10_underscore_h_push=0;
+d10_bumpers=[true,true,true,true,true,false,false,false,false,false];
 d10_rotate=[0,0,0,0,0,0,0,0,0,0];
 d10_adj_v_push=[0,0,0,0,0,0,0,0,0,0];
 d10_adj_size=[0,0,0,0,0,0,0,0,0,0];
@@ -246,6 +252,7 @@ d00_symbols=[undef,undef,undef,undef,undef,undef,undef,undef,undef,undef];
 d00_symbol_size=48;
 d00_symbol_v_push=0;
 d00_symbol_h_push=0;
+d00_bumpers=[true,true,true,true,true,false,false,false,false,false];
 d00_rotate=[0,0,0,0,0,0,0,0,0,0];
 d00_adj_size=[0,0,0,0,0,0,0,0,0,0];
 d00_adj_v_push=[0,0,0,0,0,0,0,0,0,0];
@@ -267,6 +274,7 @@ d12_underscores=[" "," "," ","_"," "," "," "," "," "," "," ","_"];
 d12_underscore_size=28;
 d12_underscore_v_push=-19;
 d12_underscore_h_push=0;
+d12_bumpers=[true,true,false,true,false,false,false,false,false,false,false,false];
 d12_rotate=[0,0,0,0,0,0,0,0,0,0,0,0];
 d12_adj_size=[0,0,0,0,0,0,0,0,0,0,0,0];
 d12_adj_v_push=[0,0,0,0,0,0,0,0,0,0,0,0];
@@ -288,6 +296,7 @@ d12r_underscores=[" "," "," "," "," "," ","_"," "," "," "," ","_"];
 d12r_underscore_size=28;
 d12r_underscore_v_push=-19;
 d12r_underscore_h_push=0;
+d12r_bumpers=[true,false,false,false,true,false,true,false,false,true,false,false];
 d12r_rotate=[0,0,0,0,0,0,0,0,0,0,0,0];
 d12r_adj_size=[0,0,0,0,0,0,0,0,0,0,0,0];
 d12r_adj_v_push=[0,0,0,0,0,0,0,0,0,0,0,0];
@@ -309,6 +318,7 @@ d20_underscores=[" "," "," "," "," "," "," ","_","_"," "," "," "," "," "," "," "
 d20_underscore_size=18;
 d20_underscore_v_push=-12;
 d20_underscore_h_push=0;
+d20_bumpers=[true,true,true,false,true,true,false,false,false,false,false,false,false,false,false,false,false,false,false,false];
 d20_rotate=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 d20_adj_size=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 d20_adj_v_push=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
@@ -391,14 +401,14 @@ txt_font=str_strip(text_font,"\"");
 under_font=str_strip(underscore_font,"\"");
 sym_font=str_strip(symbol_font,"\"");
 
-function fix_undef(x)=[for (i=x) if(i=="undef" || i==undef) undef else i];
+function fix_quotes(x)=[for (i=x) if(i=="undef" || i==undef) undef else if (i=="true" || i==true) true else if (i=="false" || i==false) false else i];
 
 function merge_txt(dist,sym)=[for (a=[0:len(dist)-1]) if(sym[a]=="undef" || sym[a]==undef) dist[a] else [sym[a]]];
 
 function adj_list(list,val)=[for (a=[0:len(list)-1]) list[a]*val];
     
 module drawd2(){
-    txt_merged=merge_txt(d2_text,fix_undef(d2_symbols));
+    txt_merged=merge_txt(d2_text,fix_quotes(d2_symbols));
     txt_mult=d2_text_size*d2_size/100;
     adj_txt=adj_list(d2_adj_size,d2_size/100);
     txt_stroke=text_stroke*txt_mult;
@@ -441,7 +451,7 @@ module drawd2(){
 }
 
 module drawd3(){
-    txt_merged=merge_txt(d3_text,fix_undef(d3_symbols));
+    txt_merged=merge_txt(d3_text,fix_quotes(d3_symbols));
     txt_mult=d3_text_size*d3_size/100;
     adj_txt=adj_list(d3_adj_size,d3_size/100);
     txt_stroke=text_stroke*txt_mult;
@@ -484,12 +494,13 @@ module drawd3(){
 }
     
 module drawd4(){
-    txt_merged=merge_txt(d4_text,fix_undef(d4_symbols));
+    txt_merged=merge_txt(d4_text,fix_quotes(d4_symbols));
     txt_mult=d4_text_size*d4_size/100;
     adj_txt=adj_list(d4_adj_size,d4_size/100);
     txt_stroke=text_stroke*txt_mult;
     sym_mult=d4_symbol_size*d4_size/100;
     sym_stroke=symbol_stroke*sym_mult;
+    bumpers=fix_quotes(d4_bumpers);
     base_rotate=[-15,15,15,15,105,255,255,135,225,135,135,255];
     d4_side=d4_size/sqrt(2/3);
     circumsphere_dia=d4_side*sqrt(3/8)*2;
@@ -533,10 +544,16 @@ module drawd4(){
                     text(txt_merged[$faceindex+i*4],size=txt_mult+adj_txt[$faceindex+i*4],font=txt_font,halign="center",valign="center");
         }
     }
+    
+    //add bumpers
+    if(add_bumpers && edge_rounding==0 && corner_rounding==0 && corner_clipping==0) {
+        regular_polyhedron("tetrahedron",side=d4_side,anchor=BOTTOM,rotate_children=false,draw=false)
+        if(bumpers[$faceindex]) stroke($face,width=bumper_size,closed=true);
+    }
 }
 
 module drawd4c(){
-    txt_merged=merge_txt(d4c_text,fix_undef(d4c_symbols));
+    txt_merged=merge_txt(d4c_text,fix_quotes(d4c_symbols));
     txt_mult=d4c_text_size*d4c_size/100;
     adj_txt=adj_list(d4c_adj_size,d4c_size/100);
     txt_stroke=text_stroke*txt_mult;
@@ -603,7 +620,7 @@ module drawd4c(){
             drwapips("d4c",d4c_pips[$faceindex],d4c_adj_depth[$faceindex]);
             
             //render pip symbols
-            d4c_pip_symbols=fix_undef(d4c_pip_symbols);
+            d4c_pip_symbols=fix_quotes(d4c_pip_symbols);
             regular_polyhedron("cube",side=d4c_size,anchor=BOTTOM,draw=false)
             zrot(d4c_rotate[$faceindex]+base_rotate[$faceindex])
             drwapipsymbols("d4c",d4c_pip_symbol_pos[$faceindex],d4c_pip_symbols[$faceindex],d4c_pip_symbol_rotate[$faceindex],d4c_adj_depth[$faceindex]);
@@ -612,7 +629,7 @@ module drawd4c(){
 }
 
 module drawd4p(){
-    txt_merged=merge_txt(d4p_text,fix_undef(d4p_symbols));
+    txt_merged=merge_txt(d4p_text,fix_quotes(d4p_symbols));
     txt_mult=d4p_text_size*d4p_size/100;
     adj_txt=adj_list(d4p_adj_size,d4p_size/100);
     txt_stroke=text_stroke*txt_mult;
@@ -685,12 +702,13 @@ module drawd4p(){
 }
 
 module drawd6(){
-    txt_merged=merge_txt(d6_text,fix_undef(d6_symbols));
+    txt_merged=merge_txt(d6_text,fix_quotes(d6_symbols));
     txt_mult=d6_text_size*d6_size/100;
     adj_txt=adj_list(d6_adj_size,d6_size/100);
     txt_stroke=text_stroke*txt_mult;
     sym_mult=d6_symbol_size*d6_size/100;
     sym_stroke=symbol_stroke*sym_mult;
+    bumpers=fix_quotes(d6_bumpers);
     under_mult=d6_underscore_size*d6_size/100;
     space_mult=d6_text_spacing>1 ? (d6_text_spacing-1)*txt_mult/3.15 : d6_text_spacing<1 ? (-1+d6_text_spacing)*txt_mult/2.8 : 0;
     rotate_mod=d6_angle_text ? 45 : 0;
@@ -752,21 +770,28 @@ module drawd6(){
             drwapips("d6",d6_pips[$faceindex],d6_adj_depth[$faceindex]);
             
             //render pip symbols
-            d6_pip_symbols=fix_undef(d6_pip_symbols);
+            d6_pip_symbols=fix_quotes(d6_pip_symbols);
             regular_polyhedron("cube",side=d6_size,anchor=BOTTOM,draw=false)
             zrot(d6_rotate[$faceindex]+base_rotate[$faceindex])
             drwapipsymbols("d6",d6_pip_symbol_pos[$faceindex],d6_pip_symbols[$faceindex],d6_pip_symbol_rotate[$faceindex],d6_adj_depth[$faceindex]);
         }
     }
+    
+    //add bumpers
+    if(add_bumpers && edge_rounding==0 && corner_rounding==0 && corner_clipping==0) {
+        regular_polyhedron("cube",side=d6_size,anchor=BOTTOM,rotate_children=false,draw=false)
+        if(bumpers[$faceindex]) stroke($face,width=bumper_size,closed=true);
+    }
 }
 
 module drawd8(){
-    txt_merged=merge_txt(d8_text,fix_undef(d8_symbols));
+    txt_merged=merge_txt(d8_text,fix_quotes(d8_symbols));
     txt_mult=d8_text_size*d8_size/100;
     adj_txt=adj_list(d8_adj_size,d8_size/100);
     txt_stroke=text_stroke*txt_mult;
     sym_mult=d8_symbol_size*d8_size/100;
     sym_stroke=symbol_stroke*sym_mult;
+    bumpers=fix_quotes(d8_bumpers);
     under_mult=d8_underscore_size*d8_size/100;
     space_mult=d8_text_spacing>1 ? (d8_text_spacing-1)*txt_mult/3.15 : d8_text_spacing<1 ? (-1+d8_text_spacing)*txt_mult/2.8 : 0;
     base_rotate=[345,15,15,135,255,15,15,195];
@@ -823,15 +848,22 @@ module drawd8(){
             text(d8_underscores[$faceindex],size=under_mult,font=under_font,halign="center",valign="center");
         }
     }
+    
+    //add bumpers
+    if(add_bumpers && edge_rounding==0 && corner_rounding==0 && corner_clipping==0) {
+        regular_polyhedron("octahedron",side=d8_side,anchor=BOTTOM,rotate_children=false,draw=false)
+        if(bumpers[$faceindex]) stroke($face,width=bumper_size,closed=true);
+    }
 }
 
 module drawd10(){
-    txt_merged=merge_txt(d10_text,fix_undef(d10_symbols));
+    txt_merged=merge_txt(d10_text,fix_quotes(d10_symbols));
     txt_mult=d10_text_size*d10_size/100;
     adj_txt=adj_list(d10_adj_size,d10_size/100);
     txt_stroke=text_stroke*txt_mult;
     sym_mult=d10_symbol_size*d10_size/100;
     sym_stroke=symbol_stroke*sym_mult;
+    bumpers=fix_quotes(d10_bumpers);
     under_mult=d10_underscore_size*d10_size/100;
     space_mult=d10_text_spacing>1 ? (d10_text_spacing-1)*txt_mult/3.15 : d10_text_spacing<1 ? (-1+d10_text_spacing)*txt_mult/2.8 : 0;
     base_rotate=[54.25,306.25,306.25,306.25,306.25,254.25,357.75,177.75,126.25,74.25];
@@ -894,16 +926,23 @@ module drawd10(){
             offset(delta=txt_stroke)
             text(d10_underscores[$faceindex],size=under_mult,font=under_font,halign="center",valign="center");
         }
-    } 
+    }
+    
+    //add bumpers
+    if(add_bumpers && edge_rounding==0 && corner_rounding==0 && corner_clipping==0) {
+        regular_polyhedron("trapezohedron",faces=10,side=d10_sside,longside=d10_size,anchor=BOTTOM,rotate_children=false,draw=false)
+        if(bumpers[$faceindex]) stroke($face,width=bumper_size,closed=true);
+    }
 }
 
 module drawd00(){
-    txt_merged=merge_txt(d00_text,fix_undef(d00_symbols));
+    txt_merged=merge_txt(d00_text,fix_quotes(d00_symbols));
     txt_mult=d00_text_size*d00_size/100;
     adj_txt=adj_list(d00_adj_size,d00_size/100);
     txt_stroke=text_stroke*txt_mult;
     sym_mult=d00_symbol_size*d00_size/100;
     sym_stroke=symbol_stroke*sym_mult;
+    bumpers=fix_quotes(d00_bumpers);
     space_mult=d00_text_spacing>1 ? (d00_text_spacing-1)*txt_mult/3.15 : d00_text_spacing<1 ? (-1+d00_text_spacing)*txt_mult/2.8 : 0;
     base_rotate=[54.25,306.25,306.25,306.25,306.25,254.25,357.75,177.75,126.25,74.25];
     rotate_mod=d00_angle_text ? 90 : 0;
@@ -968,15 +1007,22 @@ module drawd00(){
                 }
         }
     }
+    
+    //add bumpers
+    if(add_bumpers && edge_rounding==0 && corner_rounding==0 && corner_clipping==0) {
+        regular_polyhedron("trapezohedron",faces=10,side=d00_sside,longside=d00_size,anchor=BOTTOM,rotate_children=false,draw=false)
+        if(bumpers[$faceindex]) stroke($face,width=bumper_size,closed=true);
+    }
 }
 
 module drawd12(){
-    txt_merged=merge_txt(d12_text,fix_undef(d12_symbols));
+    txt_merged=merge_txt(d12_text,fix_quotes(d12_symbols));
     txt_mult=d12_text_size*d12_size/100;
     adj_txt=adj_list(d12_adj_size,d12_size/100);
     txt_stroke=text_stroke*txt_mult;
     sym_mult=d12_symbol_size*d12_size/100;
     sym_stroke=symbol_stroke*sym_mult;
+    bumpers=fix_quotes(d12_bumpers);
     under_mult=d12_underscore_size*d12_size/100;
     space_mult=d12_text_spacing>1 ? (d12_text_spacing-1)*txt_mult/3.15 : d12_text_spacing<1 ? (-1+d12_text_spacing)*txt_mult/2.8 : 0;
     base_rotate=[270,90,18,162,234,306,306,234,18,162,270,90];
@@ -1033,15 +1079,22 @@ module drawd12(){
             text(d12_underscores[$faceindex],size=under_mult,font=under_font,halign="center",valign="center");
         }
     }
+
+    //add bumpers
+    if(add_bumpers && edge_rounding==0 && corner_rounding==0 && corner_clipping==0) {
+        regular_polyhedron("dodecahedron",ir=d12_size/2,anchor=BOTTOM,rotate_children=false,draw=false)
+        if(bumpers[$faceindex]) stroke($face,width=bumper_size,closed=true);
+    }
 }
 
 module drawd12r(){
-    txt_merged=merge_txt(d12r_text,fix_undef(d12r_symbols));
+    txt_merged=merge_txt(d12r_text,fix_quotes(d12r_symbols));
     txt_mult=d12r_text_size*d12r_size/100;
     adj_txt=adj_list(d12r_adj_size,d12r_size/100);
     txt_stroke=text_stroke*txt_mult;
     sym_mult=d12r_symbol_size*d12r_size/100;
     sym_stroke=symbol_stroke*sym_mult;
+    bumpers=fix_quotes(d12r_bumpers);
     under_mult=d12r_underscore_size*d12r_size/100;
     space_mult=d12r_text_spacing>1 ? (d12r_text_spacing-1)*txt_mult/3.15 : d12r_text_spacing<1 ? (-1+d12r_text_spacing)*txt_mult/2.8 : 0;
     base_rotate=[0,180,180,180,180,-70.53,180,70.53,70.53,0,0,-70.53];
@@ -1097,15 +1150,22 @@ module drawd12r(){
             text(d12r_underscores[$faceindex],size=under_mult,font=under_font,halign="center",valign="center");
         }
     }
+
+    //add bumpers
+    if(add_bumpers && edge_rounding==0 && corner_rounding==0 && corner_clipping==0) {
+        regular_polyhedron("rhombic dodecahedron",ir=d12r_size/2,anchor=BOTTOM,rotate_children=false,draw=false)
+        if(bumpers[$faceindex]) stroke($face,width=bumper_size,closed=true);
+    }
 }
 
 module drawd20(){
-    txt_merged=merge_txt(d20_text,fix_undef(d20_symbols));
+    txt_merged=merge_txt(d20_text,fix_quotes(d20_symbols));
     txt_mult=d20_text_size*d20_size/100;
     adj_txt=adj_list(d20_adj_size,d20_size/100);
     txt_stroke=text_stroke*txt_mult;
     sym_mult=d20_symbol_size*d20_size/100;
     sym_stroke=symbol_stroke*sym_mult;
+    bumpers=fix_quotes(d20_bumpers);
     under_mult=d20_underscore_size*d20_size/100;
     space_mult=d20_text_spacing>1 ? (d20_text_spacing-1)*txt_mult/3.15 : d20_text_spacing<1 ? (-1+d20_text_spacing)*txt_mult/2.8 : 0;
     base_rotate=[20.9,339.1,339.1,-20.9,99.1,99.1,219.1,23.6,219.1,143.6,174.6,99.1,99.1,54.6,219.1,294.6,219.1,159.1,339.1,263.6];
@@ -1161,6 +1221,12 @@ module drawd20(){
             offset(delta=txt_stroke)
             text(d20_underscores[$faceindex],size=under_mult,font=under_font,halign="center",valign="center");
         }
+    }
+
+    //add bumpers
+    if(add_bumpers && edge_rounding==0 && corner_rounding==0 && corner_clipping==0) {
+        regular_polyhedron("icosahedron",ir=d20_size/2,anchor=BOTTOM,rotate_children=false,draw=false)
+        if(bumpers[$faceindex]) stroke($face,width=bumper_size,closed=true);
     }
 }
 
