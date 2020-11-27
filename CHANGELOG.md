@@ -2,6 +2,11 @@
 
 A customizable **Polyhedral Dice Generator** for OpenSCAD.
 
+## PolyDiceGenerator v0.26.11
+
+- Fixed problem with bumpers not being unioned to dice.
+- Updated arc generation values to improve performance.
+
 ## PolyDiceGenerator v0.26.10
 
 - Added ability to draw bumpers around specified faces.
