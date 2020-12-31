@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////
 // LibFile: paths.scad
-//   Polylines, polygons and paths.
+//   Support for polygons and paths.
 //   To use, add the following lines to the beginning of your file:
 //   ```
 //   include <BOSL2/std.scad>
@@ -43,10 +43,12 @@ include <triangulation.scad>
 //   dim = list of allowed dimensions of the vectors in the path.  Default: [2,3]
 //   fast = set to true for fast check that only looks at first entry.  Default: false
 function is_path(list, dim=[2,3], fast=false) =
-    fast? is_list(list) && is_vector(list[0]) :
-    is_list(list) && is_list(list[0]) && len(list)>1 &&
-    (is_undef(dim) || in_list(len(list[0]), force_list(dim))) &&
-    is_list_of(list, repeat(0,len(list[0])));
+    fast
+    ?   is_list(list) && is_vector(list[0]) 
+    :   is_matrix(list) 
+        && len(list)>1 
+        && len(list[0])>0
+        && (is_undef(dim) || in_list(len(list[0]), force_list(dim)));
 
 
 // Function: is_closed_path()
@@ -105,32 +107,51 @@ function path_subselect(path, s1, u1, s2, u2, closed=false) =
 
 // Function: simplify_path()
 // Description:
-//   Takes a path and removes unnecessary collinear points.
+//   Takes a path and removes unnecessary subsequent collinear points.
 // Usage:
 //   simplify_path(path, [eps])
 // Arguments:
-//   path = A list of 2D path points.
+//   path = A list of path points of any dimension.
 //   eps = Largest positional variance allowed.  Default: `EPSILON` (1-e9)
 function simplify_path(path, eps=EPSILON) =
-    len(path)<=2? path : let(
-        indices = concat([0], [for (i=[1:1:len(path)-2]) if (!collinear_indexed(path, i-1, i, i+1, eps=eps)) i], [len(path)-1])
-    ) [for (i = indices) path[i]];
+    assert( is_path(path), "Invalid path." )
+    assert( is_undef(eps) || (is_finite(eps) && (eps>=0) ), "Invalid tolerance." )    
+    len(path)<=2 ? path 
+    :   let(
+            indices = [ 0,
+                        for (i=[1:1:len(path)-2]) 
+                            if (!collinear(path[i-1],path[i],path[i+1], eps=eps)) i, 
+                        len(path)-1 
+                      ]
+        ) 
+        [for (i = indices) path[i] ];
 
 
 // Function: simplify_path_indexed()
 // Description:
-//   Takes a list of points, and a path as a list of indices into `points`,
-//   and removes all path points that are unecessarily collinear.
+//   Takes a list of points, and a list of indices into `points`,
+//   and removes from the list all indices of subsequent indexed points that are unecessarily collinear.
+//   Returns the list of the remained indices.
 // Usage:
-//   simplify_path_indexed(path, eps)
+//   simplify_path_indexed(points,indices, eps)
 // Arguments:
 //   points = A list of points.
-//   path = A list of indices into `points` that forms a path.
+//   indices = A list of indices into `points` that forms a path.
 //   eps = Largest angle variance allowed.  Default: EPSILON (1-e9) degrees.
-function simplify_path_indexed(points, path, eps=EPSILON) =
-    len(path)<=2? path : let(
-        indices = concat([0], [for (i=[1:1:len(path)-2]) if (!collinear_indexed(points, path[i-1], path[i], path[i+1], eps=eps)) i], [len(path)-1])
-    ) [for (i = indices) path[i]];
+function simplify_path_indexed(points, indices, eps=EPSILON) =
+    len(indices)<=2? indices 
+    : let(
+        indices = concat( indices[0], 
+                          [for (i=[1:1:len(indices)-2]) 
+                              let( 
+                                  i1 = indices[i-1],
+                                  i2 = indices[i],
+                                  i3 = indices[i+1]
+                              )
+                              if (!collinear(points[i1],points[i2],points[i3], eps=eps)) indices[i]], 
+                          indices[len(indices)-1] )
+        ) 
+        indices;
 
 
 // Function: path_length()
@@ -295,7 +316,8 @@ function path_closest_point(path, pt) =
 
 
 // Function: path_tangents()
-// Usage: path_tangents(path, [closed], [uniform])
+// Usage:
+//   tangs = path_tangents(path, <closed>, <uniform>);
 // Description:
 //   Compute the tangent vector to the input path.  The derivative approximation is described in deriv().
 //   The returns vectors will be normalized to length 1.  If any derivatives are zero then
@@ -327,7 +349,8 @@ function path_tangents(path, closed=false, uniform=true) =
 
 
 // Function: path_normals()
-// Usage:  path_normals(path, [tangents], [closed])
+// Usage:
+//   norms = path_normals(path, <tangents>, <closed>);
 // Description:
 //   Compute the normal vector to the input path.  This vector is perpendicular to the
 //   path tangent and lies in the plane of the curve.  When there are collinear points,
@@ -350,7 +373,8 @@ function path_normals(path, tangents, closed=false) =
 
 
 // Function: path_curvature()
-// Usage: path_curvature(path, [closed])
+// Usage:
+//   curvs = path_curvature(path, <closed>);
 // Description:
 //   Numerically estimate the curvature of the path (in any dimension). 
 function path_curvature(path, closed=false) =
@@ -367,7 +391,8 @@ function path_curvature(path, closed=false) =
 
 
 // Function: path_torsion()
-// Usage: path_torsion(path, [closed])
+// Usage:
+//   tortions = path_torsion(path, <closed>);
 // Description:
 //   Numerically estimate the torsion of a 3d path.  
 function path_torsion(path, closed=false) =
@@ -380,6 +405,158 @@ function path_torsion(path, closed=false) =
             crossterm = cross(d1[i],d2[i])
         ) crossterm * d3[i] / sqr(norm(crossterm))
     ];
+
+
+// Function: path_chamfer_and_rounding()
+// Usage:
+//   path2 = path_chamfer_and_rounding(path, [closed], [chamfer], [rounding]);
+// Description:
+//   Rounds or chamfers corners in the given path.
+// Arguments:
+//   path = The path to chamfer and/or round.
+//   closed = If true, treat path like a closed polygon.  Default: true
+//   chamfer = The length of the chamfer faces at the corners.  If given as a list of numbers, gives individual chamfers for each corner, from first to last.  Default: 0 (no chamfer)
+//   rounding = The rounding radius for the corners.  If given as a list of numbers, gives individual radii for each corner, from first to last.  Default: 0 (no rounding)
+// Example(2D): Chamfering a Path
+//   path = star(5, step=2, d=100);
+//   path2 = path_chamfer_and_rounding(path, closed=true, chamfer=5);
+//   stroke(path2, closed=true);
+// Example(2D): Per-Corner Chamfering
+//   path = star(5, step=2, d=100);
+//   chamfs = [for (i=[0:1:4]) each 3*[i,i]];
+//   path2 = path_chamfer_and_rounding(path, closed=true, chamfer=chamfs);
+//   stroke(path2, closed=true);
+// Example(2D): Rounding a Path
+//   path = star(5, step=2, d=100);
+//   path2 = path_chamfer_and_rounding(path, closed=true, rounding=5);
+//   stroke(path2, closed=true);
+// Example(2D): Per-Corner Chamfering
+//   path = star(5, step=2, d=100);
+//   rs = [for (i=[0:1:4]) each 2*[i,i]];
+//   path2 = path_chamfer_and_rounding(path, closed=true, rounding=rs);
+//   stroke(path2, closed=true);
+// Example(2D): Mixing Chamfers and Roundings
+//   path = star(5, step=2, d=100);
+//   chamfs = [for (i=[0:4]) each [5,0]];
+//   rs = [for (i=[0:4]) each [0,10]];
+//   path2 = path_chamfer_and_rounding(path, closed=true, chamfer=chamfs, rounding=rs);
+//   stroke(path2, closed=true);
+function path_chamfer_and_rounding(path, closed, chamfer, rounding) =
+	let (
+		path = deduplicate(path,closed=true),
+		lp = len(path),
+		chamfer = is_undef(chamfer)? repeat(0,lp) :
+			is_vector(chamfer)? list_pad(chamfer,lp,0) :
+			is_num(chamfer)? repeat(chamfer,lp) :
+			assert(false, "Bad chamfer value."),
+		rounding = is_undef(rounding)? repeat(0,lp) :
+			is_vector(rounding)? list_pad(rounding,lp,0) :
+			is_num(rounding)? repeat(rounding,lp) :
+			assert(false, "Bad rounding value."),
+		corner_paths = [
+			for (i=(closed? [0:1:lp-1] : [1:1:lp-2])) let(
+				p1 = select(path,i-1),
+				p2 = select(path,i),
+				p3 = select(path,i+1)
+			)
+			chamfer[i]  > 0? _corner_chamfer_path(p1, p2, p3, side=chamfer[i]) :
+			rounding[i] > 0? _corner_roundover_path(p1, p2, p3, r=rounding[i]) :
+			[p2]
+		],
+		out = [
+			if (!closed) path[0],
+			for (i=(closed? [0:1:lp-1] : [1:1:lp-2])) let(
+				p1 = select(path,i-1),
+				p2 = select(path,i),
+				crn1 = select(corner_paths,i-1),
+				crn2 = corner_paths[i],
+				l1 = norm(select(crn1,-1)-p1),
+				l2 = norm(crn2[0]-p2),
+				needed = l1 + l2,
+				seglen = norm(p2-p1),
+				check = assert(seglen >= needed, str("Path segment ",i," is too short to fulfill rounding/chamfering for the adjacent corners."))
+			) each crn2,
+			if (!closed) select(path,-1)
+		]
+	) deduplicate(out);
+
+
+function _corner_chamfer_path(p1, p2, p3, dist1, dist2, side, angle) = 
+	let(
+		v1 = unit(p1 - p2),
+		v2 = unit(p3 - p2),
+		n = vector_axis(v1,v2),
+		ang = vector_angle(v1,v2),
+		path = (is_num(dist1) && is_undef(dist2) && is_undef(side))? (
+			// dist1 & optional angle
+			assert(dist1 > 0)
+			let(angle = default(angle,(180-ang)/2))
+			assert(is_num(angle))
+			assert(angle > 0 && angle < 180)
+			let(
+				pta = p2 + dist1*v1,
+				a3 = 180 - angle - ang
+			) assert(a3>0, "Angle too extreme.")
+			let(
+				side = sin(angle) * dist1/sin(a3),
+				ptb = p2 + side*v2
+			) [pta, ptb]
+		) : (is_undef(dist1) && is_num(dist2) && is_undef(side))? (
+			// dist2 & optional angle
+			assert(dist2 > 0)
+			let(angle = default(angle,(180-ang)/2))
+			assert(is_num(angle))
+			assert(angle > 0 && angle < 180)
+			let(
+				ptb = p2 + dist2*v2,
+				a3 = 180 - angle - ang
+			) assert(a3>0, "Angle too extreme.")
+			let(
+				side = sin(angle) * dist2/sin(a3),
+				pta = p2 + side*v1
+			) [pta, ptb]
+		) : (is_undef(dist1) && is_undef(dist2) && is_num(side))? (
+			// side & optional angle
+			assert(side > 0)
+			let(angle = default(angle,(180-ang)/2))
+			assert(is_num(angle))
+			assert(angle > 0 && angle < 180)
+			let(
+				a3 = 180 - angle - ang
+			) assert(a3>0, "Angle too extreme.")
+			let(
+				dist1 = sin(a3) * side/sin(ang),
+				dist2 = sin(angle) * side/sin(ang),
+				pta = p2 + dist1*v1,
+				ptb = p2 + dist2*v2
+			) [pta, ptb]
+		) : (is_num(dist1) && is_num(dist2) && is_undef(side) && is_undef(side))? (
+			// dist1 & dist2
+			assert(dist1 > 0)
+			assert(dist2 > 0)
+			let(
+				pta = p2 + dist1*v1,
+				ptb = p2 + dist2*v2
+			) [pta, ptb]
+		) : (
+			assert(false,"Bad arguments.")
+		)
+	) path;
+
+
+function _corner_roundover_path(p1, p2, p3, r, d) = 
+	let(
+		r = get_radius(r=r,d=d,dflt=undef),
+		res = circle_2tangents(p1, p2, p3, r=r, tangents=true),
+		cp = res[0],
+		n = res[1],
+		tp1 = res[2],
+		ang = res[4]+res[5],
+		steps = floor(segs(r)*ang/360+0.5),
+		step = ang / steps,
+		path = [for (i=[0:1:steps]) move(cp, p=rot(a=-i*step, v=n, p=tp1-cp))]
+	) path;
+
 
 
 // Function: path3d_spiral()
@@ -396,8 +573,8 @@ function path_torsion(path, closed=false) =
 //   cp = Centerpoint of spiral. Default: `[0,0]`
 //   scale = [X,Y] scaling factors for each axis.  Default: `[1,1]`
 // Example(3D):
-//   trace_polyline(path3d_spiral(turns=2.5, h=100, n=24, r=50), N=1, showpts=true);
-function path3d_spiral(turns=3, h=100, n=12, r=undef, d=undef, cp=[0,0], scale=[1,1]) = let(
+//   trace_path(path3d_spiral(turns=2.5, h=100, n=24, r=50), N=1, showpts=true);
+function path3d_spiral(turns=3, h=100, n=12, r, d, cp=[0,0], scale=[1,1]) = let(
         rr=get_radius(r=r, d=d, dflt=100),
         cnt=floor(turns*n),
         dz=h/cnt
@@ -408,44 +585,6 @@ function path3d_spiral(turns=3, h=100, n=12, r=undef, d=undef, cp=[0,0], scale=[
             i*dz
         ]
     ];
-
-
-// Function: points_along_path3d()
-// Usage:
-//   points_along_path3d(polyline, path);
-// Description:
-//   Calculates the vertices needed to create a `polyhedron()` of the
-//   extrusion of `polyline` along `path`.  The closed 2D path shold be
-//   centered on the XY plane. The 2D path is extruded perpendicularly
-//   along the 3D path.  Produces a list of 3D vertices.  Vertex count
-//   is `len(polyline)*len(path)`.  Gives all the reoriented vertices
-//   for `polyline` at the first point in `path`, then for the second,
-//   and so on.
-// Arguments:
-//   polyline = A closed list of 2D path points.
-//   path = A list of 3D path points.
-function points_along_path3d(
-    polyline,  // The 2D polyline to drag along the 3D path.
-    path,  // The 3D polyline path to follow.
-    q=Q_Ident(),  // Used in recursion
-    n=0  // Used in recursion
-) = let(
-    end = len(path)-1,
-    v1 = (n == 0)?  [0, 0, 1] : unit(path[n]-path[n-1]),
-    v2 = (n == end)? unit(path[n]-path[n-1]) : unit(path[n+1]-path[n]),
-    crs = cross(v1, v2),
-    axis = norm(crs) <= 0.001? [0, 0, 1] : crs,
-    ang = vector_angle(v1, v2),
-    hang = ang * (n==0? 1.0 : 0.5),
-    hrot = Quat(axis, hang),
-    arot = Quat(axis, ang),
-    roth = Q_Mul(hrot, q),
-    rotm = Q_Mul(arot, q)
-) concat(
-    [for (i = [0:1:len(polyline)-1]) Qrot(roth,p=point3d(polyline[i])) + path[n]],
-    (n == end)? [] : points_along_path3d(polyline, path, rotm, n+1)
-);
-
 
 
 // Function: path_self_intersections()
@@ -504,9 +643,9 @@ function path_self_intersections(path, closed=true, eps=EPSILON) =
 
 // Function: split_path_at_self_crossings()
 // Usage:
-//   polylines = split_path_at_self_crossings(path, [closed], [eps]);
+//   paths = split_path_at_self_crossings(path, [closed], [eps]);
 // Description:
-//   Splits a path into polyline sections wherever the path crosses itself.
+//   Splits a path into sub-paths wherever the original path crosses itself.
 //   Splits may occur mid-segment, so new vertices will be created at the intersection points.
 // Arguments:
 //   path = The path to split up.
@@ -514,8 +653,8 @@ function path_self_intersections(path, closed=true, eps=EPSILON) =
 //   eps = Acceptable variance.  Default: `EPSILON` (1e-9)
 // Example(2D):
 //   path = [ [-100,100], [0,-50], [100,100], [100,-100], [0,50], [-100,-100] ];
-//   polylines = split_path_at_self_crossings(path);
-//   rainbow(polylines) stroke($item, closed=false, width=2);
+//   paths = split_path_at_self_crossings(path);
+//   rainbow(paths) stroke($item, closed=false, width=2);
 function split_path_at_self_crossings(path, closed=true, eps=EPSILON) =
     let(
         path = cleanup_path(path, eps=eps),
@@ -656,11 +795,11 @@ function _extreme_angle_fragment(seg, fragments, rightmost=true, eps=EPSILON) =
 // Usage:
 //   assemble_a_path_from_fragments(subpaths);
 // Description:
-//   Given a list of incomplete paths, assembles them together into one complete closed path, and
+//   Given a list of paths, assembles them together into one complete closed polygon path, and
 //   remainder fragments.  Returns [PATH, FRAGMENTS] where FRAGMENTS is the list of remaining
-//   polyline path fragments.
+//   unused path fragments.
 // Arguments:
-//   fragments = List of polylines to be assembled into complete polygons.
+//   fragments = List of paths to be assembled into complete polygons.
 //   rightmost = If true, assemble paths using rightmost turns. Leftmost if false.
 //   startfrag = The fragment to start with.  Default: 0
 //   eps = The epsilon error value to determine whether two points coincide.  Default: `EPSILON` (1e-9)
@@ -713,9 +852,9 @@ function assemble_a_path_from_fragments(fragments, rightmost=true, startfrag=0, 
 // Usage:
 //   assemble_path_fragments(subpaths);
 // Description:
-//   Given a list of incomplete paths, assembles them together into complete closed paths if it can.
+//   Given a list of paths, assembles them together into complete closed polygon paths if it can.
 // Arguments:
-//   fragments = List of polylines to be assembled into complete polygons.
+//   fragments = List of paths to be assembled into complete polygons.
 //   eps = The epsilon error value to determine whether two points coincide.  Default: `EPSILON` (1e-9)
 function assemble_path_fragments(fragments, eps=EPSILON, _finished=[]) =
     len(fragments)==0? _finished :
@@ -753,19 +892,27 @@ function assemble_path_fragments(fragments, eps=EPSILON, _finished=[]) =
 
 
 // Module: modulated_circle()
+// Usage:
+//   modulated_circle(r|d, sines);
 // Description:
 //   Creates a 2D polygon circle, modulated by one or more superimposed sine waves.
 // Arguments:
-//   r = radius of the base circle.
-//   sines = array of [amplitude, frequency] pairs, where the frequency is the number of times the cycle repeats around the circle.
+//   r = Radius of the base circle. Default: 40
+//   d = Diameter of the base circle.
+//   sines = array of [amplitude, frequency] pairs or [amplitude, frequency, phase] triples, where the frequency is the number of times the cycle repeats around the circle.
 // Example(2D):
 //   modulated_circle(r=40, sines=[[3, 11], [1, 31]], $fn=6);
-module modulated_circle(r=40, sines=[10])
+module modulated_circle(r, sines=[[1,1]], d)
 {
-    freqs = len(sines)>0? [for (i=sines) i[1]] : [5];
+    r = get_radius(r=r, d=d, dflt=40);
+    assert(is_list(sines)
+        && all([for(s=sines) is_vector(s,2) || is_vector(s,3)]),
+        "sines must be given as a list of pairs or triples");
+    sines_ = [for(s=sines) [s[0], s[1], len(s)==2 ? 0 : s[2]]];
+    freqs = len(sines_)>0? [for (i=sines_) i[1]] : [5];
     points = [
         for (a = [0 : (360/segs(r)/max(freqs)) : 360])
-            let(nr=r+sum_of_sines(a,sines)) [nr*cos(a), nr*sin(a)]
+            let(nr=r+sum_of_sines(a,sines_)) [nr*cos(a), nr*sin(a)]
     ];
     polygon(points);
 }
@@ -788,12 +935,14 @@ module modulated_circle(r=40, sines=[10])
 //   extrude_from_to([0,0,0], [10,20,30], convexity=4, twist=360, scale=3.0, slices=40) {
 //       xcopies(3) circle(3, $fn=32);
 //   }
-module extrude_from_to(pt1, pt2, convexity=undef, twist=undef, scale=undef, slices=undef) {
+module extrude_from_to(pt1, pt2, convexity, twist, scale, slices) {
     rtp = xyz_to_spherical(pt2-pt1);
     translate(pt1) {
         rotate([0, rtp[2], rtp[1]]) {
-            linear_extrude(height=rtp[0], convexity=convexity, center=false, slices=slices, twist=twist, scale=scale) {
-                children();
+            if (rtp[0] > 0) {
+                linear_extrude(height=rtp[0], convexity=convexity, center=false, slices=slices, twist=twist, scale=scale) {
+                    children();
+                }
             }
         }
     }
@@ -803,12 +952,13 @@ module extrude_from_to(pt1, pt2, convexity=undef, twist=undef, scale=undef, slic
 
 // Module: spiral_sweep()
 // Description:
-//   Takes a closed 2D polyline path, centered on the XY plane, and
-//   extrudes it along a 3D spiral path of a given radius, height and twist.
+//   Takes a closed 2D polygon path, centered on the XY plane, and sweeps/extrudes it along a 3D spiral path
+//   of a given radius, height and twist.
 // Arguments:
-//   polyline = Array of points of a polyline path, to be extruded.
+//   path = Array of points of a polygon path, to be extruded.
 //   h = height of the spiral to extrude along.
-//   r = radius of the spiral to extrude along.
+//   r = Radius of the spiral to extrude along. Default: 50
+//   d = Diameter of the spiral to extrude along.
 //   twist = number of degrees of rotation to spiral up along height.
 //   anchor = Translate so anchor point is at origin (0,0,0).  See [anchor](attachments.scad#anchor).  Default: `CENTER`
 //   spin = Rotate this many degrees around the Z axis after anchor.  See [spin](attachments.scad#spin).  Default: `0`
@@ -817,9 +967,10 @@ module extrude_from_to(pt1, pt2, convexity=undef, twist=undef, scale=undef, slic
 // Example:
 //   poly = [[-10,0], [-3,-5], [3,-5], [10,0], [0,-30]];
 //   spiral_sweep(poly, h=200, r=50, twist=1080, $fn=36);
-module spiral_sweep(polyline, h, r, twist=360, center, anchor, spin=0, orient=UP) {
-    polyline = path3d(polyline);
-    pline_count = len(polyline);
+module spiral_sweep(poly, h, r, twist=360, center, d, anchor, spin=0, orient=UP) {
+    r = get_radius(r=r, d=d, dflt=50);
+    poly = path3d(poly);
+    pline_count = len(poly);
     steps = ceil(segs(r)*(twist/360));
     anchor = get_anchor(anchor,center,BOT,BOT);
 
@@ -832,7 +983,7 @@ module spiral_sweep(polyline, h, r, twist=360, center, anchor, spin=0, orient=UP
             dy = r*sin(a),
             dz = h * (p/steps),
             pts = apply_list(
-                polyline, [
+                poly, [
                     affine3d_xrot(90),
                     affine3d_zrot(a),
                     affine3d_translate([dx, dy, dz-h/2])
@@ -871,7 +1022,7 @@ module spiral_sweep(polyline, h, r, twist=360, center, anchor, spin=0, orient=UP
 
 // Module: path_extrude()
 // Description:
-//   Extrudes 2D children along a 3D polyline path.  This may be slow.
+//   Extrudes 2D children along a 3D path.  This may be slow.
 // Arguments:
 //   path = array of points for the bezier path to extrude along.
 //   convexity = maximum number of walls a ran can pass through.
@@ -902,8 +1053,10 @@ module path_extrude(path, convexity=10, clipsize=100) {
             translate(pt1) {
                 Qrot(q) {
                     down(clipsize/2/2) {
-                        linear_extrude(height=dist+clipsize/2, convexity=convexity) {
-                            children();
+                        if ((dist+clipsize/2) > 0) {
+                            linear_extrude(height=dist+clipsize/2, convexity=convexity) {
+                                children();
+                            }
                         }
                     }
                 }
@@ -1134,10 +1287,11 @@ function _path_plane(path, ind, i,closed) =
 function _path_cuts_dir(path, cuts, closed=false, eps=1e-2) =
     [for(ind=[0:len(cuts)-1])
         let(
+            zeros = path[0]*0,
             nextind = cuts[ind][1],
-            nextpath = unit(select(path, nextind+1)-select(path, nextind)),
-            thispath = unit(select(path, nextind) - path[nextind-1]),
-            lastpath = unit(path[nextind-1] - select(path, nextind-2)),
+            nextpath = unit(select(path, nextind+1)-select(path, nextind),zeros),
+            thispath = unit(select(path, nextind) - path[nextind-1],zeros),
+            lastpath = unit(path[nextind-1] - select(path, nextind-2),zeros),
             nextdir =
                 nextind==len(path) && !closed? lastpath :
                 (nextind<=len(path)-2 || closed) && approx(cuts[ind][0], path[nextind],eps)?
@@ -1187,6 +1341,7 @@ function _sum_preserving_round(data, index=0) =
 // Arguments:
 //   path = path to subdivide
 //   N = scalar total number of points desired or with `method="segment"` can be a vector requesting `N[i]-1` points on segment i.
+//   refine = number of points to add each segment.
 //   closed = set to false if the path is open.  Default: True
 //   exact = if true return exactly the requested number of points, possibly sacrificing uniformity.  If false, return uniform point sample that may not match the number of points requested.  Default: True
 //   method = One of `"length"` or `"segment"`.  If `"length"`, adds vertices evenly along the total path length.  If `"segment"`, adds points evenly among the segments.  Default: `"length"`
@@ -1224,7 +1379,11 @@ function subdivide_path(path, N, refine, closed=true, exact=true, method="length
     assert(is_path(path))
     assert(method=="length" || method=="segment")
     assert(num_defined([N,refine]),"Must give exactly one of N and refine")
-    let(N = first_defined([N,len(path)*refine]))
+    let(
+        N = !is_undef(N)? N :
+            !is_undef(refine)? len(path) * refine :
+            undef
+    )
     assert((is_num(N) && N>0) || is_vector(N),"Parameter N to subdivide_path must be postive number or vector")
     let(
         count = len(path) - (closed?0:1), 
@@ -1257,7 +1416,8 @@ function subdivide_path(path, N, refine, closed=true, exact=true, method="length
 
 
 // Function: path_length_fractions()
-// Usage: path_length_fractions(path, [closed])
+// Usage:
+//   fracs = path_length_fractions(path, <closed>);
 // Description:
 //    Returns the distance fraction of each point in the path along the path, so the first
 //    point is zero and the final point is 1.  If the path is closed the length of the output
@@ -1278,7 +1438,8 @@ function path_length_fractions(path, closed=false) =
 
 
 // Function: resample_path()
-// Usage: resample_path(path, N|spacing, [closed])
+// Usage:
+//   newpath = resample_path(path, N|spacing, <closed>);
 // Description:
 //   Compute a uniform resampling of the input path.  If you specify `N` then the output path will have N
 //   points spaced uniformly (by linear interpolation along the input path segments).  The only points of the

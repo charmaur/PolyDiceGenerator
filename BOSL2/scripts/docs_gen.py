@@ -294,11 +294,11 @@ def mkdn_esc(txt):
     while txt:
         m = quotpat.match(txt)
         if m:
-            out += m.group(1).replace(r'_', r'\_')
+            out += m.group(1).replace(r'_', r'\_').replace(r'&',r'&amp;').replace(r'<', r'&lt;').replace(r'>',r'&gt;')
             out += m.group(2)
             txt = m.group(3)
         else:
-            out += txt.replace(r'_', r'\_')
+            out += txt.replace(r'_', r'\_').replace(r'&',r'&amp;').replace(r'<', r'&lt;').replace(r'>',r'&gt;')
             txt = ""
     return out
 
@@ -405,6 +405,10 @@ class LeafNode(object):
                 dummy, title = line.split(":", 1)
                 title = title.strip()
                 lines, block = get_comment_block(lines, prefix)
+                if block == []:
+                    print("Error: Usage header without any usage examples.")
+                    print(line)
+                    sys.exit(-2)
                 self.usages.append([title, block])
                 continue
             if line.startswith("Description:"):

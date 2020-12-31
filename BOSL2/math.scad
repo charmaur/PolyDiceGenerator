@@ -26,17 +26,17 @@ NAN = acos(2);  // The value `nan`, useful for comparisons.
 // Usage:
 //   sqr(x);
 // Description:
-//   Returns the square of the given number or entries in list
+//   If given a number, returns the square of that number,
+//   If given a vector, returns the sum-of-squares/dot product of the vector elements.
+//   If given a matrix, returns the matrix multiplication of the matrix with itself.
 // Examples:
 //   sqr(3);     // Returns: 9
 //   sqr(-4);    // Returns: 16
-//   sqr([3,4]); // Returns: [9,16]
-//   sqr([[1,2],[3,4]]);  // Returns [[1,4],[9,16]]
-//   sqr([[1,2],3]);      // Returns [[1,4],9]
+//   sqr([2,3,4]); // Returns: 29
+//   sqr([[1,2],[3,4]]);  // Returns [[7,10],[15,22]]
 function sqr(x) = 
-    is_list(x) ? [for(val=x) sqr(val)] : 
-    is_finite(x) ? x*x :
-    assert(is_finite(x) || is_vector(x), "Input is not a number nor a list of numbers.");
+    assert(is_finite(x) || is_vector(x) || is_matrix(x), "Input is not a number nor a list of numbers.")
+    x*x;
 
 
 // Function: log2()
@@ -56,7 +56,7 @@ function log2(x) =
 
 // Function: hypot()
 // Usage:
-//   l = hypot(x,y,[z]);
+//   l = hypot(x,y,<z>);
 // Description:
 //   Calculate hypotenuse length of a 2D or 3D triangle.
 // Arguments:
@@ -73,7 +73,7 @@ function hypot(x,y,z=0) =
 
 // Function: factorial()
 // Usage:
-//   x = factorial(n,[d]);
+//   x = factorial(n,<d>);
 // Description:
 //   Returns the factorial of the given integer value, or n!/d! if d is given.  
 // Arguments:
@@ -84,7 +84,7 @@ function hypot(x,y,z=0) =
 //   y = factorial(6);  // Returns: 720
 //   z = factorial(9);  // Returns: 362880
 function factorial(n,d=0) =
-    assert(is_int(n) && is_int(d) && n>=0 && d>=0, "Factorial is not defined for negative numbers")
+    assert(is_int(n) && is_int(d) && n>=0 && d>=0, "Factorial is defined only for non negative integers")
     assert(d<=n, "d cannot be larger than n")
     product([1,for (i=[n:-1:d+1]) i]);
 
@@ -164,8 +164,65 @@ function binomial_coefficient(n,k) =
 function lerp(a,b,u) =
     assert(same_shape(a,b), "Bad or inconsistent inputs to lerp")
     is_finite(u)? (1-u)*a + u*b :
-    assert(is_finite(u) || is_vector(u) || valid_range(u), "Input u to lerp must be a number, vector, or range.")
+    assert(is_finite(u) || is_vector(u) || valid_range(u), "Input u to lerp must be a number, vector, or valid range.")
     [for (v = u) (1-v)*a + v*b ];
+
+
+
+// Section: Undef Safe Math
+
+// Function: u_add()
+// Usage:
+//   x = u_add(a, b);
+// Description:
+//   Adds `a` to `b`, returning the result, or undef if either value is `undef`.
+//   This emulates the way undefs used to be handled in versions of OpenSCAD before 2020.
+// Arguments:
+//   a = First value.
+//   b = Second value.
+function u_add(a,b) = is_undef(a) || is_undef(b)? undef : a + b;
+
+
+// Function: u_sub()
+// Usage:
+//   x = u_sub(a, b);
+// Description:
+//   Subtracts `b` from `a`, returning the result, or undef if either value is `undef`.
+//   This emulates the way undefs used to be handled in versions of OpenSCAD before 2020.
+// Arguments:
+//   a = First value.
+//   b = Second value.
+function u_sub(a,b) = is_undef(a) || is_undef(b)? undef : a - b;
+
+
+// Function: u_mul()
+// Usage:
+//   x = u_mul(a, b);
+// Description:
+//   Multiplies `a` by `b`, returning the result, or undef if either value is `undef`.
+//   This emulates the way undefs used to be handled in versions of OpenSCAD before 2020.
+// Arguments:
+//   a = First value.
+//   b = Second value.
+function u_mul(a,b) =
+    is_undef(a) || is_undef(b)? undef :
+    is_vector(a) && is_vector(b)? vmul(a,b) :
+    a * b;
+
+
+// Function: u_div()
+// Usage:
+//   x = u_div(a, b);
+// Description:
+//   Divides `a` by `b`, returning the result, or undef if either value is `undef`.
+//   This emulates the way undefs used to be handled in versions of OpenSCAD before 2020.
+// Arguments:
+//   a = First value.
+//   b = Second value.
+function u_div(a,b) =
+    is_undef(a) || is_undef(b)? undef :
+    is_vector(a) && is_vector(b)? vdiv(a,b) :
+    a / b;
 
 
 
@@ -373,7 +430,7 @@ function modang(x) =
 
 // Function: modrange()
 // Usage:
-//   modrange(x, y, m, [step])
+//   modrange(x, y, m, <step>)
 // Description:
 //   Returns a normalized list of numbers from `x` to `y`, by `step`, modulo `m`.  Wraps if `x` > `y`.
 // Arguments:
@@ -387,12 +444,13 @@ function modang(x) =
 //   modrange(90,270,360, step=-45);  // Returns: [90,45,0,315,270]
 //   modrange(270,90,360, step=-45);  // Returns: [270,225,180,135,90]
 function modrange(x, y, m, step=1) =
-    assert( is_finite(x+y+step+m) && !approx(m,0), "Input must be finite numbers. The module value cannot be zero.")
+    assert( is_finite(x+y+step+m) && !approx(m,0), "Input must be finite numbers and the module value cannot be zero." )
     let(
         a = posmod(x, m),
         b = posmod(y, m),
-        c = step>0? (a>b? b+m : b) : (a<b? b-m : b)
-    ) [for (i=[a:step:c]) (i%m+m)%m];
+        c = step>0? (a>b? b+m : b) 
+            : (a<b? b-m : b)
+    ) [for (i=[a:step:c]) (i%m+m)%m ];
 
 
 
@@ -400,7 +458,7 @@ function modrange(x, y, m, step=1) =
 
 // Function: rand_int()
 // Usage:
-//   rand_int(minval,maxval,N,[seed]);
+//   rand_int(minval,maxval,N,<seed>);
 // Description:
 //   Return a list of random integers in the range of minval to maxval, inclusive.
 // Arguments:
@@ -420,7 +478,7 @@ function rand_int(minval, maxval, N, seed=undef) =
 
 // Function: gaussian_rands()
 // Usage:
-//   gaussian_rands(mean, stddev, [N], [seed])
+//   gaussian_rands(mean, stddev, <N>, <seed>)
 // Description:
 //   Returns a random number with a gaussian/normal distribution.
 // Arguments:
@@ -436,7 +494,7 @@ function gaussian_rands(mean, stddev, N=1, seed=undef) =
 
 // Function: log_rands()
 // Usage:
-//   log_rands(minval, maxval, factor, [N], [seed]);
+//   log_rands(minval, maxval, factor, <N>, <seed>);
 // Description:
 //   Returns a single random number, with a logarithmic distribution.
 // Arguments:
@@ -505,6 +563,8 @@ function lcm(a,b=[]) =
 // Section: Sums, Products, Aggregate Functions.
 
 // Function: sum()
+// Usage:
+//   x = sum(v, <dflt>);
 // Description:
 //   Returns the sum of all entries in the given consistent list.
 //   If passed an array of vectors, returns the sum the vectors.
@@ -517,8 +577,7 @@ function lcm(a,b=[]) =
 //   sum([1,2,3]);  // returns 6.
 //   sum([[1,2,3], [3,4,5], [5,6,7]]);  // returns [9, 12, 15]
 function sum(v, dflt=0) =
-    is_list(v) && len(v) == 0 ? dflt :
-    is_vector(v) || is_matrix(v)? [for(i=v) 1]*v :
+    v==[]? dflt :
     assert(is_consistent(v), "Input to sum is non-numeric or inconsistent")
     _sum(v,v[0]*0);
 
@@ -526,6 +585,8 @@ function _sum(v,_total,_i=0) = _i>=len(v) ? _total : _sum(v,_total+v[_i], _i+1);
 
 
 // Function: cumsum()
+// Usage:
+//   sums = cumsum(v);
 // Description:
 //   Returns a list where each item is the cumulative sum of all items up to and including the corresponding entry in the input list.
 //   If passed an array of vectors, returns a list of cumulative vectors sums.
@@ -536,27 +597,19 @@ function _sum(v,_total,_i=0) = _i>=len(v) ? _total : _sum(v,_total+v[_i], _i+1);
 //   cumsum([2,2,2]);  // returns [2,4,6]
 //   cumsum([1,2,3]);  // returns [1,3,6]
 //   cumsum([[1,2,3], [3,4,5], [5,6,7]]);  // returns [[1,2,3], [4,6,8], [9,12,15]]
-function cumsum(v,_i=0,_acc=[]) =
+function cumsum(v) =
+    assert(is_consistent(v), "The input is not consistent." )
+    _cumsum(v,_i=0,_acc=[]);
+
+function _cumsum(v,_i=0,_acc=[]) =
     _i==len(v) ? _acc :
-    cumsum(
+    _cumsum(
         v, _i+1,
         concat(
             _acc,
             [_i==0 ? v[_i] : select(_acc,-1)+v[_i]]
         )
     );
-
-
-// Function: sum_of_squares()
-// Description:
-//   Returns the sum of the square of each element of a vector.
-// Arguments:
-//   v = The vector to get the sum of.
-// Example:
-//   sum_of_squares([1,2,3]);  // Returns: 14.
-//   sum_of_squares([1,2,4]);  // Returns: 21
-//   sum_of_squares([-3,-2,-1]);  // Returns: 14
-function sum_of_squares(v) = sum(vmul(v,v));
 
 
 // Function: sum_of_sines()
@@ -580,6 +633,8 @@ function sum_of_sines(a, sines) =
 
 
 // Function: deltas()
+// Usage:
+//   delts = deltas(v);
 // Description:
 //   Returns a list with the deltas of adjacent entries in the given list.
 //   The list should be a consistent list of numeric components (numbers, vectors, matrix, etc).
@@ -595,10 +650,12 @@ function deltas(v) =
 
 
 // Function: product()
+// Usage:
+//   x = product(v);
 // Description:
 //   Returns the product of all entries in the given list.
 //   If passed a list of vectors of same dimension, returns a vector of products of each part.
-//   If passed a list of square matrices, returns a the resulting product matrix.
+//   If passed a list of square matrices, returns the resulting product matrix.
 // Arguments:
 //   v = The list to get the product of.
 // Example:
@@ -606,7 +663,7 @@ function deltas(v) =
 //   product([[1,2,3], [3,4,5], [5,6,7]]);  // returns [15, 48, 105]
 function product(v) = 
     assert( is_vector(v) || is_matrix(v) || ( is_matrix(v[0],square=true) && is_consistent(v)), 
-            "Invalid input.")
+    "Invalid input.")
     _product(v, 1, v[0]);
 
 function _product(v, i=0, _tot) = 
@@ -617,7 +674,47 @@ function _product(v, i=0, _tot) =
                
 
 
+// Function: cumprod()
+// Description:
+//   Returns a list where each item is the cumulative product of all items up to and including the corresponding entry in the input list.
+//   If passed an array of vectors, returns a list of elementwise vector products.  If passed a list of square matrices returns matrix
+//   products multiplying in the order items appear in the list.  
+// Arguments:
+//   list = The list to get the product of.
+// Example:
+//   cumprod([1,3,5]);  // returns [1,3,15]
+//   cumprod([2,2,2]);  // returns [2,4,8]
+//   cumprod([[1,2,3], [3,4,5], [5,6,7]]));  // returns [[1, 2, 3], [3, 8, 15], [15, 48, 105]]
+function cumprod(list) =
+   is_vector(list) ? _cumprod(list) :
+   assert(is_consistent(list), "Input must be a consistent list of scalars, vectors or square matrices")
+   is_matrix(list[0]) ? assert(len(list[0])==len(list[0][0]), "Matrices must be square") _cumprod(list) 
+                      : _cumprod_vec(list);
+
+function _cumprod(v,_i=0,_acc=[]) =
+    _i==len(v) ? _acc :
+    _cumprod(
+        v, _i+1,
+        concat(
+            _acc,
+            [_i==0 ? v[_i] : _acc[len(_acc)-1]*v[_i]]
+        )
+    );
+
+function _cumprod_vec(v,_i=0,_acc=[]) =
+    _i==len(v) ? _acc :
+    _cumprod_vec(
+        v, _i+1,
+        concat(
+            _acc,
+            [_i==0 ? v[_i] : vmul(_acc[len(_acc)-1],v[_i])]
+        )
+    );
+
+
 // Function: outer_product()
+// Usage:
+//   x = outer_product(u,v);
 // Description:
 //   Compute the outer product of two vectors, a matrix.  
 // Usage:
@@ -628,6 +725,8 @@ function outer_product(u,v) =
 
 
 // Function: mean()
+// Usage:
+//   x = mean(v);
 // Description:
 //   Returns the arithmetic mean/average of all entries in the given array.
 //   If passed a list of vectors, returns a vector of the mean of each part.
@@ -667,83 +766,96 @@ function convolve(p,q) =
 // Section: Matrix math
 
 // Function: linear_solve()
-// Usage: linear_solve(A,b)
+// Usage:
+//   solv = linear_solve(A,b)
 // Description:
-//   Solves the linear system Ax=b.  If A is square and non-singular the unique solution is returned.  If A is overdetermined
-//   the least squares solution is returned.  If A is underdetermined, the minimal norm solution is returned.
-//   If A is rank deficient or singular then linear_solve returns [].  If b is a matrix that is compatible with A
+//   Solves the linear system Ax=b.  If `A` is square and non-singular the unique solution is returned.  If `A` is overdetermined
+//   the least squares solution is returned. If `A` is underdetermined, the minimal norm solution is returned.
+//   If `A` is rank deficient or singular then linear_solve returns `[]`.  If `b` is a matrix that is compatible with `A`
 //   then the problem is solved for the matrix valued right hand side and a matrix is returned.  Note that if you 
-//   want to solve Ax=b1 and Ax=b2 that you need to form the matrix transpose([b1,b2]) for the right hand side and then
-//   transpose the returned value.  
-function linear_solve(A,b) =
+//   want to solve Ax=b1 and Ax=b2 that you need to form the matrix `transpose([b1,b2])` for the right hand side and then
+//   transpose the returned value.
+function linear_solve(A,b,pivot=true) =
     assert(is_matrix(A), "Input should be a matrix.")
     let(
         m = len(A),
         n = len(A[0])
     )
-    assert(is_vector(b,m) || is_matrix(b,m),"Incompatible matrix and right hand side")
+    assert(is_vector(b,m) || is_matrix(b,m),"Invalid right hand side or incompatible with the matrix")
     let (
-        qr = m<n? qr_factor(transpose(A)) : qr_factor(A),
+        qr = m<n? qr_factor(transpose(A),pivot) : qr_factor(A,pivot),
         maxdim = max(n,m),
         mindim = min(n,m),
         Q = submatrix(qr[0],[0:maxdim-1], [0:mindim-1]),
         R = submatrix(qr[1],[0:mindim-1], [0:mindim-1]),
+        P = qr[2],
         zeros = [for(i=[0:mindim-1]) if (approx(R[i][i],0)) i]
     )
     zeros != [] ? [] :
-    m<n ? Q*back_substitute(R,b,transpose=true) :
-    back_substitute(R, transpose(Q)*b);
-
+    m<n ? Q*back_substitute(R,transpose(P)*b,transpose=true) // Too messy to avoid input checks here
+        : P*_back_substitute(R, transpose(Q)*b);             // Calling internal version skips input checks
 
 // Function: matrix_inverse()
 // Usage:
-//    matrix_inverse(A)
+//    mat = matrix_inverse(A)
 // Description:
-//    Compute the matrix inverse of the square matrix A.  If A is singular, returns undef.
-//    Note that if you just want to solve a linear system of equations you should NOT
-//    use this function.  Instead use linear_solve, or use qr_factor.  The computation
+//    Compute the matrix inverse of the square matrix `A`.  If `A` is singular, returns `undef`.
+//    Note that if you just want to solve a linear system of equations you should NOT use this function.
+//    Instead use [[`linear_solve()`|linear_solve]], or use [[`qr_factor()`|qr_factor]].  The computation
 //    will be faster and more accurate.  
 function matrix_inverse(A) =
-    assert(is_matrix(A,square=true),"Input to matrix_inverse() must be a square matrix")
+    assert(is_matrix(A) && len(A)==len(A[0]),"Input to matrix_inverse() must be a square matrix")
     linear_solve(A,ident(len(A)));
 
 
-// Function: submatrix()
-// Usage: submatrix(M, ind1, ind2)
+// Function: null_space()
+// Usage:
+//   x = null_space(A)
 // Description:
-//   Returns a submatrix with the specified index ranges or index sets.  
-function submatrix(M,ind1,ind2) =
-    assert( is_matrix(M), "Input must be a matrix." )
-    [for(i=ind1) 
-        [for(j=ind2) 
-            assert( ! is_undef(M[i][j]), "Invalid indexing." )
-            M[i][j] ] ];
-    
+//   Returns an orthonormal basis for the null space of `A`, namely the vectors {x} such that Ax=0.
+//   If the null space is just the origin then returns an empty list. 
+function null_space(A,eps=1e-12) =
+    assert(is_matrix(A))
+    let(
+        Q_R = qr_factor(transpose(A),pivot=true),
+        R = Q_R[1],
+        zrow = [for(i=idx(R)) if (all_zero(R[i],eps)) i]
+    )
+    len(zrow)==0 ? [] :
+    transpose(subindex(Q_R[0],zrow));
+
 
 // Function: qr_factor()
-// Usage: qr = qr_factor(A)
+// Usage:
+//   qr = qr_factor(A,[pivot]);
 // Description:
-//   Calculates the QR factorization of the input matrix A and returns it as the list [Q,R].  This factorization can be
-//   used to solve linear systems of equations.  
-function qr_factor(A) =
+//   Calculates the QR factorization of the input matrix A and returns it as the list [Q,R,P].  This factorization can be
+//   used to solve linear systems of equations.  The factorization is A = Q*R*transpose(P).  If pivot is false (the default)
+//   then P is the identity matrix and A = Q*R.  If pivot is true then column pivoting results in an R matrix where the diagonal
+//   is non-decreasing.  The use of pivoting is supposed to increase accuracy for poorly conditioned problems, and is necessary
+//   for rank estimation or computation of the null space, but it may be slower.  
+function qr_factor(A, pivot=false) =
     assert(is_matrix(A), "Input must be a matrix." )
     let(
-      m = len(A),
-      n = len(A[0])
+        m = len(A),
+        n = len(A[0])
     )
     let(
-        qr =_qr_factor(A, column=0, m = m, n=n, Q=ident(m)),
-        Rzero = [
+        qr = _qr_factor(A, Q=ident(m),P=ident(n), pivot=pivot, column=0, m = m, n=n),
+        Rzero = let( R = qr[1]) [
             for(i=[0:m-1]) [
-                for(j=[0:n-1])
-                i>j ? 0 : qr[1][i][j]
+                let( ri = R[i] )
+                for(j=[0:n-1]) i>j ? 0 : ri[j]
             ]
         ]
-    ) [qr[0],Rzero];
+    ) [qr[0], Rzero, qr[2]];
 
-function _qr_factor(A,Q, column, m, n) =
-    column >= min(m-1,n) ? [Q,A] :
+function _qr_factor(A,Q,P, pivot, column, m, n) =
+    column >= min(m-1,n) ? [Q,A,P] :
     let(
+        swap = !pivot ? 1
+             : _swap_matrix(n,column,column+max_index([for(i=[column:n-1]) sqr([for(j=[column:m-1]) A[j][i]])])),
+        A = pivot ? A*swap : A,
         x = [for(i=[column:1:m-1]) A[i][column]],
         alpha = (x[0]<=0 ? 1 : -1) * norm(x),
         u = x - concat([alpha],repeat(0,m-1)),
@@ -751,11 +863,21 @@ function _qr_factor(A,Q, column, m, n) =
         Qc = ident(len(x)) - 2*outer_product(v,v),
         Qf = [for(i=[0:m-1]) [for(j=[0:m-1]) i<column || j<column ? (i==j ? 1 : 0) : Qc[i-column][j-column]]]
     )
-    _qr_factor(Qf*A, Q*Qf, column+1, m, n);
+    _qr_factor(Qf*A, Q*Qf, P*swap, pivot, column+1, m, n);
+
+// Produces an n x n matrix that swaps column i and j (when multiplied on the right)
+function _swap_matrix(n,i,j) =
+  assert(i<n && j<n && i>=0 && j>=0, "Swap indices out of bounds")
+  [for(y=[0:n-1]) [for (x=[0:n-1])
+     x==i ? (y==j ? 1 : 0)
+   : x==j ? (y==i ? 1 : 0)
+   : x==y ? 1 : 0]];
+
 
 
 // Function: back_substitute()
-// Usage: back_substitute(R, b, [transpose])
+// Usage:
+//   x = back_substitute(R, b, <transpose>);
 // Description:
 //   Solves the problem Rx=b where R is an upper triangular square matrix.  The lower triangular entries of R are
 //   ignored.  If transpose==true then instead solve transpose(R)*x=b.
@@ -767,13 +889,12 @@ function back_substitute(R, b, transpose = false) =
     let(n=len(R))
     assert(is_vector(b,n) || is_matrix(b,n),str("R and b are not compatible in back_substitute ",n, len(b)))
     transpose
-      ? reverse(_back_substitute([for(i=[0:n-1]) [for(j=[0:n-1]) R[n-1-j][n-1-i]]],
-                                 reverse(b)))  
+      ? reverse(_back_substitute(transpose(R, reverse=true), reverse(b)))  
       : _back_substitute(R,b);
 
 function _back_substitute(R, b, x=[]) =
-      let(n=len(R))
-      len(x) == n ? x
+    let(n=len(R))
+    len(x) == n ? x
     : let(ind = n - len(x) - 1)
       R[ind][ind] == 0 ? []
     : let(
@@ -785,6 +906,8 @@ function _back_substitute(R, b, x=[]) =
 
 
 // Function: det2()
+// Usage:
+//   d = det2(M);
 // Description:
 //   Optimized function that returns the determinant for the given 2x2 square matrix.
 // Arguments:
@@ -793,11 +916,13 @@ function _back_substitute(R, b, x=[]) =
 //   M = [ [6,-2], [1,8] ];
 //   det = det2(M);  // Returns: 50
 function det2(M) = 
-    assert( is_matrix(M,2,2), "Matrix should be 2x2." )
+    assert(is_matrix(M,2,2), "Matrix must be 2x2.")
     M[0][0] * M[1][1] - M[0][1]*M[1][0];
 
 
 // Function: det3()
+// Usage:
+//   d = det3(M);
 // Description:
 //   Optimized function that returns the determinant for the given 3x3 square matrix.
 // Arguments:
@@ -806,13 +931,15 @@ function det2(M) =
 //   M = [ [6,4,-2], [1,-2,8], [1,5,7] ];
 //   det = det3(M);  // Returns: -334
 function det3(M) =
-    assert( is_matrix(M,3,3), "Matrix should be 3x3." )
+    assert(is_matrix(M,3,3), "Matrix must be 3x3.")
     M[0][0] * (M[1][1]*M[2][2]-M[2][1]*M[1][2]) -
     M[1][0] * (M[0][1]*M[2][2]-M[2][1]*M[0][2]) +
     M[2][0] * (M[0][1]*M[1][2]-M[1][1]*M[0][2]);
 
 
 // Function: determinant()
+// Usage:
+//   d = determinant(M);
 // Description:
 //   Returns the determinant for the given square matrix.
 // Arguments:
@@ -821,7 +948,7 @@ function det3(M) =
 //   M = [ [6,4,-2,9], [1,-2,8,3], [1,5,7,6], [4,2,5,1] ];
 //   det = determinant(M);  // Returns: 2267
 function determinant(M) =
-    assert(is_matrix(M,square=true), "Input should be a square matrix." )
+    assert(is_matrix(M, square=true), "Input should be a square matrix." )
     len(M)==1? M[0][0] :
     len(M)==2? det2(M) :
     len(M)==3? det3(M) :
@@ -842,30 +969,190 @@ function determinant(M) =
 
 // Function: is_matrix()
 // Usage:
-//   is_matrix(A,[m],[n],[square])
+//   is_matrix(A,<m>,<n>,<square>)
 // Description:
 //   Returns true if A is a numeric matrix of height m and width n.  If m or n
 //   are omitted or set to undef then true is returned for any positive dimension.
-//   If `square` is true then the matrix is required to be square.  Note if you
-//   specify m != n and require a square matrix then the result will always be false.
 // Arguments:
-//   A = matrix to test
-//   m = optional height of matrix
-//   n = optional width of matrix
-//   square = set to true to require a square matrix.  Default: false        
+//   A = The matrix to test.
+//   m = Is given, requires the matrix to have the given height.
+//   n = Is given, requires the matrix to have the given width.
+//   square = If true, requires the matrix to have a width equal to its height. Default: false
 function is_matrix(A,m,n,square=false) =
-    is_list(A[0]) 
-    && ( let(v = A*A[0]) is_num(0*(v*v)) ) // a matrix of finite numbers 
-    && (is_undef(n) || len(A[0])==n )
-    && (is_undef(m) || len(A)==m )
-    && ( !square || len(A)==len(A[0]));
+   is_list(A)
+   && (( is_undef(m) && len(A) ) || len(A)==m)
+   && is_list(A[0])
+   && (( is_undef(n) && len(A[0]) ) || len(A[0])==n)
+   && (!square || len(A) == len(A[0]))
+   && is_consistent(A);
+
+
+// Function: norm_fro()
+// Usage:
+//    norm_fro(A)
+// Description:
+//    Computes frobenius norm of input matrix.  The frobenius norm is the square root of the sum of the
+//    squares of all of the entries of the matrix.  On vectors it is the same as the usual 2-norm.
+//    This is an easily computed norm that is convenient for comparing two matrices.  
+function norm_fro(A) =
+    assert(is_matrix(A) || is_vector(A))
+    norm(flatten(A));
+
+
+// Function: matrix_trace()
+// Usage:
+//   matrix_trace(M)
+// Description:
+//   Computes the trace of a square matrix, the sum of the entries on the diagonal.  
+function matrix_trace(M) =
+   assert(is_matrix(M,square=true), "Input to trace must be a square matrix")
+   [for(i=[0:1:len(M)-1])1] * [for(i=[0:1:len(M)-1]) M[i][i]];
 
 
 // Section: Comparisons and Logic
 
+// Function: all_zero()
+// Usage:
+//   x = all_zero(x, <eps>);
+// Description:
+//   Returns true if the finite number passed to it is approximately zero, to within `eps`.
+//   If passed a list, recursively checks if all items in the list are approximately zero.
+//   Otherwise, returns false.
+// Arguments:
+//   x = The value to check.
+//   eps = The maximum allowed variance.  Default: `EPSILON` (1e-9)
+// Example:
+//   all_zero(0);  // Returns: true.
+//   all_zero(1e-3);  // Returns: false.
+//   all_zero([0,0,0]);  // Returns: true.
+//   all_zero([0,0,1e-3]);  // Returns: false.
+function all_zero(x, eps=EPSILON) =
+    is_finite(x)? approx(x,eps) :
+    is_list(x)? (x != [] && [for (xx=x) if(!all_zero(xx,eps=eps)) 1] == []) :
+    false;
+
+
+// Function: all_nonzero()
+// Usage:
+//   x = all_nonzero(x, <eps>);
+// Description:
+//   Returns true if the finite number passed to it is not almost zero, to within `eps`.
+//   If passed a list, recursively checks if all items in the list are not almost zero.
+//   Otherwise, returns false.
+// Arguments:
+//   x = The value to check.
+//   eps = The maximum allowed variance.  Default: `EPSILON` (1e-9)
+// Example:
+//   all_nonzero(0);  // Returns: false.
+//   all_nonzero(1e-3);  // Returns: true.
+//   all_nonzero([0,0,0]);  // Returns: false.
+//   all_nonzero([0,0,1e-3]);  // Returns: false.
+//   all_nonzero([1e-3,1e-3,1e-3]);  // Returns: true.
+function all_nonzero(x, eps=EPSILON) =
+    is_finite(x)? !approx(x,eps) :
+    is_list(x)? (x != [] && [for (xx=x) if(!all_nonzero(xx,eps=eps)) 1] == []) :
+    false;
+
+
+// Function: all_positive()
+// Usage:
+//   all_positive(x);
+// Description:
+//   Returns true if the finite number passed to it is greater than zero.
+//   If passed a list, recursively checks if all items in the list are positive.
+//   Otherwise, returns false.
+// Arguments:
+//   x = The value to check.
+// Example:
+//   all_positive(-2);  // Returns: false.
+//   all_positive(0);  // Returns: false.
+//   all_positive(2);  // Returns: true.
+//   all_positive([0,0,0]);  // Returns: false.
+//   all_positive([0,1,2]);  // Returns: false.
+//   all_positive([3,1,2]);  // Returns: true.
+//   all_positive([3,-1,2]);  // Returns: false.
+function all_positive(x) =
+    is_num(x)? x>0 :
+    is_list(x)? (x != [] && [for (xx=x) if(!all_positive(xx)) 1] == []) :
+    false;
+
+
+// Function: all_negative()
+// Usage:
+//   all_negative(x);
+// Description:
+//   Returns true if the finite number passed to it is less than zero.
+//   If passed a list, recursively checks if all items in the list are negative.
+//   Otherwise, returns false.
+// Arguments:
+//   x = The value to check.
+// Example:
+//   all_negative(-2);  // Returns: true.
+//   all_negative(0);  // Returns: false.
+//   all_negative(2);  // Returns: false.
+//   all_negative([0,0,0]);  // Returns: false.
+//   all_negative([0,1,2]);  // Returns: false.
+//   all_negative([3,1,2]);  // Returns: false.
+//   all_negative([3,-1,2]);  // Returns: false.
+//   all_negative([-3,-1,-2]);  // Returns: true.
+function all_negative(x) =
+    is_num(x)? x<0 :
+    is_list(x)? (x != [] && [for (xx=x) if(!all_negative(xx)) 1] == []) :
+    false;
+
+
+// Function: all_nonpositive()
+// Usage:
+//   all_nonpositive(x);
+// Description:
+//   Returns true if the finite number passed to it is less than or equal to zero.
+//   If passed a list, recursively checks if all items in the list are nonpositive.
+//   Otherwise, returns false.
+// Arguments:
+//   x = The value to check.
+// Example:
+//   all_nonpositive(-2);  // Returns: true.
+//   all_nonpositive(0);  // Returns: true.
+//   all_nonpositive(2);  // Returns: false.
+//   all_nonpositive([0,0,0]);  // Returns: true.
+//   all_nonpositive([0,1,2]);  // Returns: false.
+//   all_nonpositive([3,1,2]);  // Returns: false.
+//   all_nonpositive([3,-1,2]);  // Returns: false.
+//   all_nonpositive([-3,-1,-2]);  // Returns: true.
+function all_nonpositive(x) =
+    is_num(x)? x<=0 :
+    is_list(x)? (x != [] && [for (xx=x) if(!all_nonpositive(xx)) 1] == []) :
+    false;
+
+
+// Function: all_nonnegative()
+// Usage:
+//   all_nonnegative(x);
+// Description:
+//   Returns true if the finite number passed to it is greater than or equal to zero.
+//   If passed a list, recursively checks if all items in the list are nonnegative.
+//   Otherwise, returns false.
+// Arguments:
+//   x = The value to check.
+// Example:
+//   all_nonnegative(-2);  // Returns: false.
+//   all_nonnegative(0);  // Returns: true.
+//   all_nonnegative(2);  // Returns: true.
+//   all_nonnegative([0,0,0]);  // Returns: true.
+//   all_nonnegative([0,1,2]);  // Returns: true.
+//   all_nonnegative([0,-1,-2]);  // Returns: false.
+//   all_nonnegative([3,1,2]);  // Returns: true.
+//   all_nonnegative([3,-1,2]);  // Returns: false.
+//   all_nonnegative([-3,-1,-2]);  // Returns: false.
+function all_nonnegative(x) =
+    is_num(x)? x>=0 :
+    is_list(x)? (x != [] && [for (xx=x) if(!all_nonnegative(xx)) 1] == []) :
+    false;
+
+
 // Function: approx()
 // Usage:
-//   approx(a,b,[eps])
+//   b = approx(a,b,<eps>)
 // Description:
 //   Compares two numbers or vectors, and returns true if they are closer than `eps` to each other.
 // Arguments:
@@ -879,12 +1166,9 @@ function is_matrix(A,m,n,square=false) =
 //   approx(0.3333,1/3,eps=1e-3);  // Returns: true
 //   approx(PI,3.1415926536);     // Returns: true
 function approx(a,b,eps=EPSILON) = 
-    a==b? true :
-    a*0!=b*0? false :
-    is_list(a)
-    ? ([for (i=idx(a)) if( !approx(a[i],b[i],eps=eps)) 1] == [])
-    : is_num(a) && is_num(b) && (abs(a-b) <= eps);
-    
+    (a==b && is_bool(a) == is_bool(b)) ||
+    (is_num(a) && is_num(b) && abs(a-b) <= eps) ||
+    (is_list(a) && is_list(b) && len(a) == len(b) && [] == [for (i=idx(a)) if (!approx(a[i],b[i],eps=eps)) 1]);
 
 
 function _type_num(x) =
@@ -898,7 +1182,7 @@ function _type_num(x) =
 
 // Function: compare_vals()
 // Usage:
-//   compare_vals(a, b);
+//   b = compare_vals(a, b);
 // Description:
 //   Compares two values.  Lists are compared recursively.
 //   Returns <0 if a<b.  Returns >0 if a>b.  Returns 0 if a==b.
@@ -916,7 +1200,7 @@ function compare_vals(a, b) =
 
 // Function: compare_lists()
 // Usage:
-//   compare_lists(a, b)
+//   b = compare_lists(a, b)
 // Description:
 //   Compare contents of two lists using `compare_vals()`.
 //   Returns <0 if `a`<`b`.
@@ -937,6 +1221,8 @@ function compare_lists(a, b) =
 
 
 // Function: any()
+// Usage:
+//   b = any(l);
 // Description:
 //   Returns true if any item in list `l` evaluates as true.
 //   If `l` is a lists of lists, `any()` is applied recursively to each sublist.
@@ -948,16 +1234,21 @@ function compare_lists(a, b) =
 //   any([1,5,true]);       // Returns true.
 //   any([[0,0], [0,0]]);   // Returns false.
 //   any([[0,0], [1,0]]);   // Returns true.
-function any(l, i=0, succ=false) =
-    (i>=len(l) || succ)? succ :
-    any( l, 
-         i+1, 
-         succ = is_list(l[i]) ? any(l[i]) : !(!l[i])
-        );
+function any(l) =
+    assert(is_list(l), "The input is not a list." )
+    _any(l);
 
+function _any(l, i=0, succ=false) =
+    (i>=len(l) || succ)? succ :
+    _any(
+        l, i+1, 
+        succ = is_list(l[i]) ? _any(l[i]) : !(!l[i])
+    );
 
 
 // Function: all()
+// Usage:
+//   b = all(l);
 // Description:
 //   Returns true if all items in list `l` evaluate as true.
 //   If `l` is a lists of lists, `all()` is applied recursively to each sublist.
@@ -970,18 +1261,21 @@ function any(l, i=0, succ=false) =
 //   all([[0,0], [0,0]]);   // Returns false.
 //   all([[0,0], [1,0]]);   // Returns false.
 //   all([[1,1], [1,1]]);   // Returns true.
-function all(l, i=0, fail=false) =
-    (i>=len(l) || fail)? !fail :
-    all( l, 
-         i+1,
-         fail = is_list(l[i]) ? !all(l[i]) : !l[i]
-        ) ;
+function all(l) =
+    assert( is_list(l), "The input is not a list." )
+    _all(l);
 
+function _all(l, i=0, fail=false) =
+    (i>=len(l) || fail)? !fail :
+    _all(
+        l, i+1,
+        fail = is_list(l[i]) ? !_all(l[i]) : !l[i]
+    ) ;
 
 
 // Function: count_true()
 // Usage:
-//   count_true(l)
+//   n = count_true(l)
 // Description:
 //   Returns the number of items in `l` that evaluate as true.
 //   If `l` is a lists of lists, this is applied recursively to each
@@ -999,36 +1293,22 @@ function all(l, i=0, fail=false) =
 //   count_true([[0,0], [1,0]]);   // Returns 1.
 //   count_true([[1,1], [1,1]]);   // Returns 4.
 //   count_true([[1,1], [1,1]], nmax=3);  // Returns 3.
-function count_true(l, nmax=undef, i=0, cnt=0) =
-    (i>=len(l) || (nmax!=undef && cnt>=nmax))? cnt :
-    count_true(
-        l=l, nmax=nmax, i=i+1, cnt=cnt+(
-            is_list(l[i])? count_true(l[i], nmax=nmax-cnt) :
-            (l[i]? 1 : 0)
-        )
-    );
-
+function _count_true_rec(l, nmax, _cnt=0, _i=0) =
+    _i>=len(l) || (is_num(nmax) && _cnt>=nmax)? _cnt :
+    _count_true_rec(l, nmax, _cnt=_cnt+(l[_i]?1:0), _i=_i+1);
 
 function count_true(l, nmax) = 
-    !is_list(l) ? !(!l) ? 1: 0 :
-    let( c = [for( i = 0,
-                   n = !is_list(l[i]) ? !(!l[i]) ? 1: 0 : undef,
-                   c = !is_undef(n)? n : count_true(l[i], nmax),
-                   s = c;
-                 i<len(l) && (is_undef(nmax) || s<nmax);
-                   i = i+1,
-                   n = !is_list(l[i]) ? !(!l[i]) ? 1: 0 : undef,
-                   c = !is_undef(n) || (i==len(l))? n : count_true(l[i], nmax-s),
-                   s = s+c
-                 )  s ] )
-    len(c)<len(l)? nmax: c[len(c)-1];
+    is_undef(nmax)? len([for (x=l) if(x) 1]) :
+    !is_list(l) ? ( l? 1: 0) :
+    _count_true_rec(l, nmax);
 
 
 
 // Section: Calculus
 
 // Function: deriv()
-// Usage: deriv(data, [h], [closed])
+// Usage:
+//   x = deriv(data, [h], [closed])
 // Description:
 //   Computes a numerical derivative estimate of the data, which may be scalar or vector valued.
 //   The `h` parameter gives the step size of your sampling so the derivative can be scaled correctly. 
@@ -1092,7 +1372,8 @@ function _deriv_nonuniform(data, h, closed) =
 
 
 // Function: deriv2()
-// Usage: deriv2(data, [h], [closed])
+// Usage:
+//   x = deriv2(data, <h>, <closed>)
 // Description:
 //   Computes a numerical estimate of the second derivative of the data, which may be scalar or vector valued.
 //   The `h` parameter gives the step size of your sampling so the derivative can be scaled correctly. 
@@ -1135,7 +1416,8 @@ function deriv2(data, h=1, closed=false) =
 
 
 // Function: deriv3()
-// Usage: deriv3(data, [h], [closed])
+// Usage:
+//   x = deriv3(data, <h>, <closed>)
 // Description:
 //   Computes a numerical third derivative estimate of the data, which may be scalar or vector valued.
 //   The `h` parameter gives the step size of your sampling so the derivative can be scaled correctly. 
@@ -1145,6 +1427,10 @@ function deriv2(data, h=1, closed=false) =
 //   f'''(t) = (-f(t-2*h)+2*f(t-h)-2*f(t+h)+f(t+2*h)) / 2h^3.  At the first and second points from the end
 //   the estimates are f'''(t) = (-5*f(t)+18*f(t+h)-24*f(t+2*h)+14*f(t+3*h)-3*f(t+4*h)) / 2h^3 and
 //   f'''(t) = (-3*f(t-h)+10*f(t)-12*f(t+h)+6*f(t+2*h)-f(t+3*h)) / 2h^3.
+// Arguments:
+//   data = the list of the elements to compute the derivative of.
+//   h = the constant parametric sampling of the data.
+//   closed = boolean to indicate if the data set should be wrapped around from the end to the start.
 function deriv3(data, h=1, closed=false) =
     assert( is_consistent(data) , "Input list is not consistent or not numerical.") 
     assert( len(data)>=5, "Input list has less than 5 elements.") 
@@ -1174,17 +1460,27 @@ function deriv3(data, h=1, closed=false) =
 // Section: Complex Numbers
 
 // Function: C_times()
-// Usage: C_times(z1,z2)
+// Usage:
+//   c = C_times(z1,z2)
 // Description:
 //   Multiplies two complex numbers represented by 2D vectors.  
+//   Returns a complex number as a 2D vector [REAL, IMAGINARY].
+// Arguments:
+//   z1 = First complex number, given as a 2D vector [REAL, IMAGINARY]
+//   z2 = Second complex number, given as a 2D vector [REAL, IMAGINARY]
 function C_times(z1,z2) = 
-    assert( is_vector(z1+z2,2), "Complex numbers should be represented by 2D vectors." )
+    assert( is_matrix([z1,z2],2,2), "Complex numbers should be represented by 2D vectors" )
     [ z1.x*z2.x - z1.y*z2.y, z1.x*z2.y + z1.y*z2.x ];
 
 // Function: C_div()
-// Usage: C_div(z1,z2)
+// Usage:
+//   x = C_div(z1,z2)
 // Description:
 //   Divides two complex numbers represented by 2D vectors.  
+//   Returns a complex number as a 2D vector [REAL, IMAGINARY].
+// Arguments:
+//   z1 = First complex number, given as a 2D vector [REAL, IMAGINARY]
+//   z2 = Second complex number, given as a 2D vector [REAL, IMAGINARY]
 function C_div(z1,z2) = 
     assert( is_vector(z1,2) && is_vector(z2), "Complex numbers should be represented by 2D vectors." )
     assert( !approx(z2,0), "The divisor `z2` cannot be zero." ) 
@@ -1195,59 +1491,72 @@ function C_div(z1,z2) =
 
 // Section: Polynomials
 
+// Function: quadratic_roots()
+// Usage:
+//    roots = quadratic_roots(a,b,c,<real>)
+// Description:
+//    Computes roots of the quadratic equation a*x^2+b*x+c==0, where the
+//    coefficients are real numbers.  If real is true then returns only the
+//    real roots.  Otherwise returns a pair of complex values.  This method
+//    may be more reliable than the general root finder at distinguishing
+//    real roots from complex roots.  
+//    Algorithm from: https://people.csail.mit.edu/bkph/articles/Quadratics.pdf
+function quadratic_roots(a,b,c,real=false) =
+  real ? [for(root = quadratic_roots(a,b,c,real=false)) if (root.y==0) root.x]
+  :
+  is_undef(b) && is_undef(c) && is_vector(a,3) ? quadratic_roots(a[0],a[1],a[2]) :
+  assert(is_num(a) && is_num(b) && is_num(c))
+  assert(a!=0 || b!=0 || c!=0, "Quadratic must have a nonzero coefficient")
+  a==0 && b==0 ? [] :     // No solutions
+  a==0 ? [[-c/b,0]] : 
+  let(
+      descrim = b*b-4*a*c,
+      sqrt_des = sqrt(abs(descrim))
+  )
+  descrim < 0 ?             // Complex case
+     [[-b, sqrt_des],
+      [-b, -sqrt_des]]/2/a :
+  b<0 ?                     // b positive
+     [[2*c/(-b+sqrt_des),0],
+      [(-b+sqrt_des)/a/2,0]]
+      :                     // b negative
+     [[(-b-sqrt_des)/2/a, 0],
+      [2*c/(-b-sqrt_des),0]];
+
+
 // Function: polynomial() 
 // Usage:
-//   polynomial(p, z)
+//   x = polynomial(p, z)
 // Description:
 //   Evaluates specified real polynomial, p, at the complex or real input value, z.
 //   The polynomial is specified as p=[a_n, a_{n-1},...,a_1,a_0]
 //   where a_n is the z^n coefficient.  Polynomial coefficients are real.
 //   The result is a number if `z` is a number and a complex number otherwise.
 function polynomial(p,z,k,total) =
-    is_undef(k)
-    ?   assert( is_vector(p) , "Input polynomial coefficients must be a vector." )
-        assert( is_finite(z) || is_vector(z,2), "The value of `z` must be a real or a complex number." )
-        polynomial( _poly_trim(p), z, 0, is_num(z) ? 0 : [0,0])
-    : k==len(p) ? total
-    : polynomial(p,z,k+1, is_num(z) ? total*z+p[k] : C_times(total,z)+[p[k],0]);
+    is_undef(k)
+    ?   assert( is_vector(p) , "Input polynomial coefficients must be a vector." )
+        assert( is_finite(z) || is_vector(z,2), "The value of `z` must be a real or a complex number." )
+        polynomial( _poly_trim(p), z, 0, is_num(z) ? 0 : [0,0])
+    : k==len(p) ? total
+    : polynomial(p,z,k+1, is_num(z) ? total*z+p[k] : C_times(total,z)+[p[k],0]);
 
 // Function: poly_mult()
 // Usage:
-//   polymult(p,q)
-//   polymult([p1,p2,p3,...])
+//   x = polymult(p,q)
+//   x = polymult([p1,p2,p3,...])
 // Description:
 //   Given a list of polynomials represented as real coefficient lists, with the highest degree coefficient first, 
 //   computes the coefficient list of the product polynomial.  
 function poly_mult(p,q) = 
-    is_undef(q) ?
-       assert( is_list(p) 
-               && []==[for(pi=p) if( !is_vector(pi) && pi!=[]) 0], 
-               "Invalid arguments to poly_mult")
-       len(p)==2 ? poly_mult(p[0],p[1]) 
-                 : poly_mult(p[0], poly_mult(select(p,1,-1)))
-    :
-    _poly_trim(
-    [
-    for(n = [len(p)+len(q)-2:-1:0])
-        sum( [for(i=[0:1:len(p)-1])
-             let(j = len(p)+len(q)- 2 - n - i)
-             if (j>=0 && j<len(q)) p[i]*q[j]
-                 ])
-     ]);        
-     
-function poly_mult(p,q) = 
-  is_undef(q) ?
-   len(p)==2 ? poly_mult(p[0],p[1]) 
-        : poly_mult(p[0], poly_mult(select(p,1,-1)))
-  :
-  assert( is_vector(p) && is_vector(q),"Invalid arguments to poly_mult")
-    _poly_trim( [
-         for(n = [len(p)+len(q)-2:-1:0])
-           sum( [for(i=[0:1:len(p)-1])
-             let(j = len(p)+len(q)- 2 - n - i)
-             if (j>=0 && j<len(q)) p[i]*q[j]
-               ])
-         ]);
+    is_undef(q) ?
+        len(p)==2 
+        ? poly_mult(p[0],p[1]) 
+        : poly_mult(p[0], poly_mult(select(p,1,-1)))
+    :
+    assert( is_vector(p) && is_vector(q),"Invalid arguments to poly_mult")
+    p*p==0 || q*q==0
+    ? [0]
+    : _poly_trim(convolve(p,q));
 
     
 // Function: poly_div()
@@ -1258,19 +1567,23 @@ function poly_mult(p,q) =
 //    a list of two polynomials, [quotient, remainder].  If the division has no remainder then
 //    the zero polynomial [] is returned for the remainder.  Similarly if the quotient is zero
 //    the returned quotient will be [].  
-function poly_div(n,d,q) =
-    is_undef(q) 
-    ?   assert( is_vector(n) && is_vector(d) , "Invalid polynomials." )
-        let( d = _poly_trim(d) )
-        assert( d!=[0] , "Denominator cannot be a zero polynomial." )
-        poly_div(n,d,q=[])
-    :   len(n)<len(d) ? [q,_poly_trim(n)] : 
-        let(
-          t = n[0] / d[0], 
-          newq = concat(q,[t]),
-          newn = [for(i=[1:1:len(n)-1]) i<len(d) ? n[i] - t*d[i] : n[i]]
-        )  
-        poly_div(newn,d,newq);
+function poly_div(n,d) =
+    assert( is_vector(n) && is_vector(d) , "Invalid polynomials." )
+    let( d = _poly_trim(d), 
+         n = _poly_trim(n) )
+    assert( d!=[0] , "Denominator cannot be a zero polynomial." )
+    n==[0]
+    ? [[0],[0]]
+    : _poly_div(n,d,q=[]);
+
+function _poly_div(n,d,q) =
+    len(n)<len(d) ? [q,_poly_trim(n)] : 
+    let(
+      t = n[0] / d[0], 
+      newq = concat(q,[t]),
+      newn = [for(i=[1:1:len(n)-1]) i<len(d) ? n[i] - t*d[i] : n[i]]
+    )  
+    _poly_div(newn,d,newq);
 
 
 // Internal Function: _poly_trim()
@@ -1301,7 +1614,7 @@ function poly_add(p,q) =
 
 // Function: poly_roots()
 // Usage:
-//   poly_roots(p,[tol])
+//   poly_roots(p,<tol>)
 // Description:
 //   Returns all complex roots of the specified real polynomial p.
 //   The polynomial is specified as p=[a_n, a_{n-1},...,a_1,a_0]
@@ -1371,7 +1684,7 @@ function _poly_roots(p, pderiv, s, z, tol, i=0) =
 
 // Function: real_roots()
 // Usage:
-//   real_roots(p, [eps], [tol])
+//   real_roots(p, <eps>, <tol>)
 // Description:
 //   Returns the real roots of the specified real polynomial p.
 //   The polynomial is specified as p=[a_n, a_{n-1},...,a_1,a_0]

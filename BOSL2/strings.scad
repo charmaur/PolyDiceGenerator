@@ -196,7 +196,7 @@ function str_frac(str,mixed=true,improper=true,signed=true) =
     signed && str[0]=="-" ? -str_frac(substr(str,1),mixed=mixed,improper=improper,signed=false) :
     signed && str[0]=="+" ?  str_frac(substr(str,1),mixed=mixed,improper=improper,signed=false) :
     mixed ? (                      
-        str_find(str," ")>0 || is_undef(str_find(str,"/"))? (
+        !in_list(str_find(str," "), [undef,0]) || is_undef(str_find(str,"/"))? (
             let(whole = str_split(str,[" "]))
             _str_int_recurse(whole[0],10,len(whole[0])-1) + str_frac(whole[1], mixed=false, improper=improper, signed=false)
         ) : str_frac(str,mixed=false, improper=improper)
@@ -292,12 +292,12 @@ function _str_cmp_recurse(str,sindex,pattern,plen,pindex=0,) =
 // Usage:
 //   str_find(str,pattern,[last],[all],[start])
 // Description:
-//   Searches input string `str` for the string `pattern` and returns the index or indices of the matches in `str`.  
-//   By default str_find() returns the index of the first match in `str`.  If `last` is true then it returns the index of the last match.
+//   Searches input string `str` for the string `pattern` and returns the index or indices of the matches in `str`.
+//   By default `str_find()` returns the index of the first match in `str`.  If `last` is true then it returns the index of the last match.
 //   If the pattern is the empty string the first match is at zero and the last match is the last character of the `str`.
 //   If `start` is set then the search begins at index start, working either forward and backward from that position.  If you set `start`
-//   and `last` is true then the search will find the pattern if it begins at index `start`.  If no match exists, returns undef. 
-//   If you set `all` to true then all str_find() returns all of the matches in a list, or an empty list if there are no matches.  
+//   and `last` is true then the search will find the pattern if it begins at index `start`.  If no match exists, returns `undef`.
+//   If you set `all` to true then `str_find()` returns all of the matches in a list, or an empty list if there are no matches.
 // Arguments:
 //   str = String to search.
 //   pattern = string pattern to search for
@@ -626,7 +626,6 @@ function is_letter(s) =
 // Arguments:
 //   fmt = The formatting string, with placeholders to format the values into.
 //   vals = The list of values to format.
-//   use_nbsp = Pad fields with HTML entity `&nbsp;` instead of spaces.
 // Example(NORENDER):
 //   str_format("The value of {} is {:.14f}.", ["pi", PI]);  // Returns: "The value of pi is 3.14159265358979."
 //   str_format("The value {1:f} is known as {0}.", ["pi", PI]);  // Returns: "The value 3.141593 is known as pi."
@@ -634,7 +633,7 @@ function is_letter(s) =
 //   str_format("{:-5s}{:i}{:b}", ["foo", 12e3, 5]);  // Returns: "foo  12000true"
 //   str_format("{:-10s}{:.3f}", ["plecostamus",27.43982]);  // Returns: "plecostamus27.440"
 //   str_format("{:-10.9s}{:.3f}", ["plecostamus",27.43982]);  // Returns: "plecostam 27.440"
-function str_format(fmt, vals, use_nbsp=false) =
+function str_format(fmt, vals) =
     let(
         parts = str_split(fmt,"{")
     ) str_join([
@@ -676,7 +675,7 @@ function str_format(fmt, vals, use_nbsp=false) =
                     typ=="G"? upcase(fmt_float(val,default(prec,6))) :
                     assert(false,str("Unknown format type: ",typ)),
                 padlen = max(0,wid-len(unpad)),
-                padfill = str_join([for (i=[0:1:padlen-1]) zero? "0" : use_nbsp? "&nbsp;" : " "]),
+                padfill = str_join([for (i=[0:1:padlen-1]) zero? "0" : " "]),
                 out = left? str(unpad, padfill) : str(padfill, unpad)
             )
             out, raw
@@ -692,7 +691,6 @@ function str_format(fmt, vals, use_nbsp=false) =
 // Arguments:
 //   fmt = The formatting string, with placeholders to format the values into.
 //   vals = The list of values to format.
-//   use_nbsp = Pad fields with HTML entity `&nbsp;` instead of spaces.
 // Example(NORENDER):
 //   echofmt("The value of {} is {:.14f}.", ["pi", PI]);  // ECHO: "The value of pi is 3.14159265358979."
 //   echofmt("The value {1:f} is known as {0}.", ["pi", PI]);  // ECHO: "The value 3.141593 is known as pi."
@@ -700,8 +698,10 @@ function str_format(fmt, vals, use_nbsp=false) =
 //   echofmt("{:-5s}{:i}{:b}", ["foo", 12e3, 5]);  // ECHO: "foo  12000true"
 //   echofmt("{:-10s}{:.3f}", ["plecostamus",27.43982]);  // ECHO: "plecostamus27.440"
 //   echofmt("{:-10.9s}{:.3f}", ["plecostamus",27.43982]);  // ECHO: "plecostam 27.440"
-function echofmt(fmt, vals, use_nbsp=false) = echo(str_format(fmt,vals,use_nbsp));
-module echofmt(fmt, vals, use_nbsp=false) echo(str_format(fmt,vals,use_nbsp));
-
+function echofmt(fmt, vals) = echo(str_format(fmt,vals));
+module echofmt(fmt, vals) {
+   no_children($children);
+   echo(str_format(fmt,vals));
+}
 
 // vim: expandtab tabstop=4 shiftwidth=4 softtabstop=4 nowrap

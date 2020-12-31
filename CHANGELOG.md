@@ -2,6 +2,13 @@
 
 A customizable **Polyhedral Dice Generator** for OpenSCAD.
 
+## PolyDiceGenerator v0.27.0
+
+- Fixed number rotate bug when resizing d10/d00
+- Added ability to change d4c/d6 pip shapes 'd(n)_pip_sides'
+- Tweaked arc generation values to improve performance
+- Updated included BOSL2 library to v2.0.499
+
 ## PolyDiceGenerator v0.26.11
 
 - Fixed problem with bumpers not being unioned to dice.

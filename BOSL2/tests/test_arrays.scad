@@ -3,12 +3,14 @@ include <../std.scad>
 
 // Section: List Query Operations
 
-module test_is_simple_list() {
-		assert(is_simple_list([1,2,3,4]));
-		assert(is_simple_list([]));
-		assert(!is_simple_list([1,2,[3,4]]));
-} 
-test_is_simple_list();
+module test_is_homogeneous(){
+    assert(is_homogeneous([[1,["a"]], [2,["b"]]])==true);
+    assert(is_homogeneous([[1,["a"]], [2,[true]]])==false);
+    assert(is_homogeneous([[1,["a"]], [2,[true]]],1)==true);
+    assert(is_homogeneous([[1,["a"]], [2,[true]]],2)==false);
+    assert(is_homogeneous([[1,["a"]], [true,["b"]]])==false);
+}
+test_is_homogeneous();
 
 
 module test_select() {
@@ -24,6 +26,21 @@ module test_select() {
     assert(select(l, [1,3]) == [4,6]);
 }
 test_select();
+
+module test_last() {
+    list = [1,2,3,4];
+    assert(last(list)==4);
+    assert(last([])==undef);
+}
+test_last();
+
+module test_delete_last() {
+    list = [1,2,3,4];
+    assert(delete_last(list) == [1,2,3]);
+    assert(delete_last([1]) == []);
+    assert(delete_last([]) == []);
+}
+test_delete_last();
 
 
 module test_slice() {
@@ -54,7 +71,6 @@ test_in_list();
 module test_min_index() {
     assert(min_index([5,3,9,6,2,7,8,2,1])==8);
     assert(min_index([5,3,9,6,2,7,8,2,7],all=true)==[4,7]);
-//    assert(min_index([],all=true)==[]);
 }
 test_min_index();
 
@@ -62,7 +78,6 @@ test_min_index();
 module test_max_index() {
     assert(max_index([5,3,9,6,2,7,8,9,1])==2);
     assert(max_index([5,3,9,6,2,7,8,9,7],all=true)==[2,7]);
-//    assert(max_index([],all=true)==[]);
 }
 test_max_index();
 
@@ -81,6 +96,7 @@ module test_list_decreasing() {
     assert(list_decreasing([4,3,2,1]) == true);
 }
 test_list_decreasing();
+
 
 // Section: Basic List Generation
 
@@ -111,7 +127,7 @@ test_list_range();
 
 module test_reverse() {
     assert(reverse([3,4,5,6]) == [6,5,4,3]);
-    assert(reverse("abcd") == ["d","c","b","a"]);
+    assert(reverse("abcd") == "dcba");
     assert(reverse([]) == []);
 }
 test_reverse();
@@ -133,12 +149,12 @@ test_list_rotate();
 
 
 module test_deduplicate() {
-    assert(deduplicate([8,3,4,4,4,8,2,3,3,8,8]) == [8,3,4,8,2,3,8]);
-    assert(deduplicate(closed=true, [8,3,4,4,4,8,2,3,3,8,8]) == [8,3,4,8,2,3]);
-    assert(deduplicate("Hello") == ["H","e","l","o"]);
-    assert(deduplicate([[3,4],[7,1.99],[7,2],[1,4]],eps=0.1) == [[3,4],[7,2],[1,4]]);
-    assert(deduplicate([], closed=true) == []);
-    assert(deduplicate([[1,[1,[undef]]],[1,[1,[undef]]],[1,[2]],[1,[2,[0]]]])==[[1, [1,[undef]]],[1,[2]],[1,[2,[0]]]]);
+    assert_equal(deduplicate([8,3,4,4,4,8,2,3,3,8,8]), [8,3,4,8,2,3,8]);
+    assert_equal(deduplicate(closed=true, [8,3,4,4,4,8,2,3,3,8,8]), [8,3,4,8,2,3]);
+    assert_equal(deduplicate("Hello"), "Helo");
+    assert_equal(deduplicate([[3,4],[7,1.99],[7,2],[1,4]],eps=0.1), [[3,4],[7,2],[1,4]]);
+    assert_equal(deduplicate([], closed=true), []);
+    assert_equal(deduplicate([[1,[1,[undef]]],[1,[1,[undef]]],[1,[2]],[1,[2,[0]]]]), [[1, [1,[undef]]],[1,[2]],[1,[2,[0]]]]);
 }
 test_deduplicate();
 
@@ -162,7 +178,6 @@ module test_list_remove() {
     assert(list_remove([3,6,9,12],[1,3]) == [3,9]);
 }
 test_list_remove();
-
 
 module test_list_remove_values() {
     animals = ["bat", "cat", "rat", "dog", "bat", "rat"];
@@ -253,28 +268,40 @@ test_enumerate();
 
 module test_shuffle() {
     nums1 = [for (i=list_range(100)) i];
-    nums2 = shuffle(nums1);
-    nums3 = shuffle(nums2);
-    assert(len(nums2)==len(nums1));
-    assert(len(nums3)==len(nums2));
+    nums2 = shuffle(nums1,33);
+    nums3 = shuffle(nums2,99);
+    assert(sort(nums2)==nums1);
+    assert(sort(nums3)==nums1);
     assert(nums1!=nums2);
     assert(nums2!=nums3);
     assert(nums1!=nums3);
+    str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    shufstr = shuffle(str,12);
+    assert(shufstr != str && sort(shufstr)==str);
 }
 test_shuffle();
 
 
 module test_sort() {
     assert(sort([7,3,9,4,3,1,8]) == [1,3,3,4,7,8,9]);
-    assert(sort(["cat", "oat", "sat", "bat", "vat", "rat", "pat", "mat", "fat", "hat", "eat"]) == ["bat", "cat", "eat", "fat", "hat", "mat", "oat", "pat", "rat", "sat", "vat"]);
+    assert(sort([[4,0],[7],[3,9],20,[4],[3,1],[8]]) == [20,[3,1],[3,9],[4],[4,0],[7],[8]]);
+    assert(sort([[4,0],[7],[3,9],20,[4],[3,1],[8]],idx=1) == [[7],20,[4],[8],[4,0],[3,1],[3,9]]);
+    assert(sort([[8,6],[3,1],[9,2],[4,3],[3,4],[1,5],[8,0]]) == [[1,5],[3,1],[3,4],[4,3],[8,0],[8,6],[9,2]]);
+    assert(sort([[8,0],[3,1],[9,2],[4,3],[3,4],[1,5],[8,6]],idx=1) == [[8,0],[3,1],[9,2],[4,3],[3,4],[1,5],[8,6]]);
+    assert(sort(["cat", "oat", "sat", "bat", "vat", "rat", "pat", "mat", "fat", "hat", "eat"]) 
+           == ["bat", "cat", "eat", "fat", "hat", "mat", "oat", "pat", "rat", "sat", "vat"]);
     assert(sort(enumerate([[2,3,4],[1,2,3],[2,4,3]]),idx=1)==[[1,[1,2,3]], [0,[2,3,4]], [2,[2,4,3]]]);
+    assert(sort([0,"1",[1,0],2,"a",[1]])== [0,2,"1","a",[1],[1,0]]);
+    assert(sort([["oat",0], ["cat",1], ["bat",3], ["bat",2], ["fat",3]])==  [["bat",2],["bat",3],["cat",1],["fat",3],["oat",0]]);
 }
 test_sort();
 
 
 module test_sortidx() {
-    lst1 = ["d","b","e","c"];
+    lst1 = ["da","bax","eaw","cav"];
     assert(sortidx(lst1) == [1,3,0,2]);
+    lst5 = [3,5,1,7];
+    assert(sortidx(lst5) == [2,0,1,3]);
     lst2 = [
         ["foo", 88, [0,0,1], false],
         ["bar", 90, [0,1,0], true],
@@ -284,10 +311,21 @@ module test_sortidx() {
     assert(sortidx(lst2, idx=1) == [3,0,2,1]);
     assert(sortidx(lst2, idx=0) == [1,2,0,3]);
     assert(sortidx(lst2, idx=[1,3]) == [3,0,2,1]);
-    lst3 = [[-4, 0, 0], [0, 0, -4], [0, -4, 0], [-4, 0, 0], [0, -4, 0], [0, 0, 4], [0, 0, -4], [0, 4, 0], [4, 0, 0], [0, 0, 4], [0, 4, 0], [4, 0, 0]];
+    lst3 = [[-4,0,0],[0,0,-4],[0,-4,0],[-4,0,0],[0,-4,0],[0,0,4],
+            [0,0,-4],[0,4,0],[4,0,0],[0,0,4],[0,4,0],[4,0,0]];
     assert(sortidx(lst3)==[0,3,2,4,1,6,5,9,7,10,8,11]);
+    assert(sortidx([[4,0],[7],[3,9],20,[4],[3,1],[8]]) == [3,5,2,4,0,1,6]);
+    assert(sortidx([[4,0],[7],[3,9],20,[4],[3,1],[8]],idx=1) ==  [1,3,4,6,0,5,2]);
+    lst4=[0,"1",[1,0],2,"a",[1]];
+    assert(sortidx(lst4)== [0,3,1,4,5,2]);
+    assert(sortidx(["cat","oat","sat","bat","vat","rat","pat","mat","fat","hat","eat"]) 
+             == [3,0,10,8,9,7,1,6,5,2,4]);
+    assert(sortidx([["oat",0], ["cat",1], ["bat",3], ["bat",2], ["fat",3]])==  [3,2,1,4,0]);
+    assert(sortidx(["Belfry", "OpenScad", "Library", "Documentation"])==[0,3,2,1]);
+    assert(sortidx(["x",1,[],0,"abc",true])==[5,3,1,4,0,2]);
 }
 test_sortidx();
+
 
 module test_unique() {
     assert(unique([]) == []);
@@ -344,9 +382,7 @@ module test_set_intersection() {
 test_set_intersection();
 
 
-
 // Arrays
-
 
 module test_add_scalar() {
     assert(add_scalar([1,2,3],3) == [4,5,6]);
@@ -363,6 +399,27 @@ module test_subindex() {
     assert(subindex(v,[1:3]) == [[2, 3, 4], [6, 7, 8], [10, 11, 12], [14, 15, 16]]);
 }
 test_subindex();
+
+
+// Need decision about behavior for out of bounds ranges, empty ranges
+module test_submatrix(){
+  M = [[1,2,3,4,5],
+       [6,7,8,9,10],
+       [11,12,13,14,15],
+       [16,17,18,19,20],
+       [21,22,23,24,25]];
+  assert_equal(submatrix(M,[1:2], [3:4]), [[9,10],[14,15]]);
+  assert_equal(submatrix(M,[1], [3,4]), [[9,10]]);
+  assert_equal(submatrix(M,1, [3,4]), [[9,10]]);
+  assert_equal(submatrix(M, [3,4],1), [[17],[22]]);
+  assert_equal(submatrix(M, [1,3],[2,4]), [[8,10],[18,20]]);
+  assert_equal(submatrix(M, 1,3), [[9]]);
+  A = [[true,    17, "test"],
+     [[4,2],   91, false],
+     [6,    [3,4], undef]];
+  assert_equal(submatrix(A,[0,2],[1,2]),[[17, "test"], [[3, 4], undef]]);
+}
+test_submatrix();
 
 
 module test_force_list() {
@@ -431,6 +488,40 @@ module test_zip() {
 }
 test_zip();
 
+module test_block_matrix() {
+    A = [[1,2],[3,4]];
+    B = ident(2);
+    assert_equal(block_matrix([[A,B],[B,A],[A,B]]), [[1,2,1,0],[3,4,0,1],[1,0,1,2],[0,1,3,4],[1,2,1,0],[3,4,0,1]]);
+    assert_equal(block_matrix([[A,B],ident(4)]), [[1,2,1,0],[3,4,0,1],[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]);
+    text = [["a","b"],["c","d"]];
+    assert_equal(block_matrix([[text,B]]), [["a","b",1,0],["c","d",0,1]]);
+}
+test_block_matrix();
+
+
+module test_diagonal_matrix() {
+    assert_equal(diagonal_matrix([1,2,3]), [[1,0,0],[0,2,0],[0,0,3]]);
+    assert_equal(diagonal_matrix([1,"c",2]), [[1,0,0],[0,"c",0],[0,0,2]]);
+    assert_equal(diagonal_matrix([1,"c",2],"X"), [[1,"X","X"],["X","c","X"],["X","X",2]]);
+    assert_equal(diagonal_matrix([[1,1],[2,2],[3,3]], [0,0]), [[ [1,1],[0,0],[0,0]], [[0,0],[2,2],[0,0]], [[0,0],[0,0],[3,3]]]);
+}
+test_diagonal_matrix();
+
+module test_submatrix_set() {
+    test = [[1,2,3,4,5],[6,7,8,9,10],[11,12,13,14,15], [16,17,18,19,20]];
+    ragged = [[1,2,3,4,5],[6,7,8,9,10],[11,12], [16,17]];
+    assert_equal(submatrix_set(test,[[9,8],[7,6]]), [[9,8,3,4,5],[7,6,8,9,10],[11,12,13,14,15], [16,17,18,19,20]]);
+    assert_equal(submatrix_set(test,[[9,7],[8,6]],1),[[1,2,3,4,5],[9,7,8,9,10],[8,6,13,14,15], [16,17,18,19,20]]);
+    assert_equal(submatrix_set(test,[[9,8],[7,6]],n=1), [[1,9,8,4,5],[6,7,6,9,10],[11,12,13,14,15], [16,17,18,19,20]]);
+    assert_equal(submatrix_set(test,[[9,8],[7,6]],1,2), [[1,2,3,4,5],[6,7,9,8,10],[11,12,7,6,15], [16,17,18,19,20]]);
+    assert_equal(submatrix_set(test,[[9,8],[7,6]],-1,-1), [[6,2,3,4,5],[6,7,8,9,10],[11,12,13,14,15], [16,17,18,19,20]]);
+    assert_equal(submatrix_set(test,[[9,8],[7,6]],n=4), [[1,2,3,4,9],[6,7,8,9,7],[11,12,13,14,15], [16,17,18,19,20]]);
+    assert_equal(submatrix_set(test,[[9,8],[7,6]],7,7), [[1,2,3,4,5],[6,7,8,9,10],[11,12,13,14,15], [16,17,18,19,20]]);
+    assert_equal(submatrix_set(ragged, [["a","b"],["c","d"]], 1, 1), [[1,2,3,4,5],[6,"a","b",9,10],[11,"c"], [16,17]]);
+    assert_equal(submatrix_set(test, [[]]), test);
+}
+test_submatrix_set();
+
 
 module test_array_group() {
     v = [1,2,3,4,5,6];
@@ -460,6 +551,12 @@ module test_array_dim() {
     assert(array_dim([[[1,2,3],[4,5,6]],[[7,8,9],[10,11,12]]], 0) == 2);
     assert(array_dim([[[1,2,3],[4,5,6]],[[7,8,9],[10,11,12]]], 2) == 3);
     assert(array_dim([[[1,2,3],[4,5,6]],[[7,8,9]]]) == [2,undef,3]);
+    assert(array_dim([1,2,3,4,5,6,7,8,9]) == [9]);
+    assert(array_dim([[1],[2],[3],[4],[5],[6],[7],[8],[9]]) == [9,1]);
+    assert(array_dim([]) == [0]);
+    assert(array_dim([[]]) == [1,0]);
+    assert(array_dim([[],[]]) == [2,0]);
+    assert(array_dim([[],[1]]) == [2,undef]);
 }
 test_array_dim();
 
@@ -467,12 +564,10 @@ test_array_dim();
 module test_transpose() {
     assert(transpose([[1,2,3],[4,5,6],[7,8,9]]) == [[1,4,7],[2,5,8],[3,6,9]]);
     assert(transpose([[1,2,3],[4,5,6]]) == [[1,4],[2,5],[3,6]]);
+    assert(transpose([[1,2,3],[4,5,6]],reverse=true) == [[6,3], [5,2], [4,1]]);
     assert(transpose([3,4,5]) == [3,4,5]);
 }
 test_transpose();
-
-
-cube();
 
 
 // vim: expandtab tabstop=4 shiftwidth=4 softtabstop=4 nowrap

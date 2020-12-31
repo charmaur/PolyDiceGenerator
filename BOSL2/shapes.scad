@@ -63,9 +63,9 @@
 //   cuboid(40) show_anchors();
 module cuboid(
     size=[1,1,1],
-    p1=undef, p2=undef,
-    chamfer=undef,
-    rounding=undef,
+    p1, p2,
+    chamfer,
+    rounding,
     edges=EDGES_ALL,
     except_edges=[],
     trimcorners=true,
@@ -73,8 +73,59 @@ module cuboid(
     spin=0,
     orient=UP
 ) {
+    module corner_shape(corner) {
+        e = corner_edges(edges, corner);
+        cnt = sum(e);
+        r = first_defined([chamfer, rounding, 0]);
+        c = [min(r,size.x/2), min(r,size.y/2), min(r,size.z/2)];
+        c2 = vmul(corner,c/2);
+        $fn = is_finite(chamfer)? 4 : segs(r);
+        translate(vmul(corner, size/2-c)) {
+            if (cnt == 0 || approx(r,0)) {
+                translate(c2) cube(c, center=true);
+            } else if (cnt == 1) {
+                if (e.x) right(c2.x) xcyl(l=c.x, r=r);
+                if (e.y) back (c2.y) ycyl(l=c.y, r=r);
+                if (e.z) up   (c2.z) zcyl(l=c.z, r=r);
+            } else if (cnt == 2) {
+                if (!e.x) {
+                    intersection() {
+                        ycyl(l=c.y*2, r=r);
+                        zcyl(l=c.z*2, r=r);
+                    }
+                } else if (!e.y) {
+                    intersection() {
+                        xcyl(l=c.x*2, r=r);
+                        zcyl(l=c.z*2, r=r);
+                    }
+                } else {
+                    intersection() {
+                        xcyl(l=c.x*2, r=r);
+                        ycyl(l=c.y*2, r=r);
+                    }
+                }
+            } else {
+                if (trimcorners) {
+                    spheroid(r=r, style="octa");
+                } else {
+                    intersection() {
+                        xcyl(l=c.x*2, r=r);
+                        ycyl(l=c.y*2, r=r);
+                        zcyl(l=c.z*2, r=r);
+                    }
+                }
+            }
+        }
+    }
+
     size = scalar_vec3(size);
     edges = edges(edges, except=except_edges);
+    assert(is_vector(size,3));
+    assert(is_undef(chamfer) || is_finite(chamfer));
+    assert(is_undef(rounding) || is_finite(rounding));
+    assert(is_undef(p1) || is_vector(p1));
+    assert(is_undef(p2) || is_vector(p2));
+    assert(is_bool(trimcorners));
     if (!is_undef(p1)) {
         if (!is_undef(p2)) {
             translate(pointlist_bounds([p1,p2])[0]) {
@@ -86,31 +137,31 @@ module cuboid(
             }
         }
     } else {
-        if (chamfer != undef) {
+        if (is_finite(chamfer)) {
             if (any(edges[0])) assert(chamfer <= size.y/2 && chamfer <=size.z/2, "chamfer must be smaller than half the cube length or height.");
             if (any(edges[1])) assert(chamfer <= size.x/2 && chamfer <=size.z/2, "chamfer must be smaller than half the cube width or height.");
             if (any(edges[2])) assert(chamfer <= size.x/2 && chamfer <=size.y/2, "chamfer must be smaller than half the cube width or length.");
         }
-        if (rounding != undef) {
+        if (is_finite(rounding)) {
             if (any(edges[0])) assert(rounding <= size.y/2 && rounding<=size.z/2, "rounding radius must be smaller than half the cube length or height.");
             if (any(edges[1])) assert(rounding <= size.x/2 && rounding<=size.z/2, "rounding radius must be smaller than half the cube width or height.");
             if (any(edges[2])) assert(rounding <= size.x/2 && rounding<=size.y/2, "rounding radius must be smaller than half the cube width or length.");
         }
         majrots = [[0,90,0], [90,0,0], [0,0,0]];
         attachable(anchor,spin,orient, size=size) {
-            if (chamfer != undef) {
+            if (is_finite(chamfer) && !approx(chamfer,0)) {
                 if (edges == EDGES_ALL && trimcorners) {
                     if (chamfer<0) {
                         cube(size, center=true) {
-                            attach(TOP) prismoid([size.x,size.y], [size.x-2*chamfer,size.y-2*chamfer], h=-chamfer, anchor=TOP);
-                            attach(BOT) prismoid([size.x,size.y], [size.x-2*chamfer,size.y-2*chamfer], h=-chamfer, anchor=TOP);
+                            attach(TOP,overlap=0) prismoid([size.x,size.y], [size.x-2*chamfer,size.y-2*chamfer], h=-chamfer, anchor=TOP);
+                            attach(BOT,overlap=0) prismoid([size.x,size.y], [size.x-2*chamfer,size.y-2*chamfer], h=-chamfer, anchor=TOP);
                         }
                     } else {
                         isize = [for (v = size) max(0.001, v-2*chamfer)];
                         hull() {
-                            cube([size.x, isize.y, isize.z], center=true);
-                            cube([isize.x, size.y, isize.z], center=true);
-                            cube([isize.x, isize.y, size.z], center=true);
+                            cube([ size.x, isize.y, isize.z], center=true);
+                            cube([isize.x,  size.y, isize.z], center=true);
+                            cube([isize.x, isize.y,  size.z], center=true);
                         }
                     }
                 } else if (chamfer<0) {
@@ -156,35 +207,18 @@ module cuboid(
                         }
                     }
                 } else {
-                    difference() {
-                        cube(size, center=true);
-
-                        // Chamfer edges
-                        for (i = [0:3], axis=[0:2]) {
-                            if (edges[axis][i]>0) {
-                                translate(vmul(EDGE_OFFSETS[axis][i], size/2)) {
-                                    rotate(majrots[axis]) {
-                                        zrot(45) cube([chamfer*sqrt(2), chamfer*sqrt(2), size[axis]+0.01], center=true);
-                                    }
-                                }
-                            }
-                        }
-
-                        // Chamfer triple-edge corners.
-                        if (trimcorners) {
-                            for (za=[-1,1], ya=[-1,1], xa=[-1,1]) {
-                                if (corner_edge_count(edges, [xa,ya,za]) > 2) {
-                                    translate(vmul([xa,ya,za]/2, size-[1,1,1]*chamfer*4/3)) {
-                                        rot(from=UP, to=[xa,ya,za]) {
-                                            cube(chamfer*3, anchor=BOTTOM);
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                    hull() {
+                        corner_shape([-1,-1,-1]);
+                        corner_shape([ 1,-1,-1]);
+                        corner_shape([-1, 1,-1]);
+                        corner_shape([ 1, 1,-1]);
+                        corner_shape([-1,-1, 1]);
+                        corner_shape([ 1,-1, 1]);
+                        corner_shape([-1, 1, 1]);
+                        corner_shape([ 1, 1, 1]);
                     }
                 }
-            } else if (rounding != undef) {
+            } else if (is_finite(rounding) && !approx(rounding,0)) {
                 sides = quantup(segs(rounding),4);
                 if (edges == EDGES_ALL) {
                     if(rounding<0) {
@@ -219,7 +253,7 @@ module cuboid(
                     ard = abs(rounding);
                     cube(size, center=true);
 
-                    // External-Chamfer mask edges
+                    // External-Rounding mask edges
                     difference() {
                         union() {
                             for (i = [0:3], axis=[0:1]) {
@@ -258,38 +292,15 @@ module cuboid(
                         }
                     }
                 } else {
-                    difference() {
-                        cube(size, center=true);
-
-                        // Round edges.
-                        for (i = [0:3], axis=[0:2]) {
-                            if (edges[axis][i]>0) {
-                                difference() {
-                                    translate(vmul(EDGE_OFFSETS[axis][i], size/2)) {
-                                        rotate(majrots[axis]) cube([rounding*2, rounding*2, size[axis]+0.1], center=true);
-                                    }
-                                    translate(vmul(EDGE_OFFSETS[axis][i], size/2 - [1,1,1]*rounding)) {
-                                        rotate(majrots[axis]) cyl(h=size[axis]+0.2, r=rounding, $fn=sides);
-                                    }
-                                }
-                            }
-                        }
-
-                        // Round triple-edge corners.
-                        if (trimcorners) {
-                            for (za=[-1,1], ya=[-1,1], xa=[-1,1]) {
-                                if (corner_edge_count(edges, [xa,ya,za]) > 2) {
-                                    difference() {
-                                        translate(vmul([xa,ya,za], size/2)) {
-                                            cube(rounding*2, center=true);
-                                        }
-                                        translate(vmul([xa,ya,za], size/2-[1,1,1]*rounding)) {
-                                            spheroid(r=rounding, style="octa", $fn=sides);
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                    hull() {
+                        corner_shape([-1,-1,-1]);
+                        corner_shape([ 1,-1,-1]);
+                        corner_shape([-1, 1,-1]);
+                        corner_shape([ 1, 1,-1]);
+                        corner_shape([-1,-1, 1]);
+                        corner_shape([ 1,-1, 1]);
+                        corner_shape([-1, 1, 1]);
+                        corner_shape([ 1, 1, 1]);
                     }
                 }
             } else {
@@ -501,8 +512,10 @@ module right_triangle(size=[1, 1, 1], center, anchor, spin=0, orient=UP)
     size = scalar_vec3(size);
     anchor = get_anchor(anchor, center, ALLNEG, ALLNEG);
     attachable(anchor,spin,orient, size=size) {
-        linear_extrude(height=size.z, convexity=2, center=true) {
-            polygon([[-size.x/2,-size.y/2], [-size.x/2,size.y/2], [size.x/2,-size.y/2]]);
+        if (size.z > 0) {
+            linear_extrude(height=size.z, convexity=2, center=true) {
+                polygon([[-size.x/2,-size.y/2], [-size.x/2,size.y/2], [size.x/2,-size.y/2]]);
+            }
         }
         children();
     }
@@ -673,7 +686,7 @@ module cyl(
                         ) [p1,p2]
                     ) : !is_undef(fil2)? (
                         let(
-                            cn = find_circle_2tangents([r2-fil2,l/2], [r2,l/2], [r1,-l/2], r=abs(fil2)),
+                            cn = circle_2tangents([r2-fil2,l/2], [r2,l/2], [r1,-l/2], r=abs(fil2)),
                             ang = fil2<0? phi : phi-180,
                             steps = ceil(abs(ang)/360*segs(abs(fil2))),
                             step = ang/steps,
@@ -688,7 +701,7 @@ module cyl(
                         ) [p1,p2]
                     ) : !is_undef(fil1)? (
                         let(
-                            cn = find_circle_2tangents([r1-fil1,-l/2], [r1,-l/2], [r2,l/2], r=abs(fil1)),
+                            cn = circle_2tangents([r1-fil1,-l/2], [r1,-l/2], [r2,l/2], r=abs(fil1)),
                             ang = fil1<0? 180-phi : -phi,
                             steps = ceil(abs(ang)/360*segs(abs(fil1))),
                             step = ang/steps,
@@ -741,8 +754,13 @@ module cyl(
 //   }
 module xcyl(l=undef, r=undef, d=undef, r1=undef, r2=undef, d1=undef, d2=undef, h=undef, anchor=CENTER)
 {
-    anchor = rot(from=RIGHT, to=UP, p=anchor);
-    cyl(l=l, h=h, r=r, r1=r1, r2=r2, d=d, d1=d1, d2=d2, orient=RIGHT, anchor=anchor) children();
+    r1 = get_radius(r1=r1, r=r, d1=d1, d=d, dflt=1);
+    r2 = get_radius(r1=r2, r=r, d1=d2, d=d, dflt=1);
+    l = first_defined([l, h, 1]);
+    attachable(anchor,0,UP, r1=r1, r2=r2, l=l, axis=RIGHT) {
+        cyl(l=l, r1=r1, r2=r2, orient=RIGHT, anchor=CENTER);
+        children();
+    }
 }
 
 
@@ -777,10 +795,15 @@ module xcyl(l=undef, r=undef, d=undef, r1=undef, r2=undef, d1=undef, d2=undef, h
 //       ycyl(l=35, d=20);
 //       ycyl(l=35, d1=30, d2=10);
 //   }
-module ycyl(l=undef, r=undef, d=undef, r1=undef, r2=undef, d1=undef, d2=undef, h=undef, anchor=CENTER)
+module ycyl(l, r, d, r1, r2, d1, d2, h, anchor=CENTER)
 {
-    anchor = rot(from=BACK, to=UP, p=anchor);
-    cyl(l=l, h=h, r=r, r1=r1, r2=r2, d=d, d1=d1, d2=d2, orient=BACK, anchor=anchor) children();
+    r1 = get_radius(r1=r1, r=r, d1=d1, d=d, dflt=1);
+    r2 = get_radius(r1=r2, r=r, d1=d2, d=d, dflt=1);
+    l = first_defined([l, h, 1]);
+    attachable(anchor,0,UP, r1=r1, r2=r2, l=l, axis=BACK) {
+        cyl(l=l, h=h, r1=r1, r2=r2, orient=BACK, anchor=CENTER);
+        children();
+    }
 }
 
 
@@ -879,11 +902,24 @@ module tube(
     anchor, spin=0, orient=UP,
     center, realign=false, l
 ) {
+    function safe_add(x,wall) = is_undef(x)? undef : x+wall;
     h = first_defined([h,l,1]);
-    r1 = first_defined([or1, od1/2, r1, d1/2, or, od/2, r, d/2, ir1+wall, id1/2+wall, ir+wall, id/2+wall]);
-    r2 = first_defined([or2, od2/2, r2, d2/2, or, od/2, r, d/2, ir2+wall, id2/2+wall, ir+wall, id/2+wall]);
-    ir1 = first_defined([ir1, id1/2, ir, id/2, r1-wall, d1/2-wall, r-wall, d/2-wall]);
-    ir2 = first_defined([ir2, id2/2, ir, id/2, r2-wall, d2/2-wall, r-wall, d/2-wall]);
+    orr1 = get_radius(
+        r=first_defined([or1, r1, or, r]),
+        d=first_defined([od1, d1, od, d]),
+        dflt=undef
+    );
+    orr2 = get_radius(
+        r=first_defined([or2, r2, or, r]),
+        d=first_defined([od2, d2, od, d]),
+        dflt=undef
+    );
+    irr1 = get_radius(r1=ir1, r=ir, d1=id1, d=id, dflt=undef);
+    irr2 = get_radius(r1=ir2, r=ir, d1=id2, d=id, dflt=undef);
+    r1 = is_num(orr1)? orr1 : is_num(irr1)? irr1+wall : undef;
+    r2 = is_num(orr2)? orr2 : is_num(irr2)? irr2+wall : undef;
+    ir1 = is_num(irr1)? irr1 : is_num(orr1)? orr1-wall : undef;
+    ir2 = is_num(irr2)? irr2 : is_num(orr2)? orr2-wall : undef;
     assert(ir1 <= r1, "Inner radius is larger than outer radius.");
     assert(ir2 <= r2, "Inner radius is larger than outer radius.");
     sides = segs(max(r1,r2));
@@ -1123,6 +1159,14 @@ module torus(
 //   Creates a spheroid object, with support for anchoring and attachments.
 //   This is a drop-in replacement for the built-in `sphere()` module.
 //   When called as a function, returns a [VNF](vnf.scad) for a spheroid.
+//   The exact triangulation of this spheroid can be controlled via the `style=`
+//   argument, where the value can be one of `"orig"`, `"aligned"`, `"stagger"`,
+//   `"octa"`, or `"icosa"`:
+//   - `style="orig"` constructs a sphere the same way that the OpenSCAD `sphere()` built-in does.
+//   - `style="aligned"` constructs a sphere where, if `$fn` is a multiple of 4, it has vertices at all axis maxima and minima.  ie: its bounding box is exactly the sphere diameter in length on all three axes.  This is the default.
+//   - `style="stagger"` forms a sphere where all faces are triangular, but the top and bottom poles have thinner triangles.
+//   - `style="octa"` forms a sphere by subdividing an octahedron (8-sided platonic solid).  This makes more uniform faces over the entirety of the sphere, and guarantees the bounding box is the sphere diameter in size on all axes.  The effective `$fn` value is quantized to a multiple of 4, though.  This is used in constructing rounded corners for various other shapes.
+//   - `style="icosa"` forms a sphere by subdividing an icosahedron (20-sided platonic solid).  This makes even more uniform faces over the entirety of the sphere.  The effective `$fn` value is quantized to a multiple of 5, though.
 // Arguments:
 //   r = Radius of the spheroid.
 //   d = Diameter of the spheroid.
@@ -1164,21 +1208,16 @@ module spheroid(r, d, circum=false, style="aligned", anchor=CENTER, spin=0, orie
 {
     r = get_radius(r=r, d=d, dflt=1);
     sides = segs(r);
+    vsides = ceil(sides/2);
     attachable(anchor,spin,orient, r=r) {
         if (style=="orig") {
-            rotate_extrude(convexity=2,$fn=sides) {
-                difference() {
-                    oval(r=r, circum=circum, $fn=sides);
-                    left(r) square(2*r,center=true);
-                }
-            }
-        } else if (style=="aligned") {
-            rotate_extrude(convexity=2,$fn=sides) {
-                difference() {
-                    zrot(180/sides) oval(r=r, circum=circum, $fn=sides);
-                    left(r) square(2*r,center=true);
-                }
-            }
+            merids = [ for (i=[0:1:vsides-1]) 90-(i+0.5)*180/vsides ];
+            path = [
+                let(a = merids[0]) [0, sin(a)],
+                for (a=merids) [cos(a), sin(a)],
+                let(a = select(merids,-1)) [0, sin(a)]
+            ];
+            scale(r) rotate(180) rotate_extrude(convexity=2,$fn=sides) polygon(path);
         } else {
             vnf = spheroid(r=r, circum=circum, style=style);
             vnf_polyhedron(vnf, convexity=2);
@@ -1361,8 +1400,10 @@ module teardrop(r=undef, d=undef, l=undef, h=undef, ang=45, cap_h=undef, anchor=
     size = [r*2,l,r*2];
     attachable(anchor,spin,orient, size=size) {
         rot(from=UP,to=FWD) {
-            linear_extrude(height=l, center=true, slices=2) {
-                teardrop2d(r=r, ang=ang, cap_h=cap_h);
+            if (l > 0) {
+                linear_extrude(height=l, center=true, slices=2) {
+                    teardrop2d(r=r, ang=ang, cap_h=cap_h);
+                }
             }
         }
         children();
@@ -1498,13 +1539,14 @@ module pie_slice(
 //   Center this part along the concave edge to be chamfered and union it in.
 //
 // Usage:
-//   interior_fillet(l, r, [ang], [overlap]);
+//   interior_fillet(l, r|d, [ang], [overlap]);
 //
 // Arguments:
-//   l = length of edge to fillet.
-//   r = radius of fillet.
-//   ang = angle between faces to fillet.
-//   overlap = overlap size for unioning with faces.
+//   l = Length of edge to fillet.
+//   r = Radius of fillet.
+//   d = Diameter of fillet.
+//   ang = Angle between faces to fillet.
+//   overlap = Overlap size for unioning with faces.
 //   anchor = Translate so anchor point is at origin (0,0,0).  See [anchor](attachments.scad#anchor).  Default: `FRONT+LEFT`
 //   spin = Rotate this many degrees around the Z axis after anchor.  See [spin](attachments.scad#spin).  Default: `0`
 //   orient = Vector to rotate top towards, after spin.  See [orient](attachments.scad#orient).  Default: `UP`
@@ -1526,17 +1568,20 @@ module pie_slice(
 //     position(BOT+FRONT)
 //       interior_fillet(l=50, r=10, spin=180, orient=RIGHT);
 //   }
-module interior_fillet(l=1.0, r=1.0, ang=90, overlap=0.01, anchor=FRONT+LEFT, spin=0, orient=UP) {
+module interior_fillet(l=1.0, r, ang=90, overlap=0.01, d, anchor=FRONT+LEFT, spin=0, orient=UP) {
+    r = get_radius(r=r, d=d, dflt=1);
     dy = r/tan(ang/2);
     steps = ceil(segs(r)*ang/360);
     step = ang/steps;
     attachable(anchor,spin,orient, size=[r,r,l]) {
-        linear_extrude(height=l, convexity=4, center=true) {
-            path = concat(
-                [[0,0]],
-                [for (i=[0:1:steps]) let(a=270-i*step) r*[cos(a),sin(a)]+[dy,r]]
-            );
-            translate(-[r,r]/2) polygon(path);
+        if (l > 0) {
+            linear_extrude(height=l, convexity=4, center=true) {
+                path = concat(
+                    [[0,0]],
+                    [for (i=[0:1:steps]) let(a=270-i*step) r*[cos(a),sin(a)]+[dy,r]]
+                );
+                translate(-[r,r]/2) polygon(path);
+            }
         }
         children();
     }

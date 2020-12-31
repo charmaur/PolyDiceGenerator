@@ -306,11 +306,11 @@ function up(z=0,p=undef) = move([0,0,z],p=p);
 //   * Called as a function with a `p` argument containing a list of points, returns the list of rotated points.
 //   * Called as a function with a [bezier patch](beziers.scad) in the `p` argument, returns the rotated patch.
 //   * Called as a function with a [VNF structure](vnf.scad) in the `p` argument, returns the rotated VNF.
-//   * Called as a function without a `p` argument, and `planar` is true, returns the affine2d rotational matrix.
+//   * Called as a function without a `p` argument, and `planar` is true, returns the affine2d rotational matrix.  Requires that `a` is a finite scalar.
 //   * Called as a function without a `p` argument, and `planar` is false, returns the affine3d rotational matrix.
 //
 // Arguments:
-//   a = Scalar angle or vector of XYZ rotation angles to rotate by, in degrees.
+//   a = Scalar angle or vector of XYZ rotation angles to rotate by, in degrees.  If `planar` is true and `p` is not given, then `a` must be a finite scalar.  Default: `0`
 //   v = vector for the axis of rotation.  Default: [0,0,1] or UP
 //   cp = centerpoint to rotate around. Default: [0,0,0]
 //   from = Starting vector for vector-based rotations.
@@ -343,16 +343,21 @@ module rot(a=0, v=undef, cp=undef, from=undef, to=undef, reverse=false)
 
 function rot(a=0, v, cp, from, to, reverse=false, planar=false, p, _m) =
     assert(is_undef(from)==is_undef(to), "from and to must be specified together.")
+    assert(is_undef(from) || is_vector(from, zero=false), "'from' must be a non-zero vector.")
+    assert(is_undef(to) || is_vector(to, zero=false), "'to' must be a non-zero vector.")
+    assert(is_undef(v) || is_vector(v, zero=false), "'v' must be a non-zero vector.")
+    assert(is_undef(cp) || is_vector(cp), "'cp' must be a vector.")
+    assert(is_finite(a) || is_vector(a), "'a' must be a finite scalar or a vector.")
+    assert(is_bool(reverse))
+    assert(is_bool(planar))
     is_undef(p)? (
         planar? let(
+            check = assert(is_num(a)),
             cp = is_undef(cp)? cp : point2d(cp),
             m1 = is_undef(from)? affine2d_zrot(a) :
-                assert(is_vector(from))
-                assert(!approx(norm(from),0))
-                assert(approx(point3d(from).z, 0))
-                assert(is_vector(to))
-                assert(!approx(norm(to),0))
-                assert(approx(point3d(to).z, 0))
+                assert(a==0, "'from' and 'to' cannot be used with 'a' when 'planar' is true.")
+                assert(approx(point3d(from).z, 0), "'from' must be a 2D vector when 'planar' is true.")
+                assert(approx(point3d(to).z, 0), "'to' must be a 2D vector when 'planar' is true.")
                 affine2d_zrot(
                     vang(point2d(to)) -
                     vang(point2d(from))
@@ -364,13 +369,10 @@ function rot(a=0, v, cp, from, to, reverse=false, planar=false, p, _m) =
             to = is_undef(to)? undef : point3d(to),
             cp = is_undef(cp)? undef : point3d(cp),
             m1 = !is_undef(from)? (
-                    assert(is_vector(from))
-                    assert(!approx(norm(from),0))
-                    assert(is_vector(to))
-                    assert(!approx(norm(to),0))
+                    assert(is_num(a))
                     affine3d_rot_from_to(from,to) * affine3d_zrot(a)
                 ) :
-                !is_undef(v)? affine3d_rot_by_axis(v,a) :
+                !is_undef(v)? assert(is_num(a)) affine3d_rot_by_axis(v,a) :
                 is_num(a)? affine3d_zrot(a) :
                 affine3d_zrot(a.z) * affine3d_yrot(a.y) * affine3d_xrot(a.x),
             m2 = is_undef(cp)? m1 : (move(cp) * m1 * move(-cp)),
@@ -522,12 +524,12 @@ function zrot(a=0, cp=undef, p=undef) = rot(a, cp=cp, p=p);
 
 // Function&Module: scale()
 // Usage: As Module
-//   scale(SCALAR) ...
-//   scale([X,Y,Z]) ...
+//   scale(SCALAR, <cp>) ...
+//   scale([X,Y,Z], <cp>) ...
 // Usage: Scale Points
-//   pts = scale(v, p);
+//   pts = scale(v, p, <cp>);
 // Usage: Get Scaling Matrix
-//   mat = scale(v);
+//   mat = scale(v, <cp>);
 // Description:
 //   Scales by the [X,Y,Z] scaling factors given in `v`.  If `v` is given as a scalar number, all axes are scaled uniformly by that amount.
 //   * Called as the built-in module, scales all children.
@@ -539,6 +541,7 @@ function zrot(a=0, cp=undef, p=undef) = rot(a, cp=cp, p=p);
 //   * Called as a function without a `p` argument, and a 3D list of scaling factors in `v`, returns an affine3d scaling matrix.
 // Arguments:
 //   v = Either a numeric uniform scaling factor, or a list of [X,Y,Z] scaling factors.  Default: 1
+//   cp = If given, centers the scaling on the point `cp`.
 //   p = If called as a function, the point or list of points to scale.
 // Example(NORENDER):
 //   pt1 = scale(3, p=[3,1,4]);        // Returns: [9,3,12]
@@ -550,20 +553,33 @@ function zrot(a=0, cp=undef, p=undef) = rot(a, cp=cp, p=p);
 //   path = circle(d=50,$fn=12);
 //   #stroke(path,closed=true);
 //   stroke(scale([1.5,3],p=path),closed=true);
-function scale(v=1, p=undef) =
+function scale(v=1, cp=[0,0,0], p=undef) =
     assert(is_num(v) || is_vector(v))
     assert(is_undef(p) || is_list(p))
-    let(v = is_num(v)? [v,v,v] : v)
+    let( v = is_num(v)? [v,v,v] : v )
     is_undef(p)? (
-        len(v)==2? affine2d_scale(v) : affine3d_scale(point3d(v))
+        len(v)==2? (
+            cp==[0,0,0] || cp == [0,0] ? affine2d_scale(v) : (
+                affine2d_translate(point2d(cp)) *
+                affine2d_scale(v) *
+                affine2d_translate(point2d(-cp))
+            )
+        ) : (
+            cp==[0,0,0] ? affine3d_scale(v) : (
+                affine3d_translate(point3d(cp)) *
+                affine3d_scale(v) *
+                affine3d_translate(point3d(-cp))
+            )
+        )
     ) : (
         assert(is_list(p))
-        is_vector(p)? ( len(p)==2? vmul(p,point2d(v)) : vmul(p,point3d(v,1)) ) :
+        let( mat = scale(v=v, cp=cp) )
+        is_vector(p)? apply(mat, p) :
         is_vnf(p)? let(inv=product([for (x=v) x<0? -1 : 1])) [
-            scale(v=v, p=p[0]),
+            apply(mat, p[0]),
             inv>=0? p[1] : [for (l=p[1]) reverse(l)]
         ] :
-        [ for (pp=p) scale(v=v, p=pp) ]
+        apply(mat, p)
     );
 
 
@@ -589,7 +605,8 @@ function scale(v=1, p=undef) =
 //
 // Arguments:
 //   x = Factor to scale by, along the X axis.
-//   p = A point or path to scale, when called as a function.
+//   cp = If given as a point, centers the scaling on the point `cp`.  If given as a scalar, centers scaling on the point `[cp,0,0]`
+//   p = A point, path, bezier patch, or VNF to scale, when called as a function.
 //   planar = If true, and `p` is not given, then the matrix returned is an affine2d matrix instead of an affine3d matrix.
 //
 // Example: As Module
@@ -599,9 +616,20 @@ function scale(v=1, p=undef) =
 //   path = circle(d=50,$fn=12);
 //   #stroke(path,closed=true);
 //   stroke(xscale(2,p=path),closed=true);
-module xscale(x=1) scale([x,1,1]) children();
+module xscale(x=1, cp=0) {
+    cp = is_num(cp)? [cp,0,0] : cp;
+    if (cp == [0,0,0]) {
+        scale([x,1,1]) children();
+    } else {
+        translate(cp) scale([x,1,1]) translate(-cp) children();
+    }
+}
 
-function xscale(x=1, p=undef, planar=false) = (planar || (!is_undef(p) && len(p)==2))? scale([x,1],p=p) : scale([x,1,1],p=p);
+function xscale(x=1, cp=0, p, planar=false) =
+    let( cp = is_num(cp)? [cp,0,0] : cp )
+    (planar || (!is_undef(p) && len(p)==2))
+      ? scale([x,1], cp=cp, p=p)
+      : scale([x,1,1], cp=cp, p=p);
 
 
 // Function&Module: yscale()
@@ -625,7 +653,8 @@ function xscale(x=1, p=undef, planar=false) = (planar || (!is_undef(p) && len(p)
 //
 // Arguments:
 //   y = Factor to scale by, along the Y axis.
-//   p = A point or path to scale, when called as a function.
+//   cp = If given as a point, centers the scaling on the point `cp`.  If given as a scalar, centers scaling on the point `[0,cp,0]`
+//   p = A point, path, bezier patch, or VNF to scale, when called as a function.
 //   planar = If true, and `p` is not given, then the matrix returned is an affine2d matrix instead of an affine3d matrix.
 //
 // Example: As Module
@@ -635,9 +664,20 @@ function xscale(x=1, p=undef, planar=false) = (planar || (!is_undef(p) && len(p)
 //   path = circle(d=50,$fn=12);
 //   #stroke(path,closed=true);
 //   stroke(yscale(2,p=path),closed=true);
-module yscale(y=1) scale([1,y,1]) children();
+module yscale(y=1, cp=0) {
+    cp = is_num(cp)? [0,cp,0] : cp;
+    if (cp == [0,0,0]) {
+        scale([1,y,1]) children();
+    } else {
+        translate(cp) scale([1,y,1]) translate(-cp) children();
+    }
+}
 
-function yscale(y=1, p=undef, planar=false) = (planar || (!is_undef(p) && len(p)==2))? scale([1,y],p=p) : scale([1,y,1],p=p);
+function yscale(y=1, cp=0, p, planar=false) =
+    let( cp = is_num(cp)? [0,cp,0] : cp )
+    (planar || (!is_undef(p) && len(p)==2))
+      ? scale([1,y],p=p)
+      : scale([1,y,1],p=p);
 
 
 // Function&Module: zscale()
@@ -661,7 +701,8 @@ function yscale(y=1, p=undef, planar=false) = (planar || (!is_undef(p) && len(p)
 //
 // Arguments:
 //   z = Factor to scale by, along the Z axis.
-//   p = A point or path to scale, when called as a function.
+//   cp = If given as a point, centers the scaling on the point `cp`.  If given as a scalar, centers scaling on the point `[0,0,cp]`
+//   p = A point, path, bezier patch, or VNF to scale, when called as a function.
 //   planar = If true, and `p` is not given, then the matrix returned is an affine2d matrix instead of an affine3d matrix.
 //
 // Example: As Module
@@ -669,11 +710,20 @@ function yscale(y=1, p=undef, planar=false) = (planar || (!is_undef(p) && len(p)
 //
 // Example: Scaling Points
 //   path = xrot(90,p=path3d(circle(d=50,$fn=12)));
-//   #trace_polyline(path);
-//   trace_polyline(zscale(2,p=path));
-module zscale(z=1) scale([1,1,z]) children();
+//   #trace_path(path);
+//   trace_path(zscale(2,p=path));
+module zscale(z=1, cp=0) {
+    cp = is_num(cp)? [0,0,cp] : cp;
+    if (cp == [0,0,0]) {
+        scale([1,1,z]) children();
+    } else {
+        translate(cp) scale([1,1,z]) translate(-cp) children();
+    }
+}
 
-function zscale(z=1, p=undef) = scale([1,1,z],p=p);
+function zscale(z=1, cp=0, p) =
+    let( cp = is_num(cp)? [0,0,cp] : cp )
+    scale([1,1,z], cp=cp, p=p);
 
 
 // Function&Module: mirror()
@@ -915,7 +965,7 @@ function zflip(z=0,p) =
 //   color("blue") move_copies(pts) circle(d=3, $fn=8);
 // Example(FlatSpin): Calling as a 3D Function
 //   pts = skew(p=path3d(square(40,center=true)), szx=0.5, szy=0.3);
-//   trace_polyline(close_path(pts), showpts=true);
+//   trace_path(close_path(pts), showpts=true);
 module skew(sxy=0, sxz=0, syx=0, syz=0, szx=0, szy=0)
 {
     multmatrix(

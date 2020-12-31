@@ -1,26 +1,24 @@
 //------------------------------------------
-// PolyDiceGenerator v0.26.11
+// PolyDiceGenerator v0.27.0
 //   A customizable Polyhedral Dice Generator for OpenSCAD.
 //   https://github.com/charmaur/PolyDiceGenerator
-//   Please Support PolyDiceGenerator https://ko-fi.com/charmaur
+//   Please support PolyDiceGenerator https://ko-fi.com/charmaur
 //
 // Requirements
 //   OpenSCAD http://www.openscad.org
 //   The BOSL2 library https://github.com/revarbat/BOSL2
 //
-//   *Note due to recent BOSL2 updates v2.0.402 is currently required. It can be found here:
-//    https://github.com/revarbat/BOSL2/tree/e56f953c1cd8db7e7e198e6d7d49650f133ab92a
-//
-// PolyDiceGenerator and the BOSL2 library
+// PolyDiceGenerator and the included BOSL2 library
 //   are licensed under the BSD 2-Clause License
 //------------------------------------------
 
+echo(pdg_version="0.27.0");
 include <BOSL2/std.scad>
 include <BOSL2/polyhedra.scad>
-echo(pdg_version=[0,26,11]);
-echo(bosl_version=bosl_version());
-assert(bosl_version()==[2,0,402], "BOSL2 v2.0.402 is required.");
-$fa=5;$fs=0.5;
+echo(bosl_version=bosl_version_str());
+bosl_required("2.0.474");
+$fa=$preview ? 5 : 2;
+$fs=$preview ? 0.1 : 0.03;
 
 //------------------------------------------
 // Configuration
@@ -90,7 +88,7 @@ d2_adj_depth=[0,0];
 
 /* [d3 Rounded Triangular Prism] */
 d3_text_size=36;
-d3_text_v_push=32;
+d3_text_v_push=30;
 d3_text_h_push=0;
 d3_text=["1","2","3","1","2","3"];
 d3_symbols=[undef,undef,undef,undef,undef,undef];
@@ -134,6 +132,7 @@ d4c_symbol_v_push=0;
 d4c_symbol_h_push=0;
 d4c_rotate=[0,0,0,0,0,0];
 d4c_pips=[" "," "," "," "," "," "];
+d4c_pip_sides=6; //[0,3,4,5,6,8,10,12]
 d4c_pip_size=20;
 d4c_pip_offset=2.5;
 d4c_pip_symbol_pos=["1","2"," "," ","3","4"];
@@ -181,6 +180,7 @@ d6_underscore_h_push=0;
 d6_bumpers=[false,true,true,false,false,true];
 d6_rotate=[0,0,0,0,0,0];
 d6_pips=[" "," "," "," "," "," "];
+d6_pip_sides=6; //[0,3,4,5,6,8,10,12]
 d6_pip_size=20;
 d6_pip_offset=2.5;
 d6_pip_symbol_pos=["1","3","5","2","4","6"];
@@ -462,14 +462,22 @@ module drawd3(){
     d3_circum_rad=d3_side*sqrt(3)/3;
     
     difference()
-    {
+    {   
         //render prism
-        intersection()
+        up(edge_rounding)
+        minkowski()
         {
-            translate([0,0,d3_circum_rad/2])
-            sphere(r=d3_circum_rad,$fn=96);
-            translate([0,0,0]) rotate([0,0,90])
-            prismoid(size1=[d3_side,d3_side*1.4],size2=[0,d3_side*1.4],h=d3_size);
+            scale((d3_size-2*edge_rounding)/d3_size)
+            {
+                intersection()
+                {
+                    translate([0,0,d3_circum_rad/2])
+                    sphere(r=d3_circum_rad);
+                    translate([0,0,0]) rotate([0,0,90])
+                    prismoid(size1=[d3_side,d3_side*1.4],size2=[0,d3_side*1.4],h=d3_size);
+                }
+            }
+            if(edge_rounding>0) sphere(r=edge_rounding);
         }
         
         //render numbers & symbols
@@ -516,7 +524,7 @@ module drawd4(){
             {
                 regular_polyhedron("tetrahedron",side=d4_side,anchor=BOTTOM);
                 regular_polyhedron("tetrahedron",side=d4_side,anchor=BOTTOM,rotate_children=false,draw=false)
-                if(bumpers[$faceindex]) stroke($face,width=bumper_size,closed=true,$fn=28);
+                if(bumpers[$faceindex]) stroke($face,width=bumper_size,closed=true);
             }
         else if(edge_rounding==0 && corner_rounding>0 || corner_clipping>0)
             //render clipping objects
@@ -564,6 +572,7 @@ module drawd4c(){
     sym_mult=d4c_symbol_size*d4c_size/100;
     sym_stroke=symbol_stroke*sym_mult;
     base_rotate=[180,180,180,180,180,180];
+    d4c_pip_fn=d4c_pip_sides==0 ? 128 : d4c_pip_sides;
     d4c_body_length=d4c_body_length*d4c_size;
     d4c_point_length=d4c_point_length*d4c_size;
     circumsphere_dia=d4c_body_length+d4c_point_length*2;
@@ -621,7 +630,7 @@ module drawd4c(){
             //render pips
             regular_polyhedron("cube",side=d4c_size,anchor=BOTTOM,draw=false)
             zrot(d4c_rotate[$faceindex]+base_rotate[$faceindex])
-            drwapips("d4c",d4c_pips[$faceindex],d4c_adj_depth[$faceindex]);
+            drwapips("d4c",d4c_pips[$faceindex],d4c_adj_depth[$faceindex],d4c_pip_fn);
             
             //render pip symbols
             d4c_pip_symbols=fix_quotes(d4c_pip_symbols);
@@ -717,6 +726,7 @@ module drawd6(){
     space_mult=d6_text_spacing>1 ? (d6_text_spacing-1)*txt_mult/3.15 : d6_text_spacing<1 ? (-1+d6_text_spacing)*txt_mult/2.8 : 0;
     rotate_mod=d6_angle_text ? 45 : 0;
     base_rotate=[0,-90,0,-90,180,90];
+    d6_pip_fn=d6_pip_sides==0 ? 128 : d6_pip_sides;
     circumsphere_dia=d6_size*sqrt(3);
     corner_round_mult=circumsphere_dia-(corner_rounding*circumsphere_dia/100)/1.8;
     dual_mult=d6_size*(3*sqrt(2)/2);
@@ -730,7 +740,7 @@ module drawd6(){
             {
                 regular_polyhedron("cube",side=d6_size,anchor=BOTTOM);
                 regular_polyhedron("cube",side=d6_size,anchor=BOTTOM,rotate_children=false,draw=false)
-                if(bumpers[$faceindex]) stroke($face,width=bumper_size,closed=true,$fn=28);
+                if(bumpers[$faceindex]) stroke($face,width=bumper_size,closed=true);
             }
         else if(edge_rounding==0 && corner_rounding>0 || corner_clipping>0)
             //render clipping objects
@@ -782,7 +792,7 @@ module drawd6(){
         //render pips
         regular_polyhedron("cube",side=d6_size,anchor=BOTTOM,draw=false)
         zrot(d6_rotate[$faceindex]+base_rotate[$faceindex])
-        drwapips("d6",d6_pips[$faceindex],d6_adj_depth[$faceindex]);
+        drwapips("d6",d6_pips[$faceindex],d6_adj_depth[$faceindex],d6_pip_fn);
         
         //render pip symbols
         d6_pip_symbols=fix_quotes(d6_pip_symbols);
@@ -816,7 +826,7 @@ module drawd8(){
             {
                 regular_polyhedron("octahedron",side=d8_side,anchor=BOTTOM);
                 regular_polyhedron("octahedron",side=d8_side,anchor=BOTTOM,rotate_children=false,draw=false)
-                if(bumpers[$faceindex]) stroke($face,width=bumper_size,closed=true,$fn=28);
+                if(bumpers[$faceindex]) stroke($face,width=bumper_size,closed=true);
             }
         else if(edge_rounding==0 && corner_rounding>0 || corner_clipping>0)
             //render clipping objects
@@ -879,7 +889,7 @@ module drawd10(){
     under_mult=d10_underscore_size*d10_size/100;
     space_mult=d10_text_spacing>1 ? (d10_text_spacing-1)*txt_mult/3.15 : d10_text_spacing<1 ? (-1+d10_text_spacing)*txt_mult/2.8 : 0;
     base_rotate=[54.25,306.25,306.25,306.25,306.25,254.25,357.75,177.75,126.25,74.25];
-    d10_sside=0.4857*d10_size-d10_length_mod/d10_size;
+    d10_sside=sqrt(sqrt(5)-2)*d10_size-d10_length_mod/d10_size;
     separation=2*sqr(sin(90/5))*sqrt((sqr(d10_sside)+2*sqr(d10_size)*(cos(180/5)-1))/(cos(180/5)-1)/(cos(180/5)+cos(360/5)));
     circumsphere_dia=separation/sqr(tan(90/5));
     corner_round_mult=circumsphere_dia-(corner_rounding*circumsphere_dia/100)/1.6;
@@ -893,7 +903,7 @@ module drawd10(){
             {
                 regular_polyhedron("trapezohedron",faces=10,side=d10_sside,longside=d10_size,anchor=BOTTOM);
                 regular_polyhedron("trapezohedron",faces=10,side=d10_sside,longside=d10_size,anchor=BOTTOM,rotate_children=false,draw=false)
-                if(bumpers[$faceindex]) stroke($face,width=bumper_size,closed=true,$fn=28);
+                if(bumpers[$faceindex]) stroke($face,width=bumper_size,closed=true);
             }
         else if(edge_rounding==0 && corner_rounding>0 || corner_clipping>0)
             //render clipping objects
@@ -910,13 +920,7 @@ module drawd10(){
             }
         else
             //render trapezohedron 
-            up(edge_rounding)
-            minkowski()
-            {
-                scale((d10_size-2*edge_rounding)/d10_size)
-                regular_polyhedron("trapezohedron",faces=10,side=d10_sside,longside=d10_size,anchor=BOTTOM);
-                if(edge_rounding>0) sphere(r=edge_rounding);
-            }
+            regular_polyhedron("trapezohedron",faces=10,side=d10_sside,longside=d10_size,anchor=BOTTOM,rounding=edge_rounding);
 
         //render numbers & symbols
         regular_polyhedron("trapezohedron",faces=10,side=d10_sside,longside=d10_size,anchor=BOTTOM,draw=false)
@@ -963,7 +967,7 @@ module drawd00(){
     space_mult=d00_text_spacing>1 ? (d00_text_spacing-1)*txt_mult/3.15 : d00_text_spacing<1 ? (-1+d00_text_spacing)*txt_mult/2.8 : 0;
     base_rotate=[54.25,306.25,306.25,306.25,306.25,254.25,357.75,177.75,126.25,74.25];
     rotate_mod=d00_angle_text ? 90 : 0;
-    d00_sside=0.4857*d00_size-d00_length_mod/d00_size;
+    d00_sside=sqrt(sqrt(5)-2)*d00_size-d00_length_mod/d00_size;
     separation=2*sqr(sin(90/5))*sqrt((sqr(d00_sside)+2*sqr(d00_size)*(cos(180/5)-1))/(cos(180/5)-1)/(cos(180/5)+cos(360/5)));
     circumsphere_dia=separation/sqr(tan(90/5));
     corner_round_mult=circumsphere_dia-(corner_rounding*circumsphere_dia/100)/1.6;
@@ -977,7 +981,7 @@ module drawd00(){
             {
                 regular_polyhedron("trapezohedron",faces=10,side=d00_sside,longside=d00_size,anchor=BOTTOM);
                 regular_polyhedron("trapezohedron",faces=10,side=d00_sside,longside=d00_size,anchor=BOTTOM,rotate_children=false,draw=false)
-                if(bumpers[$faceindex]) stroke($face,width=bumper_size,closed=true,$fn=28);
+                if(bumpers[$faceindex]) stroke($face,width=bumper_size,closed=true);
             }
         else if(edge_rounding==0 && corner_rounding>0 || corner_clipping>0)
             //render clipping objects
@@ -993,14 +997,8 @@ module drawd00(){
                     pentagonal_antiprism(corner_clip_mult);
             }
         else
-            //render trapezohedron 
-            up(edge_rounding)
-            minkowski()
-            {
-                scale((d00_size-2*edge_rounding)/d00_size)
-                regular_polyhedron("trapezohedron",faces=10,side=d00_sside,longside=d00_size,anchor=BOTTOM);
-                if(edge_rounding>0) sphere(r=edge_rounding);
-            }
+            //render trapezohedron
+            regular_polyhedron("trapezohedron",faces=10,side=d00_sside,longside=d00_size,anchor=BOTTOM,rounding=edge_rounding);
 
         //render numbers & symbols
         regular_polyhedron("trapezohedron",faces=10,side=d00_sside,longside=d00_size,anchor=BOTTOM,draw=false)
@@ -1060,7 +1058,7 @@ module drawd12(){
             {
                 regular_polyhedron("dodecahedron",ir=d12_size/2,anchor=BOTTOM);
                 regular_polyhedron("dodecahedron",ir=d12_size/2,anchor=BOTTOM,rotate_children=false,draw=false)
-                if(bumpers[$faceindex]) stroke($face,width=bumper_size,closed=true,$fn=28);
+                if(bumpers[$faceindex]) stroke($face,width=bumper_size,closed=true);
             }
         else if(edge_rounding==0 && corner_rounding>0 || corner_clipping>0)
             //render clipping objects
@@ -1135,7 +1133,7 @@ module drawd12r(){
             {
                 regular_polyhedron("rhombic dodecahedron",ir=d12r_size/2,anchor=BOTTOM);
                 regular_polyhedron("rhombic dodecahedron",ir=d12r_size/2,anchor=BOTTOM,rotate_children=false,draw=false)
-                if(bumpers[$faceindex]) stroke($face,width=bumper_size,closed=true,$fn=28);
+                if(bumpers[$faceindex]) stroke($face,width=bumper_size,closed=true);
             }
         else if(edge_rounding==0 && corner_rounding>0 || corner_clipping>0)
             //render clipping objects
@@ -1212,7 +1210,7 @@ module drawd20(){
             {
                 regular_polyhedron("icosahedron",ir=d20_size/2,anchor=BOTTOM);
                 regular_polyhedron("icosahedron",ir=d20_size/2,anchor=BOTTOM,rotate_children=false,draw=false)
-                if(bumpers[$faceindex]) stroke($face,width=bumper_size,closed=true,$fn=28);
+                if(bumpers[$faceindex]) stroke($face,width=bumper_size,closed=true);
             }
         else if(edge_rounding==0 && corner_rounding>0 || corner_clipping>0)
             //render clipping objects
@@ -1264,41 +1262,41 @@ module drawd20(){
     }
 }
 
-module drwapips(die,num,adj_depth){
+module drwapips(die,num,adj_depth,pip_fn){
     pip_mult=die=="d6" ? d6_pip_size*d6_size/100 : d4c_pip_size*d4c_size/100;
     pipr=pip_mult/2;
     pip_offset=die=="d6" ? d6_pip_offset : d4c_pip_offset;
 
     if(num=="1"){
-        down(text_depth+adj_depth) cylinder(r=pipr,h=2*text_depth+adj_depth);
+        down(text_depth+adj_depth) cylinder(r=pipr,h=2*text_depth+adj_depth,$fn=pip_fn);
     }
     if(num=="2"){
         translate([-pipr*pip_offset,pipr*pip_offset,0])
-        down(text_depth+adj_depth) cylinder(r=pipr,h=2*text_depth+adj_depth);
+        down(text_depth+adj_depth) cylinder(r=pipr,h=2*text_depth+adj_depth,$fn=pip_fn);
         translate([pipr*pip_offset,-pipr*pip_offset,0])
-        down(text_depth+adj_depth) cylinder(r=pipr,h=2*text_depth+adj_depth);
+        down(text_depth+adj_depth) cylinder(r=pipr,h=2*text_depth+adj_depth,$fn=pip_fn);
     }
     if(num=="3"){
-        drwapips(die,"1",adj_depth);
-        drwapips(die,"2",adj_depth);
+        drwapips(die,"1",adj_depth,pip_fn);
+        drwapips(die,"2",adj_depth,pip_fn);
     }
     if(num=="4"){
         drwapips(die,"2",adj_depth);
         translate([pipr*pip_offset,pipr*pip_offset,0])
-        down(text_depth+adj_depth) cylinder(r=pipr,h=2*text_depth+adj_depth);
+        down(text_depth+adj_depth) cylinder(r=pipr,h=2*text_depth+adj_depth,$fn=pip_fn);
         translate([-pipr*pip_offset,-pipr*pip_offset,0])
-        down(text_depth+adj_depth) cylinder(r=pipr,h=2*text_depth+adj_depth);
+        down(text_depth+adj_depth) cylinder(r=pipr,h=2*text_depth+adj_depth,$fn=pip_fn);
     }
     if(num=="5" && die=="d6"){
-        drwapips(die,"1",adj_depth);
-        drwapips(die,"4",adj_depth);
+        drwapips(die,"1",adj_depth,pip_fn);
+        drwapips(die,"4",adj_depth,pip_fn);
     }
     if(num=="6" && die=="d6"){
-        drwapips(die,"4",adj_depth);
+        drwapips(die,"4",adj_depth,pip_fn);
         translate([pipr*pip_offset,0,0])
-        down(text_depth+adj_depth) cylinder(r=pipr,h=2*text_depth+adj_depth);
+        down(text_depth+adj_depth) cylinder(r=pipr,h=2*text_depth+adj_depth,$fn=pip_fn);
         translate([-pipr*pip_offset,0,0])
-        down(text_depth+adj_depth) cylinder(r=pipr,h=2*text_depth+adj_depth);
+        down(text_depth+adj_depth) cylinder(r=pipr,h=2*text_depth+adj_depth,$fn=pip_fn);
     }
 }
 

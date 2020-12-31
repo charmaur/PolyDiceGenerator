@@ -4,6 +4,8 @@ include <../std.scad>
 module test_is_vector() {
     assert(is_vector([1,2,3]) == true);
     assert(is_vector([[1,2,3]]) == false);
+    assert(is_vector([[1,2,3,4],[5,6,7,8]]) == false);
+    assert(is_vector([[1,2,3,4],[5,6]]) == false);
     assert(is_vector(["foo"]) == false);
     assert(is_vector([]) == false);
     assert(is_vector(1) == false);
@@ -14,6 +16,14 @@ module test_is_vector() {
     assert(is_vector([0,0,0],zero=false) == false);
     assert(is_vector([0,1,0],zero=true) == false);
     assert(is_vector([0,0,1],zero=false) == true);
+    assert(is_vector([1,1,1],zero=false) == true);
+
+    assert(is_vector([0,0,0],all_nonzero=true) == false);
+    assert(is_vector([0,1,0],all_nonzero=true) == false);
+    assert(is_vector([0,0,1],all_nonzero=true) == false);
+    assert(is_vector([1,1,1],all_nonzero=true) == true);
+    assert(is_vector([-1,1,1],all_nonzero=true) == true);
+    assert(is_vector([-1,-1,-1],all_nonzero=true) == true);
 }
 test_is_vector();
 
@@ -33,8 +43,9 @@ test_vceil();
 
 
 module test_vmul() {
-    assert(vmul([3,4,5], [8,7,6]) == [24,28,30]);
-    assert(vmul([1,2,3], [4,5,6]) == [4,10,18]);
+    assert_equal(vmul([3,4,5], [8,7,6]), [24,28,30]);
+    assert_equal(vmul([1,2,3], [4,5,6]), [4,10,18]);
+    assert_equal(vmul([[1,2,3],[4,5,6],[7,8,9]], [[4,5,6],[3,2,1],[5,9,3]]), [32,28,134]);
 }
 test_vmul();
 

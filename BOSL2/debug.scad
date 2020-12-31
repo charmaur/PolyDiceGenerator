@@ -8,32 +8,30 @@
 //   ```
 //////////////////////////////////////////////////////////////////////
 
-include <skin.scad>
-
 
 // Section: Debugging Paths and Polygons
 
-// Module: trace_polyline()
+// Module: trace_path()
 // Description:
-//   Renders lines between each point of a polyline path.
+//   Renders lines between each point of a path.
 //   Can also optionally show the individual vertex points.
 // Arguments:
-//   pline = The array of points in the polyline.
+//   path = The list of points in the path.
 //   closed = If true, draw the segment from the last vertex to the first.  Default: false
 //   showpts = If true, draw vertices and control points.
 //   N = Mark the first and every Nth vertex after in a different color and shape.
 //   size = Diameter of the lines drawn.
 //   color = Color to draw the lines (but not vertices) in.
 // Example(FlatSpin):
-//   polyline = [for (a=[0:30:210]) 10*[cos(a), sin(a), sin(a)]];
-//   trace_polyline(polyline, showpts=true, size=0.5, color="lightgreen");
-module trace_polyline(pline, closed=false, showpts=false, N=1, size=1, color="yellow") {
-    assert(is_path(pline),"Input pline is not a path");
+//   path = [for (a=[0:30:210]) 10*[cos(a), sin(a), sin(a)]];
+//   trace_path(path, showpts=true, size=0.5, color="lightgreen");
+module trace_path(path, closed=false, showpts=false, N=1, size=1, color="yellow") {
+    assert(is_path(path),"Invalid path argument");
     sides = segs(size/2);
-    pline = closed? close_path(pline) : pline;
+    path = closed? close_path(path) : path;
     if (showpts) {
-        for (i = [0:1:len(pline)-1]) {
-            translate(pline[i]) {
+        for (i = [0:1:len(path)-1]) {
+            translate(path[i]) {
                 if (i%N == 0) {
                     color("blue") sphere(d=size*2.5, $fn=8);
                 } else {
@@ -47,11 +45,11 @@ module trace_polyline(pline, closed=false, showpts=false, N=1, size=1, color="ye
         }
     }
     if (N!=3) {
-        color(color) stroke(path3d(pline), width=size, $fn=8);
+        color(color) stroke(path3d(path), width=size, $fn=8);
     } else {
-        for (i = [0:1:len(pline)-2]) {
+        for (i = [0:1:len(path)-2]) {
             if (N!=3 || (i%N) != 1) {
-                color(color) extrude_from_to(pline[i], pline[i+1]) circle(d=size, $fn=sides);
+                color(color) extrude_from_to(path[i], path[i+1]) circle(d=size, $fn=sides);
             }
         }
     }
@@ -254,11 +252,19 @@ module debug_polyhedron(points, faces, convexity=10, txtsize=1, disabled=false) 
 
 
 // Function: standard_anchors()
+// Usage:
+//   anchs = standard_anchors(<two_d>);
 // Description:
 //   Return the vectors for all standard anchors.
-function standard_anchors() = [
+// Arguments:
+//   two_d = If true, returns only the anchors where the Z component is 0.  Default: false
+function standard_anchors(two_d=false) = [
     for (
-        zv = [TOP, CENTER, BOTTOM],
+        zv = [
+            if (!two_d) TOP,
+            CENTER,
+            if (!two_d) BOTTOM
+        ],
         yv = [FRONT, CENTER, BACK],
         xv = [LEFT, CENTER, RIGHT]
     ) xv+yv+zv
@@ -268,7 +274,7 @@ function standard_anchors() = [
 
 // Module: anchor_arrow()
 // Usage:
-//   anchor_arrow([s], [color], [flag]);
+//   anchor_arrow(<s>, <color>, <flag>);
 // Description:
 //   Show an anchor orientation arrow.
 // Arguments:
@@ -291,6 +297,22 @@ module anchor_arrow(s=10, color=[0.333,0.333,1], flag=true, $tags="anchor-arrow"
             }
         }
     }
+}
+
+
+
+// Module: anchor_arrow2d()
+// Usage:
+//   anchor_arrow2d(<s>, <color>, <flag>);
+// Description:
+//   Show an anchor orientation arrow.
+// Arguments:
+//   s = Length of the arrows.
+//   color = Color of the arrow.
+// Example:
+//   anchor_arrow2d(s=20);
+module anchor_arrow2d(s=15, color=[0.333,0.333,1], $tags="anchor-arrow") {
+    noop() color(color) stroke([[0,0],[0,s]], width=s/10, endcap1="butt", endcap2="arrow2");
 }
 
 
@@ -319,18 +341,28 @@ module show_internal_anchors(opacity=0.2) {
 // Example(FlatSpin):
 //   cube(50, center=true) show_anchors();
 module show_anchors(s=10, std=true, custom=true) {
+    check = assert($parent_geom != undef) 1;
+    two_d = attach_geom_2d($parent_geom);
     if (std) {
-        for (anchor=standard_anchors()) {
-            attach(anchor) anchor_arrow(s);
+        for (anchor=standard_anchors(two_d=two_d)) {
+            if(two_d) {
+                attach(anchor) anchor_arrow2d(s);
+            } else {
+                attach(anchor) anchor_arrow(s);
+            }
         }
     }
     if (custom) {
         for (anchor=select($parent_geom,-1)) {
             attach(anchor[0]) {
-                anchor_arrow(s, color="cyan");
-                recolor("black")
+                if(two_d) {
+                    anchor_arrow2d(s, color="cyan");
+                } else {
+                    anchor_arrow(s, color="cyan");
+                }
+                color("black")
                 noop($tags="anchor-arrow") {
-                    xrot(90) {
+                    xrot(two_d? 0 : 90) {
                         up(s/10) {
                             linear_extrude(height=0.01, convexity=12, center=true) {
                                 text(text=anchor[0], size=s/4, halign="center", valign="center");
@@ -447,6 +479,36 @@ module ruler(length=100, width=undef, thickness=1, depth=3, labels=false, pipsca
     }
 }
 
+
+// Function: mod_indent()
+// Usage:
+//   str = mod_indent(<indent>);
+// Description:
+//   Returns a string that is the total indentation for the module level you are at.
+// Arguments:
+//   indent = The string to indent each level by.  Default: "  " (Two spaces)
+// Example:
+//   x = echo(str(mod_indent(), parent_module(0)));
+function mod_indent(indent="  ") =
+    str_join([for (i=[1:1:$parent_modules-1]) indent]);
+
+
+// Function: mod_trace()
+// Usage:
+//   str = mod_trace(<levs>, <indent>);
+// Description:
+//   Returns a string that shows the current module and its parents, indented for each unprinted parent module.
+// Arguments:
+//   levs = This is the number of levels to print the names of.  Prints the N most nested module names.  Default: 2
+//   indent = The string to indent each level by.  Default: "  " (Two spaces)
+//   modsep = Multiple module names will be separated by this string.  Default: "->"
+// Example:
+//   x = echo(mod_trace());
+function mod_trace(levs=2, indent="  ", modsep="->") =
+    str(
+        str_join([for (i=[1:1:$parent_modules+1-levs]) indent]),
+        str_join([for (i=[min(levs-1,$parent_modules-1):-1:0]) parent_module(i)], modsep)
+    );
 
 
 // vim: expandtab tabstop=4 shiftwidth=4 softtabstop=4 nowrap

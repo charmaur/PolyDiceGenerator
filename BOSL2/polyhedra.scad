@@ -283,7 +283,7 @@ module regular_polyhedron(
     faces=undef,
     facetype=undef,
     hasfaces=undef,
-    side=1,
+    side=undef,
     ir=undef,
     mr=undef,
     or=undef,
@@ -543,7 +543,8 @@ _stellated_polyhedra_ = [
 
 // Function: regular_polyhedron_info()
 //
-// Usage: regular_polyhedron_info(info, ....)
+// Usage:
+//   x = regular_polyhedron_info(info, ....);
 //
 // Description:
 //   Calculate characteristics of regular polyhedra or the selection set for regular_polyhedron().
@@ -590,7 +591,7 @@ function regular_polyhedron_info(
     info=undef, name=undef,
     index=undef, type=undef,
     faces=undef, facetype=undef,
-    hasfaces=undef, side=1,
+    hasfaces=undef, side=undef,
     ir=undef, mr=undef, or=undef,
     r=undef, d=undef,
     anchor=[0,0,0], center=undef,
@@ -601,7 +602,7 @@ function regular_polyhedron_info(
         argcount = num_defined([ir,mr,or,r,d])
     )
     assert(argcount<=1, "You must specify only one of 'ir', 'mr', 'or', 'r', and 'd'")
-    let(
+    let(  
         //////////////////////
         //Index values into the _polyhedra_ array
         //
@@ -652,7 +653,7 @@ function regular_polyhedron_info(
     let(
         entry = (
             name == "trapezohedron"? (
-                trapezohedron(faces=faces, side=side, longside=longside, h=h, r=r)
+                _trapezohedron(faces=faces, side=side, longside=longside, h=h, r=r)
             ) : (
                 _polyhedra_[!is_undef(index)?
                     indexlist[index] :
@@ -663,6 +664,7 @@ function regular_polyhedron_info(
     )
     assert(valid_facedown,str("'facedown' set to ",facedown," but selected polygon only has faces with size(s) ",entry[facevertices]))
     let(
+        side = default(side,1),   // This default setting must occur after _trapezohedron is called
         scalefactor = (
             name=="trapezohedron" ? 1 : (
                 argcount == 0? side :
@@ -671,7 +673,7 @@ function regular_polyhedron_info(
             ) / entry[edgelen]
         ),
         face_triangles = hull(entry[vertices]),
-        faces_normals_vertices = stellate_faces(
+        faces_normals_vertices = _stellate_faces(
             entry[edgelen], stellate, entry[vertices],
             entry[facevertices]==[3]?
                 [face_triangles, [for(face=face_triangles) _facenormal(entry[vertices],face)]] :
@@ -713,11 +715,7 @@ function regular_polyhedron_info(
     assert(false, str("Unknown info type '",info,"' requested"));
 
 
-
-/// hull solution fails due to roundoff
-/// either cross product or just rotate to
-///
-function stellate_faces(scalefactor,stellate,vertices,faces_normals) =
+function _stellate_faces(scalefactor,stellate,vertices,faces_normals) =
     (stellate == false || stellate == 0)? concat(faces_normals,[vertices]) :
     let(
         faces = [for(face=faces_normals[0]) select(face,hull(select(vertices,face)))],
@@ -730,9 +728,10 @@ function stellate_faces(scalefactor,stellate,vertices,faces_normals) =
     ) [newfaces, normals, allpts];
 
 
-function trapezohedron(faces, r, side, longside, h) =
-    assert(faces%2==0, "Number of faces must be even")
+function _trapezohedron(faces, r, side, longside, h, d) =
+    assert(faces%2==0, "Must set 'faces' to an even number for trapezohedron")
     let(
+        r = get_radius(r=r, d=d),
         N = faces/2,
         parmcount = num_defined([r,side,longside,h])
     )

@@ -41,10 +41,10 @@ function hull(points) =
 //   If given a list of 2D points, creates a 2D convex hull polygon that encloses all those points.
 //   If given a list of 3D points, creates a 3D polyhedron that encloses all the points.  This should
 //   handle about 4000 points in slow mode.  If `fast` is set to true, this should be able to handle
-//   far more.
+//   far more.  When fast mode is off, 3d hulls that lie in a plane will produce a single face of a polyhedron, which can be viewed in preview but will not render.  
 // Arguments:
 //   points = The list of points to form a hull around.
-//   fast = If true, uses a faster cheat that may handle more points, but also may emit warnings that can stop your script if you have "Halt on first warning" enabled.  Default: false
+//   fast = If true for 3d case, uses a faster cheat that may handle more points, but also may emit warnings that can stop your script if you have "Halt on first warning" enabled.  Ignored for the 2d case.  Default: false
 // Example(2D):
 //   pts = [[-10,-10], [0,10], [10,10], [12,-10]];
 //   hull_points(pts);
@@ -52,27 +52,26 @@ function hull(points) =
 //   pts = [for (phi = [30:60:150], theta = [0:60:359]) spherical_to_xyz(10, theta, phi)];
 //   hull_points(pts);
 module hull_points(points, fast=false) {
-    if (points) {
-        assert(is_list(points[0]));
-        if (fast) {
-            if (len(points[0]) == 2) {
-                hull() polygon(points=points);
-            } else {
-                extra = len(points)%3;
-                faces = concat(
-                    [[for(i=[0:1:extra+2])i]],
-                    [for(i=[extra+3:3:len(points)-3])[i,i+1,i+2]]
-                );
-                hull() polyhedron(points=points, faces=faces);
-            }
-        } else {
-            perim = hull(points);
-            if (is_num(perim[0])) {
-                polygon(points=points, paths=[perim]);
-            } else {
-                polyhedron(points=points, faces=perim);
-            }
+    assert(is_path(points))
+    assert(len(points)>=3, "Point list must contain 3 points")
+    if (len(points[0])==2)
+       hull() polygon(points=points);
+    else {
+      if (fast) {
+         extra = len(points)%3;
+         faces = [
+                   [for(i=[0:1:extra+2])i], // If vertex count not divisible by 3, combine extras with first 3
+                   for(i=[extra+3:3:len(points)-3])[i,i+1,i+2]
+                 ];
+         hull() polyhedron(points=points, faces=faces);
+      } else {
+        faces = hull(points);
+        if (is_num(faces[0])){
+          if (len(faces)<=2) echo("Hull contains only two points");
+          else polyhedron(points=points, faces=[faces]);
         }
+        else polyhedron(points=points, faces=faces);
+      }
     }
 }
 
@@ -92,7 +91,7 @@ function hull2d_path(points) =
     assert(is_path(points,2),"Invalid input to hull2d_path")
     len(points) < 2 ? []
   : len(points) == 2 ? [0,1]
-  : let(tri=find_noncollinear_points(points, error=false))
+  : let(tri=noncollinear_triple(points, error=false))
     tri == [] ? _hull_collinear(points)
   : let(
         remaining = [ for (i = [0:1:len(points)-1]) if (i != tri[0] && i!=tri[1] && i!=tri[2]) i ],
@@ -170,7 +169,7 @@ function hull3d_faces(points) =
     assert(is_path(points,3),"Invalid input to hull3d_faces")
     len(points) < 3 ? list_range(len(points))
   : let ( // start with a single non-collinear triangle
-          tri = find_noncollinear_points(points, error=false)
+          tri = noncollinear_triple(points, error=false)
         )
     tri==[] ? _hull_collinear(points)
   : let(
@@ -236,7 +235,7 @@ function _hull3d_iterative(points, triangles, planes, remaining, _i=0) =
 
 
 function _remove_internal_edges(halfedges) = [
-    for (h = halfedges)
+    for (h = halfedges)  
         if (!in_list(reverse(h), halfedges))
             h
 ];
@@ -250,7 +249,7 @@ function _find_conflicts(point, planes) = [
 
 
 function _find_first_noncoplanar(plane, points, i) = 
-    (i >= len(points) || !coplanar(plane, points[i]))? i :
+    (i >= len(points) || !points_on_plane([points[i]],plane))? i :
     _find_first_noncoplanar(plane, points, i+1);
 
 
