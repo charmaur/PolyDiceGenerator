@@ -2,6 +2,12 @@
 
 A customizable **Polyhedral Dice Generator** for OpenSCAD.
 
+## PolyDiceGenerator v0.27.1
+
+- Tweaked arc generation values to improve render times
+- Updated included BOSL2 library to 2.0.525
+- BOSL2 update fixed d10/d00 rounding scale/alignmet bug
+
 ## PolyDiceGenerator v0.27.0
 
 - Fixed number rotate bug when resizing d10/d00

@@ -16,12 +16,9 @@
 //   implemented it from scratch from the descriptions and equations on Wikipedia
 //   and the web, using Mathematica for calculations and testing, and I now
 //   release it into the public domain.
-//   .
-//   To use, add the following line to the beginning of your file:
-//   ```
+// Includes:
 //   include <BOSL2/std.scad>
 //   include <BOSL2/involute_gears.scad>
-//   ```
 //////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -1211,7 +1208,7 @@ module worm(
 // Example: Multiple Starts
 //   worm_gear(pitch=5, teeth=36, worm_diam=30, worm_starts=4);
 // Example: Metric Worm Gear
-//   worm_gear(mod=25, teeth=32, worm_diam=30, worm_starts=1);
+//   worm_gear(mod=2, teeth=32, worm_diam=30, worm_starts=1);
 // Example: Called as Function
 //   vnf = worm_gear(pitch=8, teeth=30, worm_diam=30, worm_starts=1);
 //   vnf_polyhedron(vnf);

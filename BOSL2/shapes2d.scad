@@ -1,10 +1,8 @@
 //////////////////////////////////////////////////////////////////////
 // LibFile: shapes2d.scad
 //   Common useful 2D shapes.
-//   To use, add the following lines to the beginning of your file:
-//   ```
+// Includes:
 //   include <BOSL2/std.scad>
-//   ```
 //////////////////////////////////////////////////////////////////////
 
 
@@ -383,6 +381,7 @@ function arc(N, r, angle, d, cp, points, width, thickness, start, wedge=false, l
     assert(is_bool(endpoint))
     !endpoint ? assert(!wedge, "endpoint cannot be false if wedge is true")
                slice(arc(N,r,angle,d,cp,points,width,thickness,start,wedge,long,cw,ccw,true),0,-2) :
+    assert(is_undef(N) || is_integer(N), "Number of points must be an integer")
     // First try for 2D arc specified by width and thickness
     is_def(width) && is_def(thickness)? (
                 assert(!any_defined([r,cp,points]) && !any([cw,ccw,long]),"Conflicting or invalid parameters to arc")
@@ -1321,21 +1320,22 @@ module teardrop2d(r, d, ang=45, cap_h, anchor=CENTER, spin=0)
 function teardrop2d(r, d, ang=45, cap_h, anchor=CENTER, spin=0) =
     let(
         r = get_radius(r=r, d=d, dflt=1),
-        cord = 2 * r * cos(ang),
-        cord_h = r * sin(ang),
-        tip_y = (cord/2)/tan(ang),
-        cap_h = min((!is_undef(cap_h)? cap_h : tip_y+cord_h), tip_y+cord_h),
-        cap_w = cord * (1 - (cap_h - cord_h)/tip_y),
-        ang = min(ang,asin(cap_h/r)),
-        sa = 180 - ang,
-        ea = 360 + ang,
+        tanpt = polar_to_xy(r, ang),
+        tip_y = adj_ang_to_hyp(r, 90-ang),
+        cap_h = min(default(cap_h,tip_y), tip_y),
+        cap_w = tanpt.y >= cap_h
+          ? hyp_opp_to_adj(r, cap_h)
+          : adj_ang_to_opp(tip_y-cap_h, ang),
+        ang2 = min(ang,atan2(cap_h,cap_w)),
+        sa = 180 - ang2,
+        ea = 360 + ang2,
         steps = segs(r)*(ea-sa)/360,
         step = (ea-sa)/steps,
         path = deduplicate(
             [
-                [ cap_w/2,cap_h],
+                [ cap_w,cap_h],
                 for (i=[0:1:steps]) let(a=ea-i*step) r*[cos(a),sin(a)],
-                [-cap_w/2,cap_h]
+                [-cap_w,cap_h]
             ], closed=true
         ),
         maxx_idx = max_index(subindex(path,0)),
@@ -1588,6 +1588,68 @@ module supershape(step=0.5,m1=4,m2=undef,n1,n2=undef,n3=undef,a=1,b=undef, r=und
         children();
     }
 }
+
+
+// Function&Module: reuleaux_polygon()
+// Usage: As Module
+//   reuleaux_polygon(N, r|d);
+// Usage: As Function
+//   path = reuleaux_polygon(N, r|d);
+// Description:
+//   Creates a 2D Reuleaux Polygon; a constant width shape that is not circular.
+// Arguments:
+//   N = Number of "sides" to the Reuleaux Polygon.  Must be an odd positive number.  Default: 3
+//   r = Radius of the shape.  Scale shape to fit in a circle of radius r.
+//   d = Diameter of the shape.  Scale shape to fit in a circle of diameter d.
+//   anchor = Translate so anchor point is at origin (0,0,0).  See [anchor](attachments.scad#anchor).  Default: `CENTER`
+//   spin = Rotate this many degrees around the Z axis after anchor.  See [spin](attachments.scad#spin).  Default: `0`
+// Extra Anchors:
+//   "tip0", "tip1", etc. = Each tip has an anchor, pointing outwards.
+// Examples(2D):
+//   reuleaux_polygon(N=3, r=50);
+//   reuleaux_polygon(N=5, d=100);
+// Examples(2D): Standard vector anchors are based on extents
+//   reuleaux_polygon(N=3, d=50) show_anchors(custom=false);
+// Examples(2D): Named anchors exist for the tips
+//   reuleaux_polygon(N=3, d=50) show_anchors(std=false);
+module reuleaux_polygon(N=3, r, d, anchor=CENTER, spin=0) {
+    assert(N>=3 && (N%2)==1);
+    r = get_radius(r=r, d=d, dflt=1);
+    path = reuleaux_polygon(N=N, r=r);
+    anchors = [
+        for (i = [0:1:N-1]) let(
+            ca = 360 - i * 360/N,
+            cp = polar_to_xy(r, ca)
+        ) anchorpt(str("tip",i), cp, unit(cp,BACK), 0),
+    ];
+    attachable(anchor,spin, two_d=true, path=path, anchors=anchors) {
+        polygon(path);
+        children();
+    }
+}
+
+
+function reuleaux_polygon(N=3, r, d, anchor=CENTER, spin=0) =
+    assert(N>=3 && (N%2)==1)
+    let(
+        r = get_radius(r=r, d=d, dflt=1),
+        ssegs = max(3,ceil(segs(r)/N)),
+        slen = norm(polar_to_xy(r,0)-polar_to_xy(r,180-180/N)),
+        path = [
+            for (i = [0:1:N-1]) let(
+                ca = 180 - (i+0.5) * 360/N,
+                sa = ca + 180 + (90/N),
+                ea = ca + 180 - (90/N),
+                cp = polar_to_xy(r, ca)
+            ) each arc(N=ssegs, r=slen, cp=cp, angle=[sa,ea], endpoint=false)
+        ],
+        anchors = [
+            for (i = [0:1:N-1]) let(
+                ca = 360 - i * 360/N,
+                cp = polar_to_xy(r, ca)
+            ) anchorpt(str("tip",i), cp, unit(cp,BACK), 0),
+        ]
+    ) reorient(anchor,spin, two_d=true, path=path, anchors=anchors, p=path);
 
 
 // Section: 2D Masking Shapes

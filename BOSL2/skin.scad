@@ -1,13 +1,11 @@
 //////////////////////////////////////////////////////////////////////
 // LibFile: skin.scad
 //   Functions to skin arbitrary 2D profiles/paths in 3-space.
-//   To use, add the following line to the beginning of your file:
-//   ```
-//   include <BOSL2/std.scad>
-//   include <BOSL2/skin.scad>
-//   ```
 //   Inspired by list-comprehension-demos skin():
 //   - https://github.com/openscad/list-comprehension-demos/blob/master/skin.scad
+// Includes:
+//   include <BOSL2/std.scad>
+//   include <BOSL2/skin.scad>
 //////////////////////////////////////////////////////////////////////
 
 
@@ -399,8 +397,10 @@ function skin(profiles, slices, refine=1, method="direct", sampling, caps, close
   assert(!closed || !caps, "Cannot make closed shape with caps")
   let(
     profile_dim=array_dim(profiles,2),
+    profiles_zcheck = (profile_dim != 2) || (profile_dim==2 && is_list(z) && len(z)==len(profiles)), 
     profiles_ok = (profile_dim==2 && is_list(z) && len(z)==len(profiles)) || profile_dim==3
   )
+  assert(profiles_zcheck, "z parameter is invalid or has the wrong length.")
   assert(profiles_ok,"Profiles must all be 3d or must all be 2d, with matching length z parameter.")
   assert(is_undef(z) || profile_dim==2, "Do not specify z with 3d profiles")
   assert(profile_dim==3 || len(z)==len(profiles),"Length of z does not match length of profiles.")

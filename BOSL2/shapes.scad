@@ -1,10 +1,8 @@
 //////////////////////////////////////////////////////////////////////
 // LibFile: shapes.scad
 //   Common useful shapes and structured objects.
-//   To use, add the following lines to the beginning of your file:
-//   ```
+// Includes:
 //   include <BOSL2/std.scad>
-//   ```
 //////////////////////////////////////////////////////////////////////
 
 
@@ -185,7 +183,8 @@ module cuboid(
                             // Add multi-edge corners.
                             if (trimcorners) {
                                 for (za=[-1,1], ya=[-1,1], xa=[-1,1]) {
-                                    if (corner_edge_count(edges, [xa,ya,za]) > 1) {
+                                    ce = corner_edges(edges, [xa,ya,za]);
+                                    if (ce.x + ce.y > 1) {
                                         translate(vmul([xa,ya,za]/2, size+[ach-0.01,ach-0.01,-ach])) {
                                             cube([ach+0.01,ach+0.01,ach], center=true);
                                         }
@@ -270,7 +269,8 @@ module cuboid(
                             // Add multi-edge corners.
                             if (trimcorners) {
                                 for (za=[-1,1], ya=[-1,1], xa=[-1,1]) {
-                                    if (corner_edge_count(edges, [xa,ya,za]) > 1) {
+                                    ce = corner_edges(edges, [xa,ya,za]);
+                                    if (ce.x + ce.y > 1) {
                                         translate(vmul([xa,ya,za]/2, size+[ard-0.01,ard-0.01,-ard])) {
                                             cube([ard+0.01,ard+0.01,ard], center=true);
                                         }
@@ -487,6 +487,166 @@ function prismoid(
     ) reorient(anchor,spin,orient, size=[s1.x,s1.y,h], size2=s2, shift=shift, p=vnf);
 
 
+// Module: rect_tube()
+// Usage:
+//   rect_tube(size, wall, h, [center]);
+//   rect_tube(isize, wall, h, [center]);
+//   rect_tube(size, isize, h, [center]);
+//   rect_tube(size1, size2, wall, h, [center]);
+//   rect_tube(isize1, isize2, wall, h, [center]);
+//   rect_tube(size1, size2, isize1, isize2, h, [center]);
+// Description:
+//   Creates a rectangular or prismoid tube with optional roundovers and/or chamfers.
+//   You can only round or chamfer the vertical(ish) edges.  For those edges, you can
+//   specify rounding and/or chamferring per-edge, and for top and bottom, inside and
+//   outside  separately.
+//   Note: if using chamfers or rounding, you **must** also include the hull.scad file:
+//   ```
+//   include <BOSL2/hull.scad>
+//   ```
+// Arguments:
+//   size = The outer [X,Y] size of the rectangular tube.
+//   isize = The inner [X,Y] size of the rectangular tube.
+//   h|l = The height or length of the rectangular tube.  Default: 1
+//   wall = The thickness of the rectangular tube wall.
+//   size1 = The [X,Y] side of the outside of the bottom of the rectangular tube.
+//   size2 = The [X,Y] side of the outside of the top of the rectangular tube.
+//   isize1 = The [X,Y] side of the inside of the bottom of the rectangular tube.
+//   isize2 = The [X,Y] side of the inside of the top of the rectangular tube.
+//   rounding = The roundover radius for the outside edges of the rectangular tube.
+//   rounding1 = The roundover radius for the outside bottom corner of the rectangular tube.
+//   rounding2 = The roundover radius for the outside top corner of the rectangular tube.
+//   chamfer = The chamfer size for the outside edges of the rectangular tube.
+//   chamfer1 = The chamfer size for the outside bottom corner of the rectangular tube.
+//   chamfer2 = The chamfer size for the outside top corner of the rectangular tube.
+//   irounding = The roundover radius for the inside edges of the rectangular tube. Default: Same as `rounding`
+//   irounding1 = The roundover radius for the inside bottom corner of the rectangular tube.
+//   irounding2 = The roundover radius for the inside top corner of the rectangular tube.
+//   ichamfer = The chamfer size for the inside edges of the rectangular tube.  Default: Same as `chamfer`
+//   ichamfer1 = The chamfer size for the inside bottom corner of the rectangular tube.
+//   ichamfer2 = The chamfer size for the inside top corner of the rectangular tube.
+//   anchor = Translate so anchor point is at origin (0,0,0).  See [anchor](attachments.scad#anchor).  Default: `BOTTOM`
+//   spin = Rotate this many degrees around the Z axis after anchor.  See [spin](attachments.scad#spin).  Default: `0`
+//   orient = Vector to rotate top towards, after spin.  See [orient](attachments.scad#orient).  Default: `UP`
+// Examples:
+//   rect_tube(size=50, wall=5, h=30);
+//   rect_tube(size=[100,60], wall=5, h=30);
+//   rect_tube(isize=[60,80], wall=5, h=30);
+//   rect_tube(size=[100,60], isize=[90,50], h=30);
+//   rect_tube(size1=[100,60], size2=[70,40], wall=5, h=30);
+//   rect_tube(size1=[100,60], size2=[70,40], isize1=[40,20], isize2=[65,35], h=15);
+// Example: Outer Rounding Only
+//   include <BOSL2/hull.scad>
+//   rect_tube(size=100, wall=5, rounding=10, irounding=0, h=30);
+// Example: Outer Chamfer Only
+//   include <BOSL2/hull.scad>
+//   rect_tube(size=100, wall=5, chamfer=5, ichamfer=0, h=30);
+// Example: Outer Rounding, Inner Chamfer
+//   include <BOSL2/hull.scad>
+//   rect_tube(size=100, wall=5, rounding=10, ichamfer=8, h=30);
+// Example: Inner Rounding, Outer Chamfer
+//   include <BOSL2/hull.scad>
+//   rect_tube(size=100, wall=5, chamfer=10, irounding=8, h=30);
+// Example: Gradiant Rounding
+//   include <BOSL2/hull.scad>
+//   rect_tube(size1=100, size2=80, wall=5, rounding1=10, rounding2=0, irounding1=8, irounding2=0, h=30);
+// Example: Per Corner Rounding
+//   include <BOSL2/hull.scad>
+//   rect_tube(size=100, wall=10, rounding=[0,5,10,15], irounding=0, h=30);
+// Example: Per Corner Chamfer
+//   include <BOSL2/hull.scad>
+//   rect_tube(size=100, wall=10, chamfer=[0,5,10,15], ichamfer=0, h=30);
+// Example: Mixing Chamfer and Rounding
+//   include <BOSL2/hull.scad>
+//   rect_tube(size=100, wall=10, chamfer=[0,5,0,10], ichamfer=0, rounding=[5,0,10,0], irounding=0, h=30);
+// Example: Really Mixing It Up
+//   include <BOSL2/hull.scad>
+//   rect_tube(
+//       size1=[100,80], size2=[80,60],
+//       isize1=[50,30], isize2=[70,50], h=20,
+//       chamfer1=[0,5,0,10], ichamfer1=[0,3,0,8],
+//       chamfer2=[5,0,10,0], ichamfer2=[3,0,8,0],
+//       rounding1=[5,0,10,0], irounding1=[3,0,8,0],
+//       rounding2=[0,5,0,10], irounding2=[0,3,0,8]
+//   );
+module rect_tube(
+    size, isize,
+    h, shift=[0,0], wall,
+    size1, size2,
+    isize1, isize2,
+    rounding=0, rounding1, rounding2,
+    irounding=0, irounding1, irounding2,
+    chamfer=0, chamfer1, chamfer2,
+    ichamfer=0, ichamfer1, ichamfer2,
+    anchor, spin=0, orient=UP,
+    center, l
+) {
+    h = first_defined([h,l,1]);
+    assert(is_num(h), "l or h argument required.");
+    assert(is_vector(shift,2));
+    s1 = is_num(size1)? [size1, size1] :
+        is_vector(size1,2)? size1 :
+        is_num(size)? [size, size] :
+        is_vector(size,2)? size :
+        undef;
+    s2 = is_num(size2)? [size2, size2] :
+        is_vector(size2,2)? size2 :
+        is_num(size)? [size, size] :
+        is_vector(size,2)? size :
+        undef;
+    is1 = is_num(isize1)? [isize1, isize1] :
+        is_vector(isize1,2)? isize1 :
+        is_num(isize)? [isize, isize] :
+        is_vector(isize,2)? isize :
+        undef;
+    is2 = is_num(isize2)? [isize2, isize2] :
+        is_vector(isize2,2)? isize2 :
+        is_num(isize)? [isize, isize] :
+        is_vector(isize,2)? isize :
+        undef;
+    size1 = is_def(s1)? s1 :
+        (is_def(wall) && is_def(is1))? (is1+2*[wall,wall]) :
+        undef;
+    size2 = is_def(s2)? s2 :
+        (is_def(wall) && is_def(is2))? (is2+2*[wall,wall]) :
+        undef;
+    isize1 = is_def(is1)? is1 :
+        (is_def(wall) && is_def(s1))? (s1-2*[wall,wall]) :
+        undef;
+    isize2 = is_def(is2)? is2 :
+        (is_def(wall) && is_def(s2))? (s2-2*[wall,wall]) :
+        undef;
+    assert(wall==undef || is_num(wall));
+    assert(size1!=undef, "Bad size/size1 argument.");
+    assert(size2!=undef, "Bad size/size2 argument.");
+    assert(isize1!=undef, "Bad isize/isize1 argument.");
+    assert(isize2!=undef, "Bad isize/isize2 argument.");
+    assert(isize1.x < size1.x, "Inner size is larger than outer size.");
+    assert(isize1.y < size1.y, "Inner size is larger than outer size.");
+    assert(isize2.x < size2.x, "Inner size is larger than outer size.");
+    assert(isize2.y < size2.y, "Inner size is larger than outer size.");
+    anchor = get_anchor(anchor, center, BOT, BOT);
+    attachable(anchor,spin,orient, size=[each size1, h], size2=size2, shift=shift) {
+        diff("_H_o_L_e_")
+        prismoid(
+            size1, size2, h=h, shift=shift,
+            rounding=rounding, rounding1=rounding1, rounding2=rounding2,
+            chamfer=chamfer, chamfer1=chamfer1, chamfer2=chamfer2,
+            anchor=CTR
+        ) {
+            children();
+            tags("_H_o_L_e_") prismoid(
+                isize1, isize2, h=h+0.05, shift=shift,
+                rounding=irounding, rounding1=irounding1, rounding2=irounding2,
+                chamfer=ichamfer, chamfer1=ichamfer1, chamfer2=ichamfer2,
+                anchor=CTR
+            );
+        }
+        children();
+    }
+}
+
+
 // Module: right_triangle()
 //
 // Usage:
@@ -633,23 +793,25 @@ module cyl(
     circum=false, realign=false, from_end=false,
     center, anchor, spin=0, orient=UP
 ) {
-    r1 = get_radius(r1=r1, r=r, d1=d1, d=d, dflt=1);
-    r2 = get_radius(r1=r2, r=r, d1=d2, d=d, dflt=1);
     l = first_defined([l, h, 1]);
-    sides = segs(max(r1,r2));
+    _r1 = get_radius(r1=r1, r=r, d1=d1, d=d, dflt=1);
+    _r2 = get_radius(r1=r2, r=r, d1=d2, d=d, dflt=1);
+    sides = segs(max(_r1,_r2));
     sc = circum? 1/cos(180/sides) : 1;
+    r1=_r1*sc;
+    r2=_r2*sc;
     phi = atan2(l, r2-r1);
     anchor = get_anchor(anchor,center,BOT,CENTER);
     attachable(anchor,spin,orient, r1=r1, r2=r2, l=l) {
         zrot(realign? 180/sides : 0) {
             if (!any_defined([chamfer, chamfer1, chamfer2, rounding, rounding1, rounding2])) {
-                cylinder(h=l, r1=r1*sc, r2=r2*sc, center=true, $fn=sides);
+                cylinder(h=l, r1=r1, r2=r2, center=true, $fn=sides);
             } else {
                 vang = atan2(l, r1-r2)/2;
                 chang1 = 90-first_defined([chamfang1, chamfang, vang]);
                 chang2 = 90-first_defined([chamfang2, chamfang, 90-vang]);
-                cham1 = first_defined([chamfer1, chamfer]) * (from_end? 1 : tan(chang1));
-                cham2 = first_defined([chamfer2, chamfer]) * (from_end? 1 : tan(chang2));
+                cham1 = u_mul(first_defined([chamfer1, chamfer]) , (from_end? 1 : tan(chang1)));
+                cham2 = u_mul(first_defined([chamfer2, chamfer]) , (from_end? 1 : tan(chang2)));
                 fil1 = first_defined([rounding1, rounding]);
                 fil2 = first_defined([rounding2, rounding]);
                 if (chamfer != undef) {
@@ -859,7 +1021,7 @@ module zcyl(l=undef, r=undef, d=undef, r1=undef, r2=undef, d1=undef, d2=undef, h
 //   tube(h|l, ir1|id1, ir2|id2, or1|od1, or2|od2, [realign]);
 //
 // Arguments:
-//   h|l = height of tube. (Default: 1)
+//   h / l = height of tube. (Default: 1)
 //   or = Outer radius of tube.
 //   or1 = Outer radius of bottom of tube.  (Default: value of r)
 //   or2 = Outer radius of top of tube.  (Default: value of r)
@@ -930,166 +1092,6 @@ module tube(
                 cyl(h=h, r1=r1, r2=r2, $fn=sides) children();
                 cyl(h=h+0.05, r1=ir1, r2=ir2);
             }
-        }
-        children();
-    }
-}
-
-
-// Module: rect_tube()
-// Usage:
-//   rect_tube(size, wall, h, [center]);
-//   rect_tube(isize, wall, h, [center]);
-//   rect_tube(size, isize, h, [center]);
-//   rect_tube(size1, size2, wall, h, [center]);
-//   rect_tube(isize1, isize2, wall, h, [center]);
-//   rect_tube(size1, size2, isize1, isize2, h, [center]);
-// Description:
-//   Creates a rectangular or prismoid tube with optional roundovers and/or chamfers.
-//   You can only round or chamfer the vertical(ish) edges.  For those edges, you can
-//   specify rounding and/or chamferring per-edge, and for top and bottom, inside and
-//   outside  separately.
-//   Note: if using chamfers or rounding, you **must** also include the hull.scad file:
-//   ```
-//   include <BOSL2/hull.scad>
-//   ```
-// Arguments:
-//   size = The outer [X,Y] size of the rectangular tube.
-//   isize = The inner [X,Y] size of the rectangular tube.
-//   h|l = The height or length of the rectangular tube.  Default: 1
-//   wall = The thickness of the rectangular tube wall.
-//   size1 = The [X,Y] side of the outside of the bottom of the rectangular tube.
-//   size2 = The [X,Y] side of the outside of the top of the rectangular tube.
-//   isize1 = The [X,Y] side of the inside of the bottom of the rectangular tube.
-//   isize2 = The [X,Y] side of the inside of the top of the rectangular tube.
-//   rounding = The roundover radius for the outside edges of the rectangular tube.
-//   rounding1 = The roundover radius for the outside bottom corner of the rectangular tube.
-//   rounding2 = The roundover radius for the outside top corner of the rectangular tube.
-//   chamfer = The chamfer size for the outside edges of the rectangular tube.
-//   chamfer1 = The chamfer size for the outside bottom corner of the rectangular tube.
-//   chamfer2 = The chamfer size for the outside top corner of the rectangular tube.
-//   irounding = The roundover radius for the inside edges of the rectangular tube. Default: Same as `rounding`
-//   irounding1 = The roundover radius for the inside bottom corner of the rectangular tube.
-//   irounding2 = The roundover radius for the inside top corner of the rectangular tube.
-//   ichamfer = The chamfer size for the inside edges of the rectangular tube.  Default: Same as `chamfer`
-//   ichamfer1 = The chamfer size for the inside bottom corner of the rectangular tube.
-//   ichamfer2 = The chamfer size for the inside top corner of the rectangular tube.
-//   anchor = Translate so anchor point is at origin (0,0,0).  See [anchor](attachments.scad#anchor).  Default: `BOTTOM`
-//   spin = Rotate this many degrees around the Z axis after anchor.  See [spin](attachments.scad#spin).  Default: `0`
-//   orient = Vector to rotate top towards, after spin.  See [orient](attachments.scad#orient).  Default: `UP`
-// Examples:
-//   rect_tube(size=50, wall=5, h=30);
-//   rect_tube(size=[100,60], wall=5, h=30);
-//   rect_tube(isize=[60,80], wall=5, h=30);
-//   rect_tube(size=[100,60], isize=[90,50], h=30);
-//   rect_tube(size1=[100,60], size2=[70,40], wall=5, h=30);
-//   rect_tube(size1=[100,60], size2=[70,40], isize1=[40,20], isize2=[65,35], h=15);
-// Example: Outer Rounding Only
-//   include <BOSL2/hull.scad>
-//   rect_tube(size=100, wall=5, rounding=10, irounding=0, h=30);
-// Example: Outer Chamfer Only
-//   include <BOSL2/hull.scad>
-//   rect_tube(size=100, wall=5, chamfer=5, ichamfer=0, h=30);
-// Example: Outer Rounding, Inner Chamfer
-//   include <BOSL2/hull.scad>
-//   rect_tube(size=100, wall=5, rounding=10, ichamfer=8, h=30);
-// Example: Inner Rounding, Outer Chamfer
-//   include <BOSL2/hull.scad>
-//   rect_tube(size=100, wall=5, chamfer=10, irounding=8, h=30);
-// Example: Gradiant Rounding
-//   include <BOSL2/hull.scad>
-//   rect_tube(size1=100, size2=80, wall=5, rounding1=10, rounding2=0, irounding1=8, irounding2=0, h=30);
-// Example: Per Corner Rounding
-//   include <BOSL2/hull.scad>
-//   rect_tube(size=100, wall=10, rounding=[0,5,10,15], irounding=0, h=30);
-// Example: Per Corner Chamfer
-//   include <BOSL2/hull.scad>
-//   rect_tube(size=100, wall=10, chamfer=[0,5,10,15], ichamfer=0, h=30);
-// Example: Mixing Chamfer and Rounding
-//   include <BOSL2/hull.scad>
-//   rect_tube(size=100, wall=10, chamfer=[0,5,0,10], ichamfer=0, rounding=[5,0,10,0], irounding=0, h=30);
-// Example: Really Mixing It Up
-//   include <BOSL2/hull.scad>
-//   rect_tube(
-//       size1=[100,80], size2=[80,60],
-//       isize1=[50,30], isize2=[70,50], h=20,
-//       chamfer1=[0,5,0,10], ichamfer1=[0,3,0,8],
-//       chamfer2=[5,0,10,0], ichamfer2=[3,0,8,0],
-//       rounding1=[5,0,10,0], irounding1=[3,0,8,0],
-//       rounding2=[0,5,0,10], irounding2=[0,3,0,8]
-//   );
-module rect_tube(
-    size, isize,
-    h, shift=[0,0], wall,
-    size1, size2,
-    isize1, isize2,
-    rounding=0, rounding1, rounding2,
-    irounding=0, irounding1, irounding2,
-    chamfer=0, chamfer1, chamfer2,
-    ichamfer=0, ichamfer1, ichamfer2,
-    anchor, spin=0, orient=UP,
-    center, l
-) {
-    h = first_defined([h,l,1]);
-    assert(is_num(h), "l or h argument required.");
-    assert(is_vector(shift,2));
-    s1 = is_num(size1)? [size1, size1] :
-        is_vector(size1,2)? size1 :
-        is_num(size)? [size, size] :
-        is_vector(size,2)? size :
-        undef;
-    s2 = is_num(size2)? [size2, size2] :
-        is_vector(size2,2)? size2 :
-        is_num(size)? [size, size] :
-        is_vector(size,2)? size :
-        undef;
-    is1 = is_num(isize1)? [isize1, isize1] :
-        is_vector(isize1,2)? isize1 :
-        is_num(isize)? [isize, isize] :
-        is_vector(isize,2)? isize :
-        undef;
-    is2 = is_num(isize2)? [isize2, isize2] :
-        is_vector(isize2,2)? isize2 :
-        is_num(isize)? [isize, isize] :
-        is_vector(isize,2)? isize :
-        undef;
-    size1 = is_def(s1)? s1 :
-        (is_def(wall) && is_def(is1))? (is1+2*[wall,wall]) :
-        undef;
-    size2 = is_def(s2)? s2 :
-        (is_def(wall) && is_def(is2))? (is2+2*[wall,wall]) :
-        undef;
-    isize1 = is_def(is1)? is1 :
-        (is_def(wall) && is_def(s1))? (s1-2*[wall,wall]) :
-        undef;
-    isize2 = is_def(is2)? is2 :
-        (is_def(wall) && is_def(s2))? (s2-2*[wall,wall]) :
-        undef;
-    assert(wall==undef || is_num(wall));
-    assert(size1!=undef, "Bad size/size1 argument.");
-    assert(size2!=undef, "Bad size/size2 argument.");
-    assert(isize1!=undef, "Bad isize/isize1 argument.");
-    assert(isize2!=undef, "Bad isize/isize2 argument.");
-    assert(isize1.x < size1.x, "Inner size is larger than outer size.");
-    assert(isize1.y < size1.y, "Inner size is larger than outer size.");
-    assert(isize2.x < size2.x, "Inner size is larger than outer size.");
-    assert(isize2.y < size2.y, "Inner size is larger than outer size.");
-    anchor = get_anchor(anchor, center, BOT, BOT);
-    attachable(anchor,spin,orient, size=[each size1, h], size2=size2, shift=shift) {
-        diff("_H_o_L_e_")
-        prismoid(
-            size1, size2, h=h, shift=shift,
-            rounding=rounding, rounding1=rounding1, rounding2=rounding2,
-            chamfer=chamfer, chamfer1=chamfer1, chamfer2=chamfer2,
-            anchor=CTR
-        ) {
-            children();
-            tags("_H_o_L_e_") prismoid(
-                isize1, isize2, h=h+0.05, shift=shift,
-                rounding=irounding, rounding1=irounding1, rounding2=irounding2,
-                chamfer=ichamfer, chamfer1=ichamfer1, chamfer2=ichamfer2,
-                anchor=CTR
-            );
         }
         children();
     }
@@ -1689,112 +1691,118 @@ module arced_slot(
 }
 
 
-// Module: heightfield()
-// Usage:
-//   heightfield(heightfield, [size], [bottom]);
+// Function&Module: heightfield()
+// Usage: As Module
+//   heightfield(data, <size>, <bottom>, <maxz>, <xrange>, <yrange>, <style>, <convexity>);
+// Usage: As Function
+//   vnf = heightfield(data, <size>, <bottom>, <maxz>, <xrange>, <yrange>, <style>);
 // Description:
-//   Given a regular rectangular 2D grid of scalar values, generates a 3D surface where the height at
-//   any given point is the scalar value for that position.
+//   Given a regular rectangular 2D grid of scalar values, or a function literal, generates a 3D
+//   surface where the height at any given point is the scalar value for that position.
 // Arguments:
-//   heightfield = The 2D rectangular array of heights.
-//   size = The [X,Y] size of the surface to create.  If given as a scalar, use it for both X and Y sizes.
-//   bottom = The Z coordinate for the bottom of the heightfield object to create.  Must be less than the minimum heightfield value.  Default: 0
-//   convexity = Max number of times a line could intersect a wall of the surface being formed.
+//   data = This is either the 2D rectangular array of heights, or a function literal that takes X and Y arguments.
+//   size = The [X,Y] size of the surface to create.  If given as a scalar, use it for both X and Y sizes. Default: `[100,100]`
+//   bottom = The Z coordinate for the bottom of the heightfield object to create.  Any heights lower than this will be truncated to very slightly above this height.  Default: -20
+//   maxz = The maximum height to model.  Truncates anything taller to this height.  Default: 99
+//   xrange = A range of values to iterate X over when calculating a surface from a function literal.  Default: [-1 : 0.01 : 1]
+//   yrange = A range of values to iterate Y over when calculating a surface from a function literal.  Default: [-1 : 0.01 : 1]
+//   style = The style of subdividing the quads into faces.  Valid options are "default", "alt", and "quincunx".  Default: "default"
+//   convexity = Max number of times a line could intersect a wall of the surface being formed. Module only.  Default: 10
+//   anchor = Translate so anchor point is at origin (0,0,0).  See [anchor](attachments.scad#anchor).  Default: `CENTER`
+//   spin = Rotate this many degrees around the Z axis.  See [spin](attachments.scad#spin).  Default: `0`
+//   orient = Vector to rotate top towards.  See [orient](attachments.scad#orient).  Default: `UP`
 // Example:
-//   heightfield(size=[100,100], bottom=-20, heightfield=[
-//       for (x=[-180:4:180]) [for(y=[-180:4:180]) 10*cos(3*norm([x,y]))]
+//   heightfield(size=[100,100], bottom=-20, data=[
+//       for (y=[-180:4:180]) [for(x=[-180:4:180]) 10*cos(3*norm([x,y]))]
 //   ]);
 // Example:
 //   intersection() {
-//       heightfield(size=[100,100], heightfield=[
-//           for (x=[-180:5:180]) [for(y=[-180:5:180]) 10+5*cos(3*x)*sin(3*y)]
+//       heightfield(size=[100,100], data=[
+//           for (y=[-180:5:180]) [for(x=[-180:5:180]) 10+5*cos(3*x)*sin(3*y)]
 //       ]);
 //       cylinder(h=50,d=100);
 //   }
-module heightfield(heightfield, size=[100,100], bottom=0, convexity=10)
+// Example(NORENDER): Heightfield by Function
+//   fn = function (x,y) 10*sin(x*360)*cos(y*360);
+//   heightfield(size=[100,100], data=fn);
+// Example(NORENDER): Heightfield by Function, with Specific Ranges
+//   fn = function (x,y) 2*cos(5*norm([x,y]));
+//   heightfield(size=[100,100], bottom=-20, data=fn, xrange=[-180:2:180], yrange=[-180:2:180]);
+module heightfield(data, size=[100,100], xrange=[-1:0.04:1], yrange=[-1:0.04:1], bottom=-20, maxz=100, style="default", convexity=10, anchor=CENTER, spin=0, orient=UP)
 {
     size = is_num(size)? [size,size] : point2d(size);
-    dim = array_dim(heightfield);
-    assert(dim.x!=undef);
-    assert(dim.y!=undef);
-    assert(bottom<min(flatten(heightfield)), "bottom must be less than the minimum heightfield value.");
-    spacing = vdiv(size,dim-[1,1]);
-    vertices = concat(
-        [
-            for (i=[0:1:dim.x-1], j=[0:1:dim.y-1]) let(
-                pos = [i*spacing.x-size.x/2, j*spacing.y-size.y/2, heightfield[i][j]]
-            ) pos
-        ], [
-            for (i=[0:1:dim.x-1]) let(
-                pos = [i*spacing.x-size.x/2, -size.y/2, bottom]
-            ) pos
-        ], [
-            for (i=[0:1:dim.x-1]) let(
-                pos = [i*spacing.x-size.x/2, size.y/2, bottom]
-            ) pos
-        ], [
-            for (j=[0:1:dim.y-1]) let(
-                pos = [-size.x/2, j*spacing.y-size.y/2, bottom]
-            ) pos
-        ], [
-            for (j=[0:1:dim.y-1]) let(
-                pos = [size.x/2, j*spacing.y-size.y/2, bottom]
-            ) pos
-        ]
-    );
-    faces = concat(
-        [
-            for (i=[0:1:dim.x-2], j=[0:1:dim.y-2]) let(
-                idx1 = (i+0)*dim.y + j+0,
-                idx2 = (i+0)*dim.y + j+1,
-                idx3 = (i+1)*dim.y + j+0,
-                idx4 = (i+1)*dim.y + j+1
-            ) each [[idx1, idx2, idx4], [idx1, idx4, idx3]]
-        ], [
-            for (i=[0:1:dim.x-2]) let(
-                idx1 = dim.x*dim.y,
-                idx2 = dim.x*dim.y+dim.x+i,
-                idx3 = idx2+1
-            ) [idx1,idx3,idx2]
-        ], [
-            for (i=[0:1:dim.y-2]) let(
-                idx1 = dim.x*dim.y,
-                idx2 = dim.x*dim.y+dim.x*2+dim.y+i,
-                idx3 = idx2+1
-            ) [idx1,idx2,idx3]
-        ], [
-            for (i=[0:1:dim.x-2]) let(
-                idx1 = (i+0)*dim.y+0,
-                idx2 = (i+1)*dim.y+0,
-                idx3 = dim.x*dim.y+i,
-                idx4 = idx3+1
-            ) each [[idx1, idx2, idx4], [idx1, idx4, idx3]]
-        ], [
-            for (i=[0:1:dim.x-2]) let(
-                idx1 = (i+0)*dim.y+dim.y-1,
-                idx2 = (i+1)*dim.y+dim.y-1,
-                idx3 = dim.x*dim.y+dim.x+i,
-                idx4 = idx3+1
-            ) each [[idx1, idx4, idx2], [idx1, idx3, idx4]]
-        ], [
-            for (j=[0:1:dim.y-2]) let(
-                idx1 = j,
-                idx2 = j+1,
-                idx3 = dim.x*dim.y+dim.x*2+j,
-                idx4 = idx3+1
-            ) each [[idx1, idx4, idx2], [idx1, idx3, idx4]]
-        ], [
-            for (j=[0:1:dim.y-2]) let(
-                idx1 = (dim.x-1)*dim.y+j,
-                idx2 = idx1+1,
-                idx3 = dim.x*dim.y+dim.x*2+dim.y+j,
-                idx4 = idx3+1
-            ) each [[idx1, idx2, idx4], [idx1, idx4, idx3]]
-        ]
-    );
-    polyhedron(points=vertices, faces=faces, convexity=convexity);
+    vnf = heightfield(data=data, size=size, xrange=xrange, yrange=yrange, bottom=bottom, maxz=maxz, style=style);
+    attachable(anchor,spin,orient, vnf=vnf) {
+        vnf_polyhedron(vnf, convexity=convexity);
+        children();
+    }
 }
 
+
+function heightfield(data, size=[100,100], xrange=[-1:0.04:1], yrange=[-1:0.04:1], bottom=-20, maxz=100, style="default", anchor=CENTER, spin=0, orient=UP) =
+    assert(is_list(data) || is_function(data))
+    let(
+        size = is_num(size)? [size,size] : point2d(size),
+        xvals = is_list(data)
+          ? [for (i=idx(data[0])) i]
+          : assert(is_list(xrange)||is_range(xrange)) [for (x=xrange) x],
+        yvals = is_list(data)
+          ? [for (i=idx(data)) i]
+          : assert(is_list(yrange)||is_range(yrange)) [for (y=yrange) y],
+        xcnt = len(xvals),
+        minx = min(xvals),
+        maxx = max(xvals),
+        ycnt = len(yvals),
+        miny = min(yvals),
+        maxy = max(yvals),
+        verts = is_list(data) ? [
+                for (y = [0:1:ycnt-1]) [
+                    for (x = [0:1:xcnt-1]) [
+                        size.x * (x/(xcnt-1)-0.5),
+                        size.y * (y/(ycnt-1)-0.5),
+                        data[y][x]
+                    ]
+                ]
+            ] : [
+                for (y = yrange) [
+                    for (x = xrange) let(
+                        z = data(x,y)
+                    ) [
+                        size.x * ((x-minx)/(maxx-minx)-0.5),
+                        size.y * ((y-miny)/(maxy-miny)-0.5),
+                        min(maxz, max(bottom+0.1, default(z,0)))
+                    ]
+                ]
+            ],
+        vnf = vnf_merge([
+            vnf_vertex_array(verts, style=style, reverse=true),
+            vnf_vertex_array([
+                verts[0],
+                [for (v=verts[0]) [v.x, v.y, bottom]],
+            ]),
+            vnf_vertex_array([
+                [for (v=verts[ycnt-1]) [v.x, v.y, bottom]],
+                verts[ycnt-1],
+            ]),
+            vnf_vertex_array([
+                [for (r=verts) let(v=r[0]) [v.x, v.y, bottom]],
+                [for (r=verts) let(v=r[0]) v],
+            ]),
+            vnf_vertex_array([
+                [for (r=verts) let(v=r[xcnt-1]) v],
+                [for (r=verts) let(v=r[xcnt-1]) [v.x, v.y, bottom]],
+            ]),
+            vnf_vertex_array([
+                [
+                    for (v=verts[0]) [v.x, v.y, bottom],
+                    for (r=verts) let(v=r[xcnt-1]) [v.x, v.y, bottom],
+                ], [
+                    for (r=verts) let(v=r[0]) [v.x, v.y, bottom],
+                    for (v=verts[ycnt-1]) [v.x, v.y, bottom],
+                ]
+            ])
+        ])
+    ) reorient(anchor,spin,orient, vnf=vnf, p=vnf);
 
 
 // vim: expandtab tabstop=4 shiftwidth=4 softtabstop=4 nowrap

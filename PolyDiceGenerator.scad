@@ -1,24 +1,25 @@
 //------------------------------------------
-// PolyDiceGenerator v0.27.0
+// PolyDiceGenerator v0.27.1
 //   A customizable Polyhedral Dice Generator for OpenSCAD.
 //   https://github.com/charmaur/PolyDiceGenerator
 //   Please support PolyDiceGenerator https://ko-fi.com/charmaur
 //
 // Requirements
 //   OpenSCAD http://www.openscad.org
-//   The BOSL2 library https://github.com/revarbat/BOSL2
+//   BOSL2 library https://github.com/revarbat/BOSL2
+//      included with PolyDiceGenerator
 //
 // PolyDiceGenerator and the included BOSL2 library
 //   are licensed under the BSD 2-Clause License
 //------------------------------------------
 
-echo(pdg_version="0.27.0");
+echo(pdg_version="0.27.1");
 include <BOSL2/std.scad>
 include <BOSL2/polyhedra.scad>
 echo(bosl_version=bosl_version_str());
-bosl_required("2.0.474");
+bosl_required("2.0.525");
 $fa=$preview ? 5 : 2;
-$fs=$preview ? 0.1 : 0.03;
+$fs=$preview ? 0.5 : 0.2;
 
 //------------------------------------------
 // Configuration

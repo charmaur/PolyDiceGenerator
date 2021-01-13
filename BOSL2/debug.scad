@@ -1,11 +1,8 @@
 //////////////////////////////////////////////////////////////////////
 // LibFile: debug.scad
 //   Helpers to make debugging OpenScad code easier.
-//   To use, add the following lines to the beginning of your file:
-//   ```
+// Includes:
 //   include <BOSL2/std.scad>
-//   include <BOSL2/debug.scad>
-//   ```
 //////////////////////////////////////////////////////////////////////
 
 
@@ -509,6 +506,30 @@ function mod_trace(levs=2, indent="  ", modsep="->") =
         str_join([for (i=[1:1:$parent_modules+1-levs]) indent]),
         str_join([for (i=[min(levs-1,$parent_modules-1):-1:0]) parent_module(i)], modsep)
     );
+
+
+// Function&Module: echo_matrix()
+// Usage:
+//    echo_matrix(M, [description], [sig], [eps]);
+//    dummy = echo_matrix(M, [description], [sig], [eps]),
+// Description:
+//    Display a numerical matrix in a readable columnar format with `sig` significant
+//    digits.  Values smaller than eps display as zero.  If you give a description
+//    it is displayed at the top.  
+function echo_matrix(M,description,sig=4,eps=1e-9) =
+  let(
+      horiz_line = chr(8213),
+      matstr = matrix_strings(M,sig=sig,eps=eps),
+      separator = str_join(repeat(horiz_line,10)),
+      dummy=echo(str(separator,"  ",is_def(description) ? description : ""))
+            [for(row=matstr) echo(row)]
+  )
+  echo(separator);
+
+module echo_matrix(M,description,sig=4,eps=1e-9)
+{
+  dummy = echo_matrix(M,description,sig,eps);
+}
 
 
 // vim: expandtab tabstop=4 shiftwidth=4 softtabstop=4 nowrap
