@@ -2,6 +2,10 @@
 
 A customizable **Polyhedral Dice Generator** for OpenSCAD.
 
+## PolyDiceGenerator v0.27.2
+
+- Fixed d4c/d4p render issues with OpenSCAD 2021.01
+
 ## PolyDiceGenerator v0.27.1
 
 - Tweaked arc generation values to improve render times

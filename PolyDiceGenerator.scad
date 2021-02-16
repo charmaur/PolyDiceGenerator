@@ -1,5 +1,5 @@
 //------------------------------------------
-// PolyDiceGenerator v0.27.1
+// PolyDiceGenerator v0.27.2
 //   A customizable Polyhedral Dice Generator for OpenSCAD.
 //   https://github.com/charmaur/PolyDiceGenerator
 //   Please support PolyDiceGenerator https://ko-fi.com/charmaur
@@ -13,7 +13,7 @@
 //   are licensed under the BSD 2-Clause License
 //------------------------------------------
 
-echo(pdg_version="0.27.1");
+echo(pdg_version="0.27.2");
 include <BOSL2/std.scad>
 include <BOSL2/polyhedra.scad>
 echo(bosl_version=bosl_version_str());
@@ -580,7 +580,7 @@ module drawd4c(){
     corner_round_mult=circumsphere_dia-(corner_rounding*circumsphere_dia/100)/1.9;
     corner_clip_mult=circumsphere_dia-(corner_clipping*circumsphere_dia/100)/1.9;
     
-    intersection()
+    union()
     {
         //render clipping objects
         if(edge_rounding==0 && corner_rounding>0)
@@ -666,7 +666,7 @@ module drawd4p(){
     translate([0,0,d4p_up_length])
     rotate([180-d4p_face_angle,0,0])
     
-    intersection()
+    union()
     {
         //render clipping objects
         if(edge_rounding==0 && corner_rounding>0)
