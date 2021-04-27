@@ -68,6 +68,13 @@ Text, numbers, underscores, and symbols are added to dice by creating lists of v
   - Bracket enclosed `[]` non-quoted numbers seperated by commas `,`.
   - The values entered here will be added to the die's existing `d(n)_text_h_push` value.
 
+- **Adjust Spacing** - A list for altering the spacing between double digit elements. In this example the spacing between the `1` and `2` in the number `12` of the `d12` will be increased by `0.2`.
+
+  ***Example:*** `d12_adj_spacing=[0,0,0,0,0,0,0,0,0,0,0.2,0];`
+  - Bracket enclosed `[]` non-quoted numbers seperated by commas `,`.
+  - The values entered here are added to the die's existing `d(n)_text_spacing` value.
+  - Only avaliable where double digits are likely to occur.
+
 - **Adjust Depth** - A list for altering the depth of individual elements. In this example the number `5` will be extruded by an assitional `0.5`mm.
 
   ***Example:*** `d6_adj_depth=[0,0,0.5,0,0,0];`

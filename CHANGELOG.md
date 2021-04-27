@@ -2,6 +2,11 @@
 
 A customizable **Polyhedral Dice Generator** for OpenSCAD.
 
+## PolyDiceGenerator v0.27.3
+
+- Fixed d4c/d4p corner rounding/clipping bug
+- Added per-die spacing adjustment for double digit numbers
+
 ## PolyDiceGenerator v0.27.2
 
 - Fixed d4c/d4p render issues with OpenSCAD 2021.01
@@ -46,7 +51,7 @@ A customizable **Polyhedral Dice Generator** for OpenSCAD.
 
 ## PolyDiceGenerator v0.26.5
 
-- Added per-die size adjustment of each individual text element
+- Added per-die size adjustment for each individual text element
 - Removed pre-built distributions for simplification
 - DiceLab distribution values can be found in Hidden variables section
 - Variable names have changed, existing Customizer presets will be affected

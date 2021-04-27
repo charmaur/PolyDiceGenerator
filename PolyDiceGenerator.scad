@@ -1,5 +1,5 @@
 //------------------------------------------
-// PolyDiceGenerator v0.27.2
+// PolyDiceGenerator v0.27.3
 //   A customizable Polyhedral Dice Generator for OpenSCAD.
 //   https://github.com/charmaur/PolyDiceGenerator
 //   Please support PolyDiceGenerator https://ko-fi.com/charmaur
@@ -13,7 +13,7 @@
 //   are licensed under the BSD 2-Clause License
 //------------------------------------------
 
-echo(pdg_version="0.27.2");
+echo(pdg_version="0.27.3");
 include <BOSL2/std.scad>
 include <BOSL2/polyhedra.scad>
 echo(bosl_version=bosl_version_str());
@@ -232,9 +232,10 @@ d10_underscore_v_push=-17;
 d10_underscore_h_push=0;
 d10_bumpers=[true,true,true,true,true,false,false,false,false,false];
 d10_rotate=[0,0,0,0,0,0,0,0,0,0];
-d10_adj_v_push=[0,0,0,0,0,0,0,0,0,0];
 d10_adj_size=[0,0,0,0,0,0,0,0,0,0];
+d10_adj_v_push=[0,0,0,0,0,0,0,0,0,0];
 d10_adj_h_push=[0,0,0,0,0,0,0,0,0,0];
+d10_adj_spacing=[0,0,0,0,0,0,0,0,0,0];
 d10_adj_depth=[0,0,0,0,0,0,0,0,0,0];
 
 /* [d00 Trapezohedron] */
@@ -258,6 +259,7 @@ d00_rotate=[0,0,0,0,0,0,0,0,0,0];
 d00_adj_size=[0,0,0,0,0,0,0,0,0,0];
 d00_adj_v_push=[0,0,0,0,0,0,0,0,0,0];
 d00_adj_h_push=[0,0,0,0,0,0,0,0,0,0];
+d00_adj_spacing=[0,0,0,0,0,0,0,0,0,0];
 d00_adj_depth=[0,0,0,0,0,0,0,0,0,0];
 
 /* [d12 Dodecahedron] */
@@ -280,6 +282,7 @@ d12_rotate=[0,0,0,0,0,0,0,0,0,0,0,0];
 d12_adj_size=[0,0,0,0,0,0,0,0,0,0,0,0];
 d12_adj_v_push=[0,0,0,0,0,0,0,0,0,0,0,0];
 d12_adj_h_push=[0,0,0,0,0,0,0,0,0,0,0,0];
+d12_adj_spacing=[0,0,0,0,0,0,0,0,0,0,0,0];
 d12_adj_depth=[0,0,0,0,0,0,0,0,0,0,0,0];
 
 /* [d12r Rhombic Dodecahedron] */
@@ -302,6 +305,7 @@ d12r_rotate=[0,0,0,0,0,0,0,0,0,0,0,0];
 d12r_adj_size=[0,0,0,0,0,0,0,0,0,0,0,0];
 d12r_adj_v_push=[0,0,0,0,0,0,0,0,0,0,0,0];
 d12r_adj_h_push=[0,0,0,0,0,0,0,0,0,0,0,0];
+d12r_adj_spacing=[0,0,0,0,0,0,0,0,0,0,0,0];
 d12r_adj_depth=[0,0,0,0,0,0,0,0,0,0,0,0];
 
 /* [d20 Icosahedron] */
@@ -324,6 +328,7 @@ d20_rotate=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 d20_adj_size=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 d20_adj_v_push=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 d20_adj_h_push=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+d20_adj_spacing=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 d20_adj_depth=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 
 /* [Please Support PolyDiceGenerator] */
@@ -527,7 +532,7 @@ module drawd4(){
                 regular_polyhedron("tetrahedron",side=d4_side,anchor=BOTTOM,rotate_children=false,draw=false)
                 if(bumpers[$faceindex]) stroke($face,width=bumper_size,closed=true);
             }
-        else if(edge_rounding==0 && corner_rounding>0 || corner_clipping>0)
+        else if(edge_rounding==0 && (corner_rounding>0 || corner_clipping>0))
             //render clipping objects
             intersection()
             {
@@ -580,18 +585,20 @@ module drawd4c(){
     corner_round_mult=circumsphere_dia-(corner_rounding*circumsphere_dia/100)/1.9;
     corner_clip_mult=circumsphere_dia-(corner_clipping*circumsphere_dia/100)/1.9;
     
-    union()
+    difference()
     {
-        //render clipping objects
-        if(edge_rounding==0 && corner_rounding>0)
-            translate([0,0,d4c_size/2])
-            sphere(d=corner_round_mult);
-        else if(edge_rounding==0 && corner_clipping>0)
-            translate([0,0,d4c_size/2])
-            cube(corner_clip_mult,center=true);
-        
-        difference()
+        intersection()
         {
+            //render clipping objects
+            if(edge_rounding==0 && (corner_rounding>0 || corner_clipping>0)) {
+                if(corner_rounding>0)
+                    translate([0,0,d4c_size/2])
+                    sphere(d=corner_round_mult);
+                else if(corner_clipping>0)
+                    translate([0,0,d4c_size/2])
+                    cube(corner_clip_mult,center=true);
+            }
+            
             //render cube 
             up(edge_rounding)
             minkowski()
@@ -609,36 +616,36 @@ module drawd4c(){
                 }
                 if(edge_rounding>0) sphere(r=edge_rounding);
             }
-            
-            //render numbers & symbols
-            regular_polyhedron("cube",side=d4c_size,anchor=BOTTOM,draw=false)
-            zrot(d4c_rotate[$faceindex]+base_rotate[$faceindex])
-            down(text_depth+d4c_adj_depth[$faceindex])
-            linear_extrude(height=2*text_depth+d4c_adj_depth[$faceindex])
-            move(x=(d4c_text_h_push+d4c_adj_h_push[$faceindex])*d4c_size/100,y=(d4c_text_v_push+d4c_adj_v_push[$faceindex])*d4c_size/100)
-            if(is_list(txt_merged[$faceindex])) //a symbol
-                move(x=d4c_symbol_h_push*d4c_size/100,y=d4c_symbol_v_push*d4c_size/100)
-                offset(delta=sym_stroke)
-                text(txt_merged[$faceindex][0],size=sym_mult,font=sym_font,halign="center",valign="center");
-            else if(txt_merged[$faceindex]=="4") //a number 4
-                right(d4c_num_4_h_push*d4c_size/100)
-                offset(delta=txt_stroke)
-                text(txt_merged[$faceindex],size=txt_mult+adj_txt[$faceindex],font=txt_font,halign="center",valign="center");
-            else //a number thats's not 4
-                offset(delta=txt_stroke)
-                text(txt_merged[$faceindex],size=txt_mult+adj_txt[$faceindex],font=txt_font,halign="center",valign="center");
-            
-            //render pips
-            regular_polyhedron("cube",side=d4c_size,anchor=BOTTOM,draw=false)
-            zrot(d4c_rotate[$faceindex]+base_rotate[$faceindex])
-            drwapips("d4c",d4c_pips[$faceindex],d4c_adj_depth[$faceindex],d4c_pip_fn);
-            
-            //render pip symbols
-            d4c_pip_symbols=fix_quotes(d4c_pip_symbols);
-            regular_polyhedron("cube",side=d4c_size,anchor=BOTTOM,draw=false)
-            zrot(d4c_rotate[$faceindex]+base_rotate[$faceindex])
-            drwapipsymbols("d4c",d4c_pip_symbol_pos[$faceindex],d4c_pip_symbols[$faceindex],d4c_pip_symbol_rotate[$faceindex],d4c_adj_depth[$faceindex]);
         }
+        
+        //render numbers & symbols
+        regular_polyhedron("cube",side=d4c_size,anchor=BOTTOM,draw=false)
+        zrot(d4c_rotate[$faceindex]+base_rotate[$faceindex])
+        down(text_depth+d4c_adj_depth[$faceindex])
+        linear_extrude(height=2*text_depth+d4c_adj_depth[$faceindex])
+        move(x=(d4c_text_h_push+d4c_adj_h_push[$faceindex])*d4c_size/100,y=(d4c_text_v_push+d4c_adj_v_push[$faceindex])*d4c_size/100)
+        if(is_list(txt_merged[$faceindex])) //a symbol
+            move(x=d4c_symbol_h_push*d4c_size/100,y=d4c_symbol_v_push*d4c_size/100)
+            offset(delta=sym_stroke)
+            text(txt_merged[$faceindex][0],size=sym_mult,font=sym_font,halign="center",valign="center");
+        else if(txt_merged[$faceindex]=="4") //a number 4
+            right(d4c_num_4_h_push*d4c_size/100)
+            offset(delta=txt_stroke)
+            text(txt_merged[$faceindex],size=txt_mult+adj_txt[$faceindex],font=txt_font,halign="center",valign="center");
+        else //a number thats's not 4
+            offset(delta=txt_stroke)
+            text(txt_merged[$faceindex],size=txt_mult+adj_txt[$faceindex],font=txt_font,halign="center",valign="center");
+        
+        //render pips
+        regular_polyhedron("cube",side=d4c_size,anchor=BOTTOM,draw=false)
+        zrot(d4c_rotate[$faceindex]+base_rotate[$faceindex])
+        drwapips("d4c",d4c_pips[$faceindex],d4c_adj_depth[$faceindex],d4c_pip_fn);
+        
+        //render pip symbols
+        d4c_pip_symbols=fix_quotes(d4c_pip_symbols);
+        regular_polyhedron("cube",side=d4c_size,anchor=BOTTOM,draw=false)
+        zrot(d4c_rotate[$faceindex]+base_rotate[$faceindex])
+        drwapipsymbols("d4c",d4c_pip_symbol_pos[$faceindex],d4c_pip_symbols[$faceindex],d4c_pip_symbol_rotate[$faceindex],d4c_adj_depth[$faceindex]);
     }
 }
 
@@ -666,20 +673,22 @@ module drawd4p(){
     translate([0,0,d4p_up_length])
     rotate([180-d4p_face_angle,0,0])
     
-    union()
+    difference()
     {
-        //render clipping objects
-        if(edge_rounding==0 && corner_rounding>0)
-            translate([0,0,d4p_body_length/2+d4p_base_length/2-d4p_base_length])
-            sphere(d=corner_round_mult);
-        else if(edge_rounding==0 && corner_clipping>0)
-            rotate([0,0,45])
-            translate([0,0,d4p_body_length/2+d4p_base_length/2-d4p_base_length])
-            cuboid([diag_clip_mult,diag_clip_mult,corner_clip_mult]);
-
-        difference()
+        intersection()
         {
-            //render prismoid 
+            //render clipping objects
+            if(edge_rounding==0 && (corner_rounding>0 || corner_clipping>0)) {
+                if(corner_rounding>0)
+                    translate([0,0,d4p_body_length/2+d4p_base_length/2-d4p_base_length])
+                    sphere(d=corner_round_mult);
+                else if(corner_clipping>0)
+                    rotate([0,0,45])
+                    translate([0,0,d4p_body_length/2+d4p_base_length/2-d4p_base_length])
+                    cuboid([diag_clip_mult,diag_clip_mult,corner_clip_mult]);
+            }
+
+            //render prismoid
             minkowski()
             {
                 scale((d4p_size-2*edge_rounding)/d4p_size)
@@ -689,29 +698,28 @@ module drawd4p(){
                 }
                 if(edge_rounding>0) sphere(r=edge_rounding);
             }
-            up(edge_rounding)
-            
-            //render numbers & symbols
-            for(i=[0:3])
-                rotate([90,0,0]) rotate([0,90*i,0])  
-                translate([d4p_size/2,0,0])
-                rotate([0,90,90-d4p_face_angle])
-                move(x=(d4p_text_h_push+d4p_adj_h_push[i])*d4p_size/100,y=(d4p_text_v_push+d4p_adj_v_push[i])*d4p_size/100)
-                zrot(d4p_rotate[i]+base_rotate[i])
-                down(text_depth+d4p_adj_depth[i])
-                linear_extrude(height=2*text_depth+d4p_adj_depth[i])
-                if(is_list(txt_merged[i])) //a symbol
-                    move(x=d4p_symbol_h_push*d4p_size/100,y=d4p_symbol_v_push*d4p_size/100)
-                    offset(delta=sym_stroke)
-                    text(txt_merged[i][0],size=sym_mult,font=sym_font,halign="center",valign="center");
-                else if(txt_merged[i]=="4") //a number 4
-                    right(d4p_num_4_h_push*d4p_size/100)
-                    offset(delta=txt_stroke)
-                    text(txt_merged[i],size=txt_mult+adj_txt[i],font=txt_font,halign="center",valign="center");
-                else //a number thats's not 4
-                    offset(delta=txt_stroke)
-                    text(txt_merged[i],size=txt_mult+adj_txt[i],font=txt_font,halign="center",valign="center");
         }
+            
+        //render numbers & symbols
+        for(i=[0:3])
+            rotate([90,0,0]) rotate([0,90*i,0])  
+            translate([d4p_size/2,0,0])
+            rotate([0,90,90-d4p_face_angle])
+            move(x=(d4p_text_h_push+d4p_adj_h_push[i])*d4p_size/100,y=(d4p_text_v_push+d4p_adj_v_push[i])*d4p_size/100)
+            zrot(d4p_rotate[i]+base_rotate[i])
+            down(text_depth+d4p_adj_depth[i])
+            linear_extrude(height=2*text_depth+d4p_adj_depth[i])
+            if(is_list(txt_merged[i])) //a symbol
+                move(x=d4p_symbol_h_push*d4p_size/100,y=d4p_symbol_v_push*d4p_size/100)
+                offset(delta=sym_stroke)
+                text(txt_merged[i][0],size=sym_mult,font=sym_font,halign="center",valign="center");
+            else if(txt_merged[i]=="4") //a number 4
+                right(d4p_num_4_h_push*d4p_size/100)
+                offset(delta=txt_stroke)
+                text(txt_merged[i],size=txt_mult+adj_txt[i],font=txt_font,halign="center",valign="center");
+            else //a number thats's not 4
+                offset(delta=txt_stroke)
+                text(txt_merged[i],size=txt_mult+adj_txt[i],font=txt_font,halign="center",valign="center");
     }
 }
 
@@ -743,7 +751,7 @@ module drawd6(){
                 regular_polyhedron("cube",side=d6_size,anchor=BOTTOM,rotate_children=false,draw=false)
                 if(bumpers[$faceindex]) stroke($face,width=bumper_size,closed=true);
             }
-        else if(edge_rounding==0 && corner_rounding>0 || corner_clipping>0)
+        else if(edge_rounding==0 && (corner_rounding>0 || corner_clipping>0))
             //render clipping objects
             intersection()
             {
@@ -829,7 +837,7 @@ module drawd8(){
                 regular_polyhedron("octahedron",side=d8_side,anchor=BOTTOM,rotate_children=false,draw=false)
                 if(bumpers[$faceindex]) stroke($face,width=bumper_size,closed=true);
             }
-        else if(edge_rounding==0 && corner_rounding>0 || corner_clipping>0)
+        else if(edge_rounding==0 && (corner_rounding>0 || corner_clipping>0))
             //render clipping objects
             intersection()
             {
@@ -906,7 +914,7 @@ module drawd10(){
                 regular_polyhedron("trapezohedron",faces=10,side=d10_sside,longside=d10_size,anchor=BOTTOM,rotate_children=false,draw=false)
                 if(bumpers[$faceindex]) stroke($face,width=bumper_size,closed=true);
             }
-        else if(edge_rounding==0 && corner_rounding>0 || corner_clipping>0)
+        else if(edge_rounding==0 && (corner_rounding>0 || corner_clipping>0))
             //render clipping objects
             intersection()
             {
@@ -984,7 +992,7 @@ module drawd00(){
                 regular_polyhedron("trapezohedron",faces=10,side=d00_sside,longside=d00_size,anchor=BOTTOM,rotate_children=false,draw=false)
                 if(bumpers[$faceindex]) stroke($face,width=bumper_size,closed=true);
             }
-        else if(edge_rounding==0 && corner_rounding>0 || corner_clipping>0)
+        else if(edge_rounding==0 && (corner_rounding>0 || corner_clipping>0))
             //render clipping objects
             intersection()
             {
@@ -1025,12 +1033,12 @@ module drawd00(){
                     text(txt_merged[$faceindex][0],size=txt_mult+adj_txt[$faceindex],font=txt_font,halign="center",valign="center");
                     right(txt_mult*d00_0_padding/100)
                     offset(delta=txt_stroke)
-                    text(txt_merged[$faceindex][1],size=txt_mult*d00_0_size/100,font=txt_font,halign="center",valign="center");
+                    text(txt_merged[$faceindex][1],size=txt_mult*d00_0_size/100,font=txt_font,spacing=d00_text_spacing-d00_adj_spacing[$faceindex],halign="center",valign="center");
                 }
             } else {
                 right(space_mult)
                 offset(delta=txt_stroke)
-                text(txt_merged[$faceindex],size=txt_mult+adj_txt[$faceindex],font=txt_font,spacing=d00_text_spacing,halign="center",valign="center");
+                text(txt_merged[$faceindex],size=txt_mult+adj_txt[$faceindex],font=txt_font,spacing=d00_text_spacing+d00_adj_spacing[$faceindex],halign="center",valign="center");
             }
     }
 }
@@ -1061,7 +1069,7 @@ module drawd12(){
                 regular_polyhedron("dodecahedron",ir=d12_size/2,anchor=BOTTOM,rotate_children=false,draw=false)
                 if(bumpers[$faceindex]) stroke($face,width=bumper_size,closed=true);
             }
-        else if(edge_rounding==0 && corner_rounding>0 || corner_clipping>0)
+        else if(edge_rounding==0 && (corner_rounding>0 || corner_clipping>0))
             //render clipping objects
             intersection()
             {
@@ -1098,7 +1106,7 @@ module drawd12(){
         else //a double digit number
             right(space_mult)
             offset(delta=txt_stroke)
-            text(txt_merged[$faceindex],size=txt_mult+adj_txt[$faceindex],font=txt_font,spacing=d12_text_spacing,halign="center",valign="center");
+            text(txt_merged[$faceindex],size=txt_mult+adj_txt[$faceindex],font=txt_font,spacing=d12_text_spacing+d12_adj_spacing[$faceindex],halign="center",valign="center");
         
         //render underscore
         regular_polyhedron("dodecahedron",ir=d12_size/2,anchor=BOTTOM,draw=false)
@@ -1136,7 +1144,7 @@ module drawd12r(){
                 regular_polyhedron("rhombic dodecahedron",ir=d12r_size/2,anchor=BOTTOM,rotate_children=false,draw=false)
                 if(bumpers[$faceindex]) stroke($face,width=bumper_size,closed=true);
             }
-        else if(edge_rounding==0 && corner_rounding>0 || corner_clipping>0)
+        else if(edge_rounding==0 && (corner_rounding>0 || corner_clipping>0))
             //render clipping objects
             intersection()
             {
@@ -1173,7 +1181,7 @@ module drawd12r(){
         else //a double digit number
             right(space_mult)
             offset(delta=txt_stroke)
-            text(txt_merged[$faceindex],size=txt_mult+adj_txt[$faceindex],font=txt_font,spacing=d12r_text_spacing,halign="center",valign="center");
+            text(txt_merged[$faceindex],size=txt_mult+adj_txt[$faceindex],font=txt_font,spacing=d12r_text_spacing+d12r_adj_spacing[$faceindex],halign="center",valign="center");
         
         //render underscore
         regular_polyhedron("rhombic dodecahedron",ir=d12r_size/2,anchor=BOTTOM,draw=false)
@@ -1213,7 +1221,7 @@ module drawd20(){
                 regular_polyhedron("icosahedron",ir=d20_size/2,anchor=BOTTOM,rotate_children=false,draw=false)
                 if(bumpers[$faceindex]) stroke($face,width=bumper_size,closed=true);
             }
-        else if(edge_rounding==0 && corner_rounding>0 || corner_clipping>0)
+        else if(edge_rounding==0 && (corner_rounding>0 || corner_clipping>0))
             //render clipping objects
             intersection()
             {
@@ -1250,7 +1258,7 @@ module drawd20(){
         else //a double digit number
             right(space_mult)
             offset(delta=txt_stroke)
-            text(txt_merged[$faceindex],size=txt_mult+adj_txt[$faceindex],font=txt_font,spacing=d20_text_spacing,halign="center",valign="center");
+            text(txt_merged[$faceindex],size=txt_mult+adj_txt[$faceindex],font=txt_font,spacing=d20_text_spacing+d20_adj_spacing[$faceindex],halign="center",valign="center");
         
         //render underscore
         regular_polyhedron("icosahedron",ir=d20_size/2,anchor=BOTTOM,draw=false)
