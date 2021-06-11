@@ -1,5 +1,5 @@
 //------------------------------------------
-// PolyDiceGenerator v0.27.3
+// PolyDiceGenerator v0.27.4
 //   A customizable Polyhedral Dice Generator for OpenSCAD.
 //   https://github.com/charmaur/PolyDiceGenerator
 //   Please support PolyDiceGenerator https://ko-fi.com/charmaur
@@ -13,7 +13,7 @@
 //   are licensed under the BSD 2-Clause License
 //------------------------------------------
 
-echo(pdg_version="0.27.3");
+echo(pdg_version="0.27.4");
 include <BOSL2/std.scad>
 include <BOSL2/polyhedra.scad>
 echo(bosl_version=bosl_version_str());
@@ -35,6 +35,7 @@ d2=true;
 d3=true;
 d4=true;
 d4c=true;
+d4i=true;
 d4p=true;
 d6=true;
 d8=true;
@@ -49,6 +50,7 @@ d2_size=24;
 d3_size=16;
 d4_size=20;
 d4c_size=13;
+d4i_size=14;
 d4p_size=14;
 d6_size=15;
 d8_size=15;
@@ -143,6 +145,30 @@ d4c_adj_size=[0,0,0,0,0,0];
 d4c_adj_v_push=[0,0,0,0,0,0];
 d4c_adj_h_push=[0,0,0,0,0,0];
 d4c_adj_depth=[0,0,0,0,0,0];
+
+/* [d4i Infinity] */
+d4i_text_size=70;
+d4i_text_v_push=10;
+d4i_text_h_push=0;
+d4i_num_4_h_push=-3;
+d4i_body_length=1.4;
+d4i_text=["1","2"," "," ","3","4"];
+d4i_symbols=[undef,undef,undef,undef,undef,undef];
+d4i_symbol_size=72;
+d4i_symbol_v_push=0;
+d4i_symbol_h_push=0;
+d4i_rotate=[0,0,0,0,0,0];
+d4i_pips=[" "," "," "," "," "," "];
+d4i_pip_sides=6; //[0,3,4,5,6,8,10,12]
+d4i_pip_size=20;
+d4i_pip_offset=2.5;
+d4i_pip_symbol_pos=["1","2"," "," ","3","4"];
+d4i_pip_symbols=[undef,undef,undef,undef,undef,undef]; //symbols for pips
+d4i_pip_symbol_rotate=[0,0,0,0,0,0];
+d4i_adj_size=[0,0,0,0,0,0];
+d4i_adj_v_push=[0,0,0,0,0,0];
+d4i_adj_h_push=[0,0,0,0,0,0];
+d4i_adj_depth=[0,0,0,0,0,0];
 
 /* [d4p Pyramid] */
 d4p_text_size=55;
@@ -347,6 +373,10 @@ d4_dl_rotate=[0,0,0,0 ,0,0,0,0 ,0,0,0,0];
 d4c_dl_text=["1","2"," "," ","3","4"];
 d4c_dl_rotate=[0,0,0,0,0,0];
 
+//d4i
+d4i_dl_text=["1","2"," "," ","3","4"];
+d4i_dl_rotate=[0,0,0,0,0,0];
+
 //d4p
 d4p_dl_text=["3","4","2","1"];
 d4p_dl_rotate=[0,0,0,0];
@@ -388,20 +418,21 @@ d20_dl_rotate=[0,-120,0,120,-120,0,120,0,0,-120,120,120,-120,120,120,0,-120,0,0,
 // Generation, functions, modules
 //------------------------------------------
 
-spacing=d10_size/2;
+spacing=d20_size*1.5;
 
-if(d2) move(x=d4_size/2+d2_size/2+spacing,y=-d6_size/2-d2_size/2-spacing) drawd2();
-if(d3) left(d6_size/2+d00_size+d3_size/2+spacing*2) drawd3();
-if(d4) fwd(d6_size/2+d4_size/2+spacing) drawd4();
-if(d4c) move(x=-d4_size/2+-d4c_size/2-spacing,y=-d6_size/2-d4c_size/2-d4c_point_length*d4c_size-spacing) drawd4c();
-if(d4p) fwd(d6_size/2+d4_size+d4p_base_length/2+spacing*2) drawd4p();
+if(d2) move(x=spacing,y=-spacing) drawd2();
+if(d3) move(x=-spacing,y=-spacing*2) drawd3();
+if(d4) fwd(spacing) drawd4();
+if(d4c) move(x=-spacing,y=-spacing) drawd4c();
+if(d4i) move(x=spacing,y=-spacing*2) drawd4i();
+if(d4p) fwd(spacing*2) drawd4p();
 if(d6) drawd6();
-if(d8) back(d6_size/2+d8_size/2+spacing) drawd8();
-if(d10) move(x=-d8_size/2-d10_size/2-spacing,y=d6_size/2+d10_size/2+spacing) drawd10();
-if(d00) left(d6_size/2+d00_size/2+spacing) drawd00();
-if(d12) move(x=d8_size/2+d12_size/2+spacing,y=d6_size/2+d12_size/2+spacing) drawd12();
-if(d12r) back(d6_size/2+d8_size/2+d12r_size+spacing*2) drawd12r();
-if(d20) right(d6_size/2+d20_size/2+spacing) drawd20();
+if(d8) back(spacing) drawd8();
+if(d10) move(x=-spacing,y=spacing) drawd10();
+if(d00) left(spacing) drawd00();
+if(d12) move(x=spacing,y=spacing) drawd12();
+if(d12r) back(spacing*2) drawd12r();
+if(d20) right(spacing) drawd20();
 
 txt_font=str_strip(text_font,"\"");
 under_font=str_strip(underscore_font,"\"");
@@ -646,6 +677,74 @@ module drawd4c(){
         regular_polyhedron("cube",side=d4c_size,anchor=BOTTOM,draw=false)
         zrot(d4c_rotate[$faceindex]+base_rotate[$faceindex])
         drwapipsymbols("d4c",d4c_pip_symbol_pos[$faceindex],d4c_pip_symbols[$faceindex],d4c_pip_symbol_rotate[$faceindex],d4c_adj_depth[$faceindex]);
+    }
+}
+
+module drawd4i(){
+    txt_merged=merge_txt(d4i_text,fix_quotes(d4i_symbols));
+    txt_mult=d4i_text_size*d4i_size/100;
+    adj_txt=adj_list(d4i_adj_size,d4i_size/100);
+    txt_stroke=text_stroke*txt_mult;
+    sym_mult=d4i_symbol_size*d4i_size/100;
+    sym_stroke=symbol_stroke*sym_mult;
+    base_rotate=[0,180,180,180,180,0];
+    d4i_pip_fn=d4i_pip_sides==0 ? 128 : d4i_pip_sides;
+    d4i_body_length=d4i_body_length*d4i_size;
+    
+    difference()
+    {
+        //render cube 
+        up(edge_rounding)
+        minkowski()
+        {
+            scale((d4i_size-2*edge_rounding)/d4i_size)
+            {
+                difference()
+                {
+                    cuboid([d4i_size,d4i_body_length,d4i_size],anchor=BOTTOM);
+                    translate([d4i_size/2,d4i_body_length/2,0])
+                    rounding_mask_z(l=d4i_size, r=d4i_size/2, anchor=BOTTOM);
+                    translate([-d4i_size/2,d4i_body_length/2,0])
+                    rounding_mask_z(l=d4i_size, r=d4i_size/2, anchor=BOTTOM);
+                    translate([-d4i_size/2,-d4i_body_length/2,0])
+                    rotate([0,90,0])
+                    rounding_mask_z(l=d4i_size, r=d4i_size/2, anchor=BOTTOM);
+                    translate([-d4i_size/2,-d4i_body_length/2,d4i_size])
+                    rotate([0,90,0])
+                    rounding_mask_z(l=d4i_size, r=d4i_size/2, anchor=BOTTOM);
+                }
+            }
+            if(edge_rounding>0) sphere(r=edge_rounding);
+        }
+        
+        //render numbers & symbols
+        regular_polyhedron("cube",side=d4i_size,anchor=BOTTOM,draw=false)
+        zrot(d4i_rotate[$faceindex]+base_rotate[$faceindex])
+        down(text_depth+d4i_adj_depth[$faceindex])
+        linear_extrude(height=2*text_depth+d4i_adj_depth[$faceindex])
+        move(x=(d4i_text_h_push+d4i_adj_h_push[$faceindex])*d4i_size/100,y=(d4i_text_v_push+d4i_adj_v_push[$faceindex])*d4i_size/100)
+        if(is_list(txt_merged[$faceindex])) //a symbol
+            move(x=d4i_symbol_h_push*d4i_size/100,y=d4i_symbol_v_push*d4i_size/100)
+            offset(delta=sym_stroke)
+            text(txt_merged[$faceindex][0],size=sym_mult,font=sym_font,halign="center",valign="center");
+        else if(txt_merged[$faceindex]=="4") //a number 4
+            right(d4i_num_4_h_push*d4i_size/100)
+            offset(delta=txt_stroke)
+            text(txt_merged[$faceindex],size=txt_mult+adj_txt[$faceindex],font=txt_font,halign="center",valign="center");
+        else //a number thats's not 4
+            offset(delta=txt_stroke)
+            text(txt_merged[$faceindex],size=txt_mult+adj_txt[$faceindex],font=txt_font,halign="center",valign="center");
+        
+        //render pips
+        regular_polyhedron("cube",side=d4i_size,anchor=BOTTOM,draw=false)
+        zrot(d4i_rotate[$faceindex]+base_rotate[$faceindex])
+        drwapips("d4i",d4i_pips[$faceindex],d4i_adj_depth[$faceindex],d4i_pip_fn);
+        
+        //render pip symbols
+        d4i_pip_symbols=fix_quotes(d4i_pip_symbols);
+        regular_polyhedron("cube",side=d4i_size,anchor=BOTTOM,draw=false)
+        zrot(d4i_rotate[$faceindex]+base_rotate[$faceindex])
+        drwapipsymbols("d4i",d4i_pip_symbol_pos[$faceindex],d4i_pip_symbols[$faceindex],d4i_pip_symbol_rotate[$faceindex],d4i_adj_depth[$faceindex]);
     }
 }
 
@@ -1272,9 +1371,9 @@ module drawd20(){
 }
 
 module drwapips(die,num,adj_depth,pip_fn){
-    pip_mult=die=="d6" ? d6_pip_size*d6_size/100 : d4c_pip_size*d4c_size/100;
+    pip_mult=die=="d4c" ? d4c_pip_size*d4c_size/100 : die=="d4i" ? d4i_pip_size*d4i_size/100 : d6_pip_size*d6_size/100;
     pipr=pip_mult/2;
-    pip_offset=die=="d6" ? d6_pip_offset : d4c_pip_offset;
+    pip_offset=die=="d4c" ? d4c_pip_offset : die=="d4i" ? d4i_pip_offset : d6_pip_offset;
 
     if(num=="1"){
         down(text_depth+adj_depth) cylinder(r=pipr,h=2*text_depth+adj_depth,$fn=pip_fn);
@@ -1290,7 +1389,7 @@ module drwapips(die,num,adj_depth,pip_fn){
         drwapips(die,"2",adj_depth,pip_fn);
     }
     if(num=="4"){
-        drwapips(die,"2",adj_depth);
+        drwapips(die,"2",adj_depth,pip_fn);
         translate([pipr*pip_offset,pipr*pip_offset,0])
         down(text_depth+adj_depth) cylinder(r=pipr,h=2*text_depth+adj_depth,$fn=pip_fn);
         translate([-pipr*pip_offset,-pipr*pip_offset,0])
@@ -1310,10 +1409,10 @@ module drwapips(die,num,adj_depth,pip_fn){
 }
 
 module drwapipsymbols(die,num,pipsymbol,rot,adj_depth){
-    pip_mult=die=="d6" ? d6_pip_size*d6_size/100 : d4c_pip_size*d4c_size/100;
+    pip_mult=die=="d4c" ? d4c_pip_size*d4c_size/100 : die=="d4i" ? d4i_pip_size*d4i_size/100 : d6_pip_size*d6_size/100;
     sym_stroke=symbol_stroke*pip_mult;
     pipr=pip_mult/2;
-    pip_offset=die=="d6" ? d6_pip_offset : d4c_pip_offset;
+    pip_offset=die=="d4c" ? d4c_pip_offset : die=="d4i" ? d4i_pip_offset : d6_pip_offset;
 
     if(num=="1"){
         zrot(rot) down(text_depth+adj_depth) linear_extrude(height=2*text_depth+adj_depth)

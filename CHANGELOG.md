@@ -2,6 +2,10 @@
 
 A customizable **Polyhedral Dice Generator** for OpenSCAD.
 
+## PolyDiceGenerator v0.27.4
+
+- Added d4i - an infinity edge d4
+
 ## PolyDiceGenerator v0.27.3
 
 - Fixed d4c/d4p corner rounding/clipping bug
