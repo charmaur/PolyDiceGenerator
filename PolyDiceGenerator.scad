@@ -17,7 +17,7 @@ echo(pdg_version="0.27.4");
 include <BOSL2/std.scad>
 include <BOSL2/polyhedra.scad>
 echo(bosl_version=bosl_version_str());
-bosl_required("2.0.525");
+bosl_required("2.0.669");
 $fa=$preview ? 5 : 2;
 $fs=$preview ? 0.5 : 0.2;
 
