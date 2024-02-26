@@ -2,6 +2,11 @@
 
 A customizable **Polyhedral Dice Generator** for OpenSCAD.
 
+## PolyDiceGenerator v0.27.5
+
+- Updated included BOSL2 library to 2.0.716
+- Thanks to [arnoesterhuizen](https://github.com/arnoesterhuizen) for creating the pull request that this update is based on.
+
 ## PolyDiceGenerator v0.27.4
 
 - Added d4i - an infinity edge d4

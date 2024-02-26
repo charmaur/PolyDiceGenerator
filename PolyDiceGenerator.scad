@@ -1,5 +1,5 @@
 //------------------------------------------
-// PolyDiceGenerator v0.27.4
+// PolyDiceGenerator v0.27.5
 //   A customizable Polyhedral Dice Generator for OpenSCAD.
 //   https://github.com/charmaur/PolyDiceGenerator
 //   Please support PolyDiceGenerator https://ko-fi.com/charmaur
@@ -13,11 +13,11 @@
 //   are licensed under the BSD 2-Clause License
 //------------------------------------------
 
-echo(pdg_version="0.27.4");
+echo(pdg_version="0.27.5");
 include <BOSL2/std.scad>
 include <BOSL2/polyhedra.scad>
 echo(bosl_version=bosl_version_str());
-bosl_required("2.0.525");
+bosl_required("2.0.716");
 $fa=$preview ? 5 : 2;
 $fs=$preview ? 0.5 : 0.2;
 
@@ -128,7 +128,7 @@ d4c_text_h_push=0;
 d4c_num_4_h_push=-3;
 d4c_body_length=1.4;
 d4c_point_length=0.4;
-d4c_text=["1","2"," "," ","3","4"];
+d4c_text=["1"," ","3"," ","4","2"];
 d4c_symbols=[undef,undef,undef,undef,undef,undef];
 d4c_symbol_size=72;
 d4c_symbol_v_push=0;
@@ -138,7 +138,7 @@ d4c_pips=[" "," "," "," "," "," "];
 d4c_pip_sides=6; //[0,3,4,5,6,8,10,12]
 d4c_pip_size=20;
 d4c_pip_offset=2.5;
-d4c_pip_symbol_pos=["1","2"," "," ","3","4"];
+d4c_pip_symbol_pos=["1"," ","3"," ","4","2"];
 d4c_pip_symbols=[undef,undef,undef,undef,undef,undef]; //symbols for pips
 d4c_pip_symbol_rotate=[0,0,0,0,0,0];
 d4c_adj_size=[0,0,0,0,0,0];
@@ -152,7 +152,7 @@ d4i_text_v_push=10;
 d4i_text_h_push=0;
 d4i_num_4_h_push=-3;
 d4i_body_length=1.4;
-d4i_text=["1","2"," "," ","3","4"];
+d4i_text=["1"," ","3"," ","4","2"];
 d4i_symbols=[undef,undef,undef,undef,undef,undef];
 d4i_symbol_size=72;
 d4i_symbol_v_push=0;
@@ -162,7 +162,7 @@ d4i_pips=[" "," "," "," "," "," "];
 d4i_pip_sides=6; //[0,3,4,5,6,8,10,12]
 d4i_pip_size=20;
 d4i_pip_offset=2.5;
-d4i_pip_symbol_pos=["1","2"," "," ","3","4"];
+d4i_pip_symbol_pos=["1"," ","3"," ","4","2"];
 d4i_pip_symbols=[undef,undef,undef,undef,undef,undef]; //symbols for pips
 d4i_pip_symbol_rotate=[0,0,0,0,0,0];
 d4i_adj_size=[0,0,0,0,0,0];
@@ -195,12 +195,12 @@ d6_text_h_push=0;
 d6_text_spacing=1; //[0.5:0.02:1.5]
 d6_num_4_h_push=-3;
 d6_angle_text=false; //angle d6 text
-d6_text=["1","3","5","2","4","6"];
+d6_text=["1","2","4","5","6","3"];
 d6_symbols=[undef,undef,undef,undef,undef,undef];
 d6_symbol_size=62;
 d6_symbol_v_push=0;
 d6_symbol_h_push=0;
-d6_underscores=[" "," "," "," "," ","_"];
+d6_underscores=[" "," "," "," ","_"," "];
 d6_underscore_size=48;
 d6_underscore_v_push=-32;
 d6_underscore_h_push=0;
@@ -210,7 +210,7 @@ d6_pips=[" "," "," "," "," "," "];
 d6_pip_sides=6; //[0,3,4,5,6,8,10,12]
 d6_pip_size=20;
 d6_pip_offset=2.5;
-d6_pip_symbol_pos=["1","3","5","2","4","6"];
+d6_pip_symbol_pos=["1","2","4","5","6","3"];
 d6_pip_symbols=[undef,undef,undef,undef,undef,undef]; //symbols for pips
 d6_pip_symbol_rotate=[0,0,0,0,0,0];
 d6_adj_size=[0,0,0,0,0,0];
@@ -224,12 +224,12 @@ d8_text_v_push=2;
 d8_text_h_push=0;
 d8_text_spacing=1; //[0.5:0.02:1.5]
 d8_num_4_h_push=-3;
-d8_text=["1","4","3","2","6","7","5","8"];
+d8_text=["1","3","7","5","4","2","8","6"];
 d8_symbols=[undef,undef,undef,undef,undef,undef,undef,undef];
 d8_symbol_size=55;
 d8_symbol_v_push=0;
 d8_symbol_h_push=0;
-d8_underscores=[" "," "," "," ","_"," "," "," "];
+d8_underscores=[" "," "," "," "," "," "," ","_"];
 d8_underscore_size=42;
 d8_underscore_v_push=-26;
 d8_underscore_h_push=0;
@@ -247,16 +247,16 @@ d10_text_h_push=0;
 d10_text_spacing=1; //[0.5:0.02:1.5]
 d10_num_4_h_push=-3;
 d10_length_mod=0;
-d10_text=["9","1","7","5","3","6","2","4","0","8"];
+d10_text=["9","1","6","7","4","3","0","5","8","2"];
 d10_symbols=[undef,undef,undef,undef,undef,undef,undef,undef,undef,undef];
 d10_symbol_size=48;
 d10_symbol_v_push=0;
 d10_symbol_h_push=0;
-d10_underscores=["_"," "," "," "," ","_"," "," "," "," "];
+d10_underscores=["_"," ","_"," "," "," "," "," "," "," "];
 d10_underscore_size=37;
 d10_underscore_v_push=-17;
 d10_underscore_h_push=0;
-d10_bumpers=[true,true,true,true,true,false,false,false,false,false];
+d10_bumpers=[true,true,false,true,false,true,false,true,false,false];
 d10_rotate=[0,0,0,0,0,0,0,0,0,0];
 d10_adj_size=[0,0,0,0,0,0,0,0,0,0];
 d10_adj_v_push=[0,0,0,0,0,0,0,0,0,0];
@@ -275,12 +275,12 @@ d00_0_size=65; //"0" undersize if d00_angle_text=true
 d00_0_padding=60; //"0" padding if d00_angle_text=true
 d00_10_h_push=2; //horizontal push for "10" if d00_angle_text=true
 d00_10_0_padding=52; //"0" padding for "10" if d00_angle_text=true
-d00_text=["90","10","70","50","30","60","20","40","00","80"];
+d00_text=["90","10","60","70","40","30","00","50","80","20"];
 d00_symbols=[undef,undef,undef,undef,undef,undef,undef,undef,undef,undef];
 d00_symbol_size=48;
 d00_symbol_v_push=0;
 d00_symbol_h_push=0;
-d00_bumpers=[true,true,true,true,true,false,false,false,false,false];
+d00_bumpers=[true,true,false,true,false,true,false,true,false,false];
 d00_rotate=[0,0,0,0,0,0,0,0,0,0];
 d00_adj_size=[0,0,0,0,0,0,0,0,0,0];
 d00_adj_v_push=[0,0,0,0,0,0,0,0,0,0];
@@ -294,7 +294,7 @@ d12_text_v_push=0;
 d12_text_h_push=0;
 d12_text_spacing=1; //[0.5:0.02:1.5]
 d12_num_4_h_push=-3;
-d12_text=["1","4","2","6","8","10","3","5","11","7","12","9"];
+d12_text=["1","2","4","6","3","5","8","10","11","7","12","9"];
 d12_symbols=[undef,undef,undef,undef,undef,undef,undef,undef,undef,undef,undef,undef];
 d12_symbol_size=36;
 d12_symbol_v_push=0;
@@ -317,12 +317,12 @@ d12r_text_v_push=0;
 d12r_text_h_push=0;
 d12r_text_spacing=1; //[0.5:0.02:1.5]
 d12r_num_4_h_push=-3;
-d12r_text=["1","4","2","8","3","7","6","10","11","5","12","9"];
+d12r_text=["1","6","2","8","10","4","3","7","9","5","12","11"];
 d12r_symbols=[undef,undef,undef,undef,undef,undef,undef,undef,undef,undef,undef,undef];
 d12r_symbol_size=34;
 d12r_symbol_v_push=0;
 d12r_symbol_h_push=0;
-d12r_underscores=[" "," "," "," "," "," ","_"," "," "," "," ","_"];
+d12r_underscores=[" ","_"," "," "," "," "," "," ","_"," "," "," "];
 d12r_underscore_size=28;
 d12r_underscore_v_push=-19;
 d12r_underscore_h_push=0;
@@ -340,12 +340,12 @@ d20_text_v_push=0;
 d20_text_h_push=0;
 d20_text_spacing=1; //[0.5:0.02:1.5]
 d20_num_4_h_push=-3;
-d20_text=["1","5","13","11","7","15","19","6","9","18","4","14","17","16","3","12","2","20","8","10"];
+d20_text=["1","19","11","13","9","7","17","3","18","5","4","15","12","10","6","16","2","8","14","20"];
 d20_symbols=[undef,undef,undef,undef,undef,undef,undef,undef,undef,undef,undef,undef,undef,undef,undef,undef,undef,undef,undef,undef];
 d20_symbol_size=23;
 d20_symbol_v_push=0;
 d20_symbol_h_push=0;
-d20_underscores=[" "," "," "," "," "," "," ","_","_"," "," "," "," "," "," "," "," "," "," "," "];
+d20_underscores=[" "," "," "," ","_"," "," "," "," "," "," "," "," "," ","_"," "," "," "," "," "];
 d20_underscore_size=18;
 d20_underscore_v_push=-12;
 d20_underscore_h_push=0;
@@ -361,76 +361,22 @@ d20_adj_depth=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 Go_to="https://ko-fi.com/charmaur";
 
 //------------------------------------------
-// Hidden variables
-//------------------------------------------
-
-/* [Hidden] */
-//d4
-d4_dl_text=["1","4","1","1","2","2","4","4","3","3","3","2"];
-d4_dl_rotate=[0,0,0,0 ,0,0,0,0 ,0,0,0,0];
-
-//d4c
-d4c_dl_text=["1","2"," "," ","3","4"];
-d4c_dl_rotate=[0,0,0,0,0,0];
-
-//d4i
-d4i_dl_text=["1","2"," "," ","3","4"];
-d4i_dl_rotate=[0,0,0,0,0,0];
-
-//d4p
-d4p_dl_text=["3","4","2","1"];
-d4p_dl_rotate=[0,0,0,0];
-
-//d6
-d6_dl_text=["1","2","3","4","5","6"];
-d6_dl_under=[" "," "," "," "," ","_"];
-d6_dl_rotate=[0,180,90,0,-90,90];
-
-//d8
-d8_dl_text=["1","6","7","4","2","5","3","8"];
-d8_dl_under=[" ","_"," "," "," "," "," "," "];
-d8_dl_rotate=[0,0,0,0,0,0,0,0];
-
-//d10
-d10_dl_text=["9","1","6","2","5","4","3","7","0","8"];
-d10_dl_under=["_"," ","_"," "," "," "," "," "," "," "];
-d10_dl_rotate=[0,0,0,0,0,0,0,0,0,0];
-
-//d00
-d00_dl_text=["90","10","60","20","50","40","30","70","00","80"];
-d00_dl_rotate=[0,0,0,0,0,0,0,0,0,0];
-
-//d12
-d12_dl_text=["1","10","7","9","5","11","2","8","6","4","12","3"];
-d12_dl_under=[" "," "," ","_"," "," "," "," ","_"," "," "," "];
-d12_dl_rotate=[-144,144,-144,0,36,72,72,-72,-72,144,-72,0];
-
-d12r_dl_text=["1","4","2","8","3","7","6","10","11","5","12","9"];
-d20r_dl_under=[" "," "," "," "," "," ","_"," "," "," "," ","_"];
-d12r_dl_rotate=[0,180,180,180,180,-70.53,180,70.53,70.53,0,0,-70.53];
-
-//d20
-d20_dl_text=["1","12","11","19","15","13","5","8","17","7","3","6","18","9","14","4","16","20","10","2"];
-d20_dl_under=[" "," "," "," "," "," "," "," "," "," "," ","_"," ","_"," "," "," "," "," "," "];
-d20_dl_rotate=[0,-120,0,120,-120,0,120,0,0,-120,120,120,-120,120,120,0,-120,0,0,-120];
-
-//------------------------------------------
 // Generation, functions, modules
 //------------------------------------------
 
 spacing=d20_size*1.5;
 
-if(d2) move(x=spacing,y=-spacing) drawd2();
-if(d3) move(x=-spacing,y=-spacing*2) drawd3();
+if(d2) move([spacing,-spacing]) drawd2();
+if(d3) move([-spacing,-spacing*2]) drawd3();
 if(d4) fwd(spacing) drawd4();
-if(d4c) move(x=-spacing,y=-spacing) drawd4c();
-if(d4i) move(x=spacing,y=-spacing*2) drawd4i();
+if(d4c) move([-spacing,-spacing]) drawd4c();
+if(d4i) move([spacing,-spacing*2]) drawd4i();
 if(d4p) fwd(spacing*2) drawd4p();
 if(d6) drawd6();
 if(d8) back(spacing) drawd8();
-if(d10) move(x=-spacing,y=spacing) drawd10();
+if(d10) move([-spacing,spacing]) drawd10();
 if(d00) left(spacing) drawd00();
-if(d12) move(x=spacing,y=spacing) drawd12();
+if(d12) move([spacing,spacing]) drawd12();
 if(d12r) back(spacing*2) drawd12r();
 if(d20) right(spacing) drawd20();
 
@@ -474,9 +420,9 @@ module drawd2(){
             translate([0,0,d2_height*i+edge_rounding*2*i])
             down(text_depth+d2_adj_depth[i])
             linear_extrude(height=2*text_depth+d2_adj_depth[i])
-            move(x=(d2_text_h_push+d2_adj_h_push[i])*d2_size/100,y=(d2_text_v_push+d2_adj_v_push[i])*d2_size/100)
+            move([(d2_text_h_push+d2_adj_h_push[i])*d2_size/100,(d2_text_v_push+d2_adj_v_push[i])*d2_size/100])
             if(is_list(txt_merged[i])) //a symbol
-                move(x=d2_symbol_h_push*d2_size/100,y=d2_symbol_v_push*d2_size/100)
+                move([d2_symbol_h_push*d2_size/100,d2_symbol_v_push*d2_size/100])
                 zrot(d2_rotate[i]+base_rotate[i])
                 offset(delta=sym_stroke)
                 text(txt_merged[i][0],size=sym_mult,font=sym_font,halign="center",valign="center");
@@ -527,9 +473,9 @@ module drawd3(){
             zrot(d3_rotate[j*2+i]+base_rotate[j*2+i])
             down(text_depth+d3_adj_depth[j*2+i])
             linear_extrude(height=2*text_depth+d3_adj_depth[j*2+i])
-            move(x=(d3_text_h_push+d3_adj_h_push[j*2+i])*d3_size/100,y=(d3_text_v_push+d3_adj_v_push[j*2+i])*d3_size/100)
+            move([(d3_text_h_push+d3_adj_h_push[j*2+i])*d3_size/100,(d3_text_v_push+d3_adj_v_push[j*2+i])*d3_size/100])
             if(is_list(txt_merged[j*2+i])) //a symbol
-                move(x=d3_symbol_h_push*d3_size/100,y=d3_symbol_v_push*d3_size/100)
+                move([d3_symbol_h_push*d3_size/100,d3_symbol_v_push*d3_size/100])
                 offset(delta=sym_stroke)
                 text(txt_merged[j*2+i][0],size=sym_mult,font=sym_font,halign="center",valign="center");
             else //a number
@@ -546,7 +492,7 @@ module drawd4(){
     sym_mult=d4_symbol_size*d4_size/100;
     sym_stroke=symbol_stroke*sym_mult;
     bumpers=fix_quotes(d4_bumpers);
-    base_rotate=[-15,15,15,15,105,255,255,135,225,135,135,255];
+    base_rotate=[0,-120,-120,0, 120,120,120,120, -120,0,0,-120];
     d4_side=d4_size/sqrt(2/3);
     circumsphere_dia=d4_side*sqrt(3/8)*2;
     corner_round_mult=circumsphere_dia-(corner_rounding*circumsphere_dia/100);
@@ -586,9 +532,9 @@ module drawd4(){
             zrot(d4_rotate[$faceindex+i*4]+base_rotate[$faceindex+i*4])
             down(text_depth+d4_adj_depth[$faceindex+i*4])
             linear_extrude(height=2*text_depth+d4_adj_depth[$faceindex+i*4])
-            move(x=(d4_text_h_push+d4_adj_h_push[$faceindex+i*4])*d4_size/100,y=(d4_text_v_push+d4_adj_v_push[$faceindex+i*4])*d4_size/100)
+            move([(d4_text_h_push+d4_adj_h_push[$faceindex+i*4])*d4_size/100,(d4_text_v_push+d4_adj_v_push[$faceindex+i*4])*d4_size/100])
             if(is_list(txt_merged[$faceindex+i*4])) //a symbol
-                move(x=d4_symbol_h_push*d4_size/100,y=d4_symbol_v_push*d4_size/100)
+                move([d4_symbol_h_push*d4_size/100,d4_symbol_v_push*d4_size/100])
                 offset(delta=sym_stroke)
                 text(txt_merged[$faceindex+i*4][0],size=sym_mult,font=sym_font,halign="center",valign="center");
             else if(txt_merged[$faceindex+i*4]=="4") //a number 4
@@ -608,7 +554,7 @@ module drawd4c(){
     txt_stroke=text_stroke*txt_mult;
     sym_mult=d4c_symbol_size*d4c_size/100;
     sym_stroke=symbol_stroke*sym_mult;
-    base_rotate=[180,180,180,180,180,180];
+    base_rotate=[180,0,90,0,0,-90];
     d4c_pip_fn=d4c_pip_sides==0 ? 128 : d4c_pip_sides;
     d4c_body_length=d4c_body_length*d4c_size;
     d4c_point_length=d4c_point_length*d4c_size;
@@ -654,9 +600,9 @@ module drawd4c(){
         zrot(d4c_rotate[$faceindex]+base_rotate[$faceindex])
         down(text_depth+d4c_adj_depth[$faceindex])
         linear_extrude(height=2*text_depth+d4c_adj_depth[$faceindex])
-        move(x=(d4c_text_h_push+d4c_adj_h_push[$faceindex])*d4c_size/100,y=(d4c_text_v_push+d4c_adj_v_push[$faceindex])*d4c_size/100)
+        move([(d4c_text_h_push+d4c_adj_h_push[$faceindex])*d4c_size/100,(d4c_text_v_push+d4c_adj_v_push[$faceindex])*d4c_size/100])
         if(is_list(txt_merged[$faceindex])) //a symbol
-            move(x=d4c_symbol_h_push*d4c_size/100,y=d4c_symbol_v_push*d4c_size/100)
+            move([d4c_symbol_h_push*d4c_size/100,d4c_symbol_v_push*d4c_size/100])
             offset(delta=sym_stroke)
             text(txt_merged[$faceindex][0],size=sym_mult,font=sym_font,halign="center",valign="center");
         else if(txt_merged[$faceindex]=="4") //a number 4
@@ -687,7 +633,7 @@ module drawd4i(){
     txt_stroke=text_stroke*txt_mult;
     sym_mult=d4i_symbol_size*d4i_size/100;
     sym_stroke=symbol_stroke*sym_mult;
-    base_rotate=[0,180,180,180,180,0];
+    base_rotate=[0,0,90,0,180,-90];
     d4i_pip_fn=d4i_pip_sides==0 ? 128 : d4i_pip_sides;
     d4i_body_length=d4i_body_length*d4i_size;
     
@@ -703,15 +649,17 @@ module drawd4i(){
                 {
                     cuboid([d4i_size,d4i_body_length,d4i_size],anchor=BOTTOM);
                     translate([d4i_size/2,d4i_body_length/2,0])
-                    rounding_mask_z(l=d4i_size, r=d4i_size/2, anchor=BOTTOM);
+                    rotate([0,0,180])
+                    rounding_edge_mask(d4i_size, d4i_size/2, anchor=BOTTOM);
                     translate([-d4i_size/2,d4i_body_length/2,0])
-                    rounding_mask_z(l=d4i_size, r=d4i_size/2, anchor=BOTTOM);
+                    rotate([0,0,270])
+                    rounding_edge_mask(d4i_size, d4i_size/2, anchor=BOTTOM);
                     translate([-d4i_size/2,-d4i_body_length/2,0])
-                    rotate([0,90,0])
-                    rounding_mask_z(l=d4i_size, r=d4i_size/2, anchor=BOTTOM);
+                    rotate([270,180,-90])
+                    rounding_edge_mask(d4i_size, d4i_size/2, anchor=BOTTOM);
                     translate([-d4i_size/2,-d4i_body_length/2,d4i_size])
                     rotate([0,90,0])
-                    rounding_mask_z(l=d4i_size, r=d4i_size/2, anchor=BOTTOM);
+                    rounding_edge_mask(d4i_size, d4i_size/2, anchor=BOTTOM);
                 }
             }
             if(edge_rounding>0) sphere(r=edge_rounding);
@@ -722,9 +670,9 @@ module drawd4i(){
         zrot(d4i_rotate[$faceindex]+base_rotate[$faceindex])
         down(text_depth+d4i_adj_depth[$faceindex])
         linear_extrude(height=2*text_depth+d4i_adj_depth[$faceindex])
-        move(x=(d4i_text_h_push+d4i_adj_h_push[$faceindex])*d4i_size/100,y=(d4i_text_v_push+d4i_adj_v_push[$faceindex])*d4i_size/100)
+        move([(d4i_text_h_push+d4i_adj_h_push[$faceindex])*d4i_size/100,(d4i_text_v_push+d4i_adj_v_push[$faceindex])*d4i_size/100])
         if(is_list(txt_merged[$faceindex])) //a symbol
-            move(x=d4i_symbol_h_push*d4i_size/100,y=d4i_symbol_v_push*d4i_size/100)
+            move([d4i_symbol_h_push*d4i_size/100,d4i_symbol_v_push*d4i_size/100])
             offset(delta=sym_stroke)
             text(txt_merged[$faceindex][0],size=sym_mult,font=sym_font,halign="center",valign="center");
         else if(txt_merged[$faceindex]=="4") //a number 4
@@ -804,12 +752,12 @@ module drawd4p(){
             rotate([90,0,0]) rotate([0,90*i,0])  
             translate([d4p_size/2,0,0])
             rotate([0,90,90-d4p_face_angle])
-            move(x=(d4p_text_h_push+d4p_adj_h_push[i])*d4p_size/100,y=(d4p_text_v_push+d4p_adj_v_push[i])*d4p_size/100)
+            move([(d4p_text_h_push+d4p_adj_h_push[i])*d4p_size/100,(d4p_text_v_push+d4p_adj_v_push[i])*d4p_size/100])
             zrot(d4p_rotate[i]+base_rotate[i])
             down(text_depth+d4p_adj_depth[i])
             linear_extrude(height=2*text_depth+d4p_adj_depth[i])
             if(is_list(txt_merged[i])) //a symbol
-                move(x=d4p_symbol_h_push*d4p_size/100,y=d4p_symbol_v_push*d4p_size/100)
+                move([d4p_symbol_h_push*d4p_size/100,d4p_symbol_v_push*d4p_size/100])
                 offset(delta=sym_stroke)
                 text(txt_merged[i][0],size=sym_mult,font=sym_font,halign="center",valign="center");
             else if(txt_merged[i]=="4") //a number 4
@@ -833,7 +781,8 @@ module drawd6(){
     under_mult=d6_underscore_size*d6_size/100;
     space_mult=d6_text_spacing>1 ? (d6_text_spacing-1)*txt_mult/3.15 : d6_text_spacing<1 ? (-1+d6_text_spacing)*txt_mult/2.8 : 0;
     rotate_mod=d6_angle_text ? 45 : 0;
-    base_rotate=[0,-90,0,-90,180,90];
+    //d6_text=["1","2","4","5","6","3"];
+    base_rotate=[0,-90,90,180,-90,0];
     d6_pip_fn=d6_pip_sides==0 ? 128 : d6_pip_sides;
     circumsphere_dia=d6_size*sqrt(3);
     corner_round_mult=circumsphere_dia-(corner_rounding*circumsphere_dia/100)/1.8;
@@ -871,9 +820,9 @@ module drawd6(){
         zrot(d6_rotate[$faceindex]+base_rotate[$faceindex]+rotate_mod)
         down(text_depth+d6_adj_depth[$faceindex])
         linear_extrude(height=2*text_depth+d6_adj_depth[$faceindex])
-        move(x=(d6_text_h_push+d6_adj_h_push[$faceindex])*d6_size/100,y=(d6_text_v_push+d6_adj_v_push[$faceindex])*d6_size/100)
+        move([(d6_text_h_push+d6_adj_h_push[$faceindex])*d6_size/100,(d6_text_v_push+d6_adj_v_push[$faceindex])*d6_size/100])
         if(is_list(txt_merged[$faceindex])) //a symbol
-            move(x=d6_symbol_h_push*d6_size/100,y=d6_symbol_v_push*d6_size/100)
+            move([d6_symbol_h_push*d6_size/100,d6_symbol_v_push*d6_size/100])
             offset(delta=sym_stroke)
             text(txt_merged[$faceindex][0],size=sym_mult,font=sym_font,halign="center",valign="center");
         else if(txt_merged[$faceindex]=="4") //a number 4
@@ -893,7 +842,7 @@ module drawd6(){
         zrot(d6_rotate[$faceindex]+base_rotate[$faceindex]+rotate_mod)
         down(text_depth+d6_adj_depth[$faceindex])
         linear_extrude(height=2*text_depth+d6_adj_depth[$faceindex])
-        move(x=d6_underscore_h_push*d6_size/100,y=d6_underscore_v_push*d6_size/100)
+        move([d6_underscore_h_push*d6_size/100,d6_underscore_v_push*d6_size/100])
         offset(delta=txt_stroke)
         text(d6_underscores[$faceindex],size=under_mult,font=under_font,halign="center",valign="center");
         
@@ -920,7 +869,8 @@ module drawd8(){
     bumpers=fix_quotes(d8_bumpers);
     under_mult=d8_underscore_size*d8_size/100;
     space_mult=d8_text_spacing>1 ? (d8_text_spacing-1)*txt_mult/3.15 : d8_text_spacing<1 ? (-1+d8_text_spacing)*txt_mult/2.8 : 0;
-    base_rotate=[345,15,15,135,255,15,15,195];
+    //d8_text=["1","3","7","5","4","2","8","6"];
+    base_rotate=[0,0,0,0,120,-120,-120,0];
     d8_side=sqrt(3/2)*d8_size;
     circumsphere_dia=d8_side*sqrt(2);
     corner_round_mult=circumsphere_dia-(corner_rounding*circumsphere_dia/100)/1.4;
@@ -958,9 +908,9 @@ module drawd8(){
         zrot(d8_rotate[$faceindex]+base_rotate[$faceindex])
         down(text_depth+d8_adj_depth[$faceindex])
         linear_extrude(height=2*text_depth+d8_adj_depth[$faceindex])
-        move(x=(d8_text_h_push+d8_adj_h_push[$faceindex])*d8_size/100,y=(d8_text_v_push+d8_adj_v_push[$faceindex])*d8_size/100)
+        move([(d8_text_h_push+d8_adj_h_push[$faceindex])*d8_size/100,(d8_text_v_push+d8_adj_v_push[$faceindex])*d8_size/100])
         if(is_list(txt_merged[$faceindex])) //a symbol
-            move(x=d8_symbol_h_push*d8_size/100,y=d8_symbol_v_push*d8_size/100)
+            move([d8_symbol_h_push*d8_size/100,d8_symbol_v_push*d8_size/100])
             offset(delta=sym_stroke)
             text(txt_merged[$faceindex][0],size=sym_mult,font=sym_font,halign="center",valign="center");
         else if(txt_merged[$faceindex]=="4") //a number 4
@@ -980,7 +930,7 @@ module drawd8(){
         zrot(d8_rotate[$faceindex]+base_rotate[$faceindex])
         down(text_depth+d8_adj_depth[$faceindex])
         linear_extrude(height=2*text_depth+d8_adj_depth[$faceindex])
-        move(x=d8_underscore_h_push*d8_size/100,y=d8_underscore_v_push*d8_size/100)
+        move([d8_underscore_h_push*d8_size/100,d8_underscore_v_push*d8_size/100])
         offset(delta=txt_stroke)
         text(d8_underscores[$faceindex],size=under_mult,font=under_font,halign="center",valign="center");
     }
@@ -996,7 +946,8 @@ module drawd10(){
     bumpers=fix_quotes(d10_bumpers);
     under_mult=d10_underscore_size*d10_size/100;
     space_mult=d10_text_spacing>1 ? (d10_text_spacing-1)*txt_mult/3.15 : d10_text_spacing<1 ? (-1+d10_text_spacing)*txt_mult/2.8 : 0;
-    base_rotate=[54.25,306.25,306.25,306.25,306.25,254.25,357.75,177.75,126.25,74.25];
+    //d10_text=["9","1","6","7","4","3","0","5","8","2"];
+    base_rotate=[25,-25,-115,-25,-115,-115,25,-115,-25,-25];
     d10_sside=sqrt(sqrt(5)-2)*d10_size-d10_length_mod/d10_size;
     separation=2*sqr(sin(90/5))*sqrt((sqr(d10_sside)+2*sqr(d10_size)*(cos(180/5)-1))/(cos(180/5)-1)/(cos(180/5)+cos(360/5)));
     circumsphere_dia=separation/sqr(tan(90/5));
@@ -1035,9 +986,9 @@ module drawd10(){
         zrot(d10_rotate[$faceindex]+base_rotate[$faceindex])
         down(text_depth+d10_adj_depth[$faceindex])
         linear_extrude(height=2*text_depth+d10_adj_depth[$faceindex])
-        move(x=(d10_text_h_push+d10_adj_h_push[$faceindex])*d10_size/100,y=(d10_text_v_push+d10_adj_v_push[$faceindex])*d10_size/100)
+        move([(d10_text_h_push+d10_adj_h_push[$faceindex])*d10_size/100,(d10_text_v_push+d10_adj_v_push[$faceindex])*d10_size/100])
         if(is_list(txt_merged[$faceindex])) //a symbol
-            move(x=d10_symbol_h_push*d10_size/100,y=d10_symbol_v_push*d10_size/100)
+            move([d10_symbol_h_push*d10_size/100,d10_symbol_v_push*d10_size/100])
             offset(delta=sym_stroke)
             text(txt_merged[$faceindex][0],size=sym_mult,font=sym_font,halign="center",valign="center");
         else if(txt_merged[$faceindex]=="4") //a number 4
@@ -1057,7 +1008,7 @@ module drawd10(){
         zrot(d10_rotate[$faceindex]+base_rotate[$faceindex])
         down(text_depth+d10_adj_depth[$faceindex])
         linear_extrude(height=2*text_depth+d10_adj_depth[$faceindex])
-        move(x=d10_underscore_h_push*d10_size/100,y=d10_underscore_v_push*d10_size/100)
+        move([d10_underscore_h_push*d10_size/100,d10_underscore_v_push*d10_size/100])
         offset(delta=txt_stroke)
         text(d10_underscores[$faceindex],size=under_mult,font=under_font,halign="center",valign="center");
         
@@ -1073,7 +1024,7 @@ module drawd00(){
     sym_stroke=symbol_stroke*sym_mult;
     bumpers=fix_quotes(d00_bumpers);
     space_mult=d00_text_spacing>1 ? (d00_text_spacing-1)*txt_mult/3.15 : d00_text_spacing<1 ? (-1+d00_text_spacing)*txt_mult/2.8 : 0;
-    base_rotate=[54.25,306.25,306.25,306.25,306.25,254.25,357.75,177.75,126.25,74.25];
+    base_rotate=[25,-25,-115,-25,-115,-115,25,-115,-25,-25];
     rotate_mod=d00_angle_text ? 90 : 0;
     d00_sside=sqrt(sqrt(5)-2)*d00_size-d00_length_mod/d00_size;
     separation=2*sqr(sin(90/5))*sqrt((sqr(d00_sside)+2*sqr(d00_size)*(cos(180/5)-1))/(cos(180/5)-1)/(cos(180/5)+cos(360/5)));
@@ -1113,9 +1064,9 @@ module drawd00(){
         zrot(d00_rotate[$faceindex]+base_rotate[$faceindex]+rotate_mod)
         down(text_depth+d00_adj_depth[$faceindex])
         linear_extrude(height=2*text_depth+d00_adj_depth[$faceindex])
-        move(x=(d00_text_h_push+d00_adj_h_push[$faceindex])*d00_size/100,y=(d00_text_v_push+d00_adj_v_push[$faceindex])*d00_size/100)
+        move([(d00_text_h_push+d00_adj_h_push[$faceindex])*d00_size/100,(d00_text_v_push+d00_adj_v_push[$faceindex])*d00_size/100])
         if(is_list(txt_merged[$faceindex])) //a symbol
-            move(x=d00_symbol_h_push*d00_size/100,y=d00_symbol_v_push*d00_size/100)
+            move([d00_symbol_h_push*d00_size/100,d00_symbol_v_push*d00_size/100])
             offset(delta=sym_stroke)
             text(txt_merged[$faceindex][0],size=sym_mult,font=sym_font,halign="center",valign="center");
         else //a double digit number
@@ -1152,7 +1103,7 @@ module drawd12(){
     bumpers=fix_quotes(d12_bumpers);
     under_mult=d12_underscore_size*d12_size/100;
     space_mult=d12_text_spacing>1 ? (d12_text_spacing-1)*txt_mult/3.15 : d12_text_spacing<1 ? (-1+d12_text_spacing)*txt_mult/2.8 : 0;
-    base_rotate=[270,90,18,162,234,306,306,234,18,162,270,90];
+    base_rotate=[72,-144,-144,-72,72,-72,72,-144,144,0,72,-144];
     d12_side=d12_size/2*20/sqrt(250+110*sqrt(5));
     circumsphere_dia=d12_side*sqrt(3)/4*(1+sqrt(5))*2;
     corner_round_mult=circumsphere_dia-(corner_rounding*circumsphere_dia/100)/3.2;
@@ -1190,9 +1141,9 @@ module drawd12(){
         zrot(d12_rotate[$faceindex]+base_rotate[$faceindex])
         down(text_depth+d12_adj_depth[$faceindex])
         linear_extrude(height=2*text_depth+d12_adj_depth[$faceindex])
-        move(x=(d12_text_h_push+d12_adj_h_push[$faceindex])*d12_size/100,y=(d12_text_v_push+d12_adj_v_push[$faceindex])*d12_size/100)
+        move([(d12_text_h_push+d12_adj_h_push[$faceindex])*d12_size/100,(d12_text_v_push+d12_adj_v_push[$faceindex])*d12_size/100])
         if(is_list(txt_merged[$faceindex])) //a symbol
-            move(x=d12_symbol_h_push*d12_size/100,y=d12_symbol_v_push*d12_size/100)
+            move([d12_symbol_h_push*d12_size/100,d12_symbol_v_push*d12_size/100])
             offset(delta=sym_stroke)
             text(txt_merged[$faceindex][0],size=sym_mult,font=sym_font,halign="center",valign="center");
         else if(txt_merged[$faceindex]=="4") //a number 4
@@ -1212,7 +1163,7 @@ module drawd12(){
         zrot(d12_rotate[$faceindex]+base_rotate[$faceindex])
         down(text_depth+d12_adj_depth[$faceindex])
         linear_extrude(height=2*text_depth+d12_adj_depth[$faceindex])
-        move(x=d12_underscore_h_push*d12_size/100,y=d12_underscore_v_push*d12_size/100)
+        move([d12_underscore_h_push*d12_size/100,d12_underscore_v_push*d12_size/100])
         offset(delta=txt_stroke)
         text(d12_underscores[$faceindex],size=under_mult,font=under_font,halign="center",valign="center");
     }
@@ -1228,7 +1179,7 @@ module drawd12r(){
     bumpers=fix_quotes(d12r_bumpers);
     under_mult=d12r_underscore_size*d12r_size/100;
     space_mult=d12r_text_spacing>1 ? (d12r_text_spacing-1)*txt_mult/3.15 : d12r_text_spacing<1 ? (-1+d12r_text_spacing)*txt_mult/2.8 : 0;
-    base_rotate=[0,180,180,180,180,-70.53,180,70.53,70.53,0,0,-70.53];
+    base_rotate=[145,-145,145,-35,35,-145,35,-145,35,145,145,-35];
     circumsphere_dia=d12r_size*(1/sqrt(2))*2;
     corner_round_mult=circumsphere_dia-(corner_rounding*circumsphere_dia/100)/2;
     corner_clip_mult=circumsphere_dia/2-(corner_clipping*circumsphere_dia/100/2)/2;
@@ -1265,9 +1216,9 @@ module drawd12r(){
         zrot(d12r_rotate[$faceindex]+base_rotate[$faceindex])
         down(text_depth+d12r_adj_depth[$faceindex])
         linear_extrude(height=2*text_depth+d12r_adj_depth[$faceindex])
-        move(x=(d12r_text_h_push+d12r_adj_h_push[$faceindex])*d12r_size/100,y=(d12r_text_v_push+d12r_adj_v_push[$faceindex])*d12r_size/100)
+        move([(d12r_text_h_push+d12r_adj_h_push[$faceindex])*d12r_size/100,(d12r_text_v_push+d12r_adj_v_push[$faceindex])*d12r_size/100])
         if(is_list(txt_merged[$faceindex])) //a symbol
-            move(x=d12r_symbol_h_push*d12r_size/100,y=d12r_symbol_v_push*d12r_size/100)
+            move([d12r_symbol_h_push*d12r_size/100,d12r_symbol_v_push*d12r_size/100])
             offset(delta=sym_stroke)
             text(txt_merged[$faceindex][0],size=sym_mult,font=sym_font,halign="center",valign="center");
         else if(txt_merged[$faceindex]=="4") //a number 4
@@ -1287,7 +1238,7 @@ module drawd12r(){
         zrot(d12r_rotate[$faceindex]+base_rotate[$faceindex])
         down(text_depth+d12r_adj_depth[$faceindex])
         linear_extrude(height=2*text_depth+d12r_adj_depth[$faceindex])
-        move(x=d12r_underscore_h_push*d12r_size/100,y=d12r_underscore_v_push*d12r_size/100)
+        move([d12r_underscore_h_push*d12r_size/100,d12r_underscore_v_push*d12r_size/100])
         offset(delta=txt_stroke)
         text(d12r_underscores[$faceindex],size=under_mult,font=under_font,halign="center",valign="center");
         
@@ -1304,7 +1255,7 @@ module drawd20(){
     bumpers=fix_quotes(d20_bumpers);
     under_mult=d20_underscore_size*d20_size/100;
     space_mult=d20_text_spacing>1 ? (d20_text_spacing-1)*txt_mult/3.15 : d20_text_spacing<1 ? (-1+d20_text_spacing)*txt_mult/2.8 : 0;
-    base_rotate=[20.9,339.1,339.1,-20.9,99.1,99.1,219.1,23.6,219.1,143.6,174.6,99.1,99.1,54.6,219.1,294.6,219.1,159.1,339.1,263.6];
+    base_rotate=[120,120,-120,-120,120,120,120,-120,0,-120,0,120,0,0,0,0,0,0,-120,0];
     d20_side=d20_size/2*12/(sqrt(3)*(3+sqrt(5)));
     circumsphere_dia=d20_side*sin(72)*2;
     corner_round_mult=circumsphere_dia-(corner_rounding*circumsphere_dia/100)/2.5;
@@ -1342,9 +1293,9 @@ module drawd20(){
         zrot(d20_rotate[$faceindex]+base_rotate[$faceindex])
         down(text_depth+d20_adj_depth[$faceindex])
         linear_extrude(height=2*text_depth+d20_adj_depth[$faceindex])
-        move(x=(d20_text_h_push+d20_adj_h_push[$faceindex])*d20_size/100,y=(d20_text_v_push+d20_adj_v_push[$faceindex])*d20_size/100)
+        move([(d20_text_h_push+d20_adj_h_push[$faceindex])*d20_size/100,(d20_text_v_push+d20_adj_v_push[$faceindex])*d20_size/100])
         if(is_list(txt_merged[$faceindex])) //a symbol
-            move(x=d20_symbol_h_push*d20_size/100,y=d20_symbol_v_push*d20_size/100)
+            move([d20_symbol_h_push*d20_size/100,d20_symbol_v_push*d20_size/100])
             offset(delta=sym_stroke)
             text(txt_merged[$faceindex][0],size=sym_mult,font=sym_font,halign="center",valign="center");
         else if(txt_merged[$faceindex]=="4") //a number 4
@@ -1364,7 +1315,7 @@ module drawd20(){
         zrot(d20_rotate[$faceindex]+base_rotate[$faceindex])
         down(text_depth+d20_adj_depth[$faceindex])
         linear_extrude(height=2*text_depth+d20_adj_depth[$faceindex])
-        move(x=d20_underscore_h_push*d20_size/100,y=d20_underscore_v_push*d20_size/100)
+        move([d20_underscore_h_push*d20_size/100,d20_underscore_v_push*d20_size/100])
         offset(delta=txt_stroke)
         text(d20_underscores[$faceindex],size=under_mult,font=under_font,halign="center",valign="center");
     }

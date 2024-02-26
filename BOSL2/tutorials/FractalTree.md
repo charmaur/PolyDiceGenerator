@@ -1,13 +1,15 @@
 # Fractal Tree Tutorial
 
+<!-- TOC -->
+
 ### Start with a Tree Trunk
 
 Firstoff, include the BOSL2 library, then make a starting module that just has a tapered cylinder for the tree trunk.
 
-```openscad
+```openscad-3D
 include <BOSL2/std.scad>
 module tree(l=1500, sc=0.7)
-    cylinder(l=l, d1=l/5, d2=l/5*sc);
+    cylinder(h=l, d1=l/5, d2=l/5*sc);
 tree();
 ```
 
@@ -15,12 +17,12 @@ tree();
 
 You can attach a branch to the top of the trunk by using `attach()` as a child of the trunk cylinder.
 
-```openscad
+```openscad-3D
 include <BOSL2/std.scad>
 module tree(l=1500, sc=0.7)
-    cylinder(l=l, d1=l/5, d2=l/5*sc)
+    cylinder(h=l, d1=l/5, d2=l/5*sc)
         attach(TOP)
-            yrot(30) cylinder(l=l*sc, d1=l/5*sc, d2=l/5*sc*sc);
+            yrot(30) cylinder(h=l*sc, d1=l/5*sc, d2=l/5*sc*sc);
 tree();
 ```
 
@@ -28,13 +30,13 @@ tree();
 
 Instead of attaching each branch individually, you can make multiple copies of one branch, that are rotated relative to each other.
 
-```openscad
+```openscad-3D
 include <BOSL2/std.scad>
 module tree(l=1500, sc=0.7)
-    cylinder(l=l, d1=l/5, d2=l/5*sc)
+    cylinder(h=l, d1=l/5, d2=l/5*sc)
         attach(TOP)
             zrot_copies(n=2)  // Replicate that branch
-                yrot(30) cylinder(l=l*sc, d1=l/5*sc, d2=l/5*sc*sc);
+                yrot(30) cylinder(h=l*sc, d1=l/5*sc, d2=l/5*sc*sc);
 tree();
 ```
 
@@ -45,7 +47,7 @@ Since branches look much like the main trunk, we can make the tree recursive. Do
 ```openscad-Med
 include <BOSL2/std.scad>
 module tree(l=1500, sc=0.7, depth=10)
-    cylinder(l=l, d1=l/5, d2=l/5*sc)
+    cylinder(h=l, d1=l/5, d2=l/5*sc)
         attach(TOP)
             if (depth>0)  { // Important!
                 zrot_copies(n=2)
@@ -61,7 +63,7 @@ A flat planar tree isn't what we want, so lets bush it out a bit by rotating eac
 ```openscad-Med
 include <BOSL2/std.scad>
 module tree(l=1500, sc=0.7, depth=10)
-    cylinder(l=l, d1=l/5, d2=l/5*sc)
+    cylinder(h=l, d1=l/5, d2=l/5*sc)
         attach(TOP)
             if (depth>0) {
                 zrot(90)  // Bush it out
@@ -78,7 +80,7 @@ Let's add leaves. They look much like squashed versions of the standard teardrop
 ```openscad-Big
 include <BOSL2/std.scad>
 module tree(l=1500, sc=0.7, depth=10)
-    cylinder(l=l, d1=l/5, d2=l/5*sc)
+    cylinder(h=l, d1=l/5, d2=l/5*sc)
         attach(TOP)
             if (depth>0) {
                 zrot(90)
@@ -102,7 +104,7 @@ nested `recolor()`.
 include <BOSL2/std.scad>
 module tree(l=1500, sc=0.7, depth=10)
     recolor("lightgray")
-    cylinder(l=l, d1=l/5, d2=l/5*sc)
+    cylinder(h=l, d1=l/5, d2=l/5*sc)
         attach(TOP)
             if (depth>0) {
                 zrot(90)
@@ -115,4 +117,5 @@ module tree(l=1500, sc=0.7, depth=10)
             }
 tree();
 ```
+
 

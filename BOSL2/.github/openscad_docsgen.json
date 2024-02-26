@@ -1,0 +1,14 @@
+{
+    "problemMatcher": [
+        {
+            "owner": "docsgen",
+            "pattern": [
+                {
+                    "regexp": "^!! (WARNING|ERROR) at ([^:]+:\\d+: .*[^:])$",
+                    "severity": 1,
+                    "message": 2
+                }
+            ]
+        }
+    ]
+}

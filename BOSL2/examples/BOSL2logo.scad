@@ -1,5 +1,5 @@
 include <BOSL2/std.scad>
-include <BOSL2/involute_gears.scad>
+include <BOSL2/gears.scad>
 include <BOSL2/beziers.scad>
 include <BOSL2/screws.scad>
 include <BOSL2/cubetruss.scad>
@@ -11,11 +11,11 @@ xdistribute(50) {
 	recolor("#f77")
 	diff("hole")
 	cuboid([45,45,10], chamfer=10, edges=[RIGHT+BACK,RIGHT+FRONT], anchor=FRONT) {
-		cuboid([30,30,11], chamfer=5, edges=[RIGHT+BACK,RIGHT+FRONT], $tags="hole");
+		tag("hole")cuboid([30,30,11], chamfer=5, edges=[RIGHT+BACK,RIGHT+FRONT]);
 		attach(FRONT,BACK, overlap=5) {
-			diff("hole")
+			diff("hole2")
 			cuboid([45,45,10], rounding=15, edges=[RIGHT+BACK,RIGHT+FRONT]) {
-				cuboid([30,30,11], rounding=10, edges=[RIGHT+BACK,RIGHT+FRONT], $tags="hole");
+				tag("hole2")cuboid([30,30,11], rounding=10, edges=[RIGHT+BACK,RIGHT+FRONT]);
 			}
 		}
 	}
@@ -34,7 +34,7 @@ xdistribute(50) {
 		[ x, y+s1], [ x, y]
 	];
 	recolor("#99f")
-	path_sweep(regular_ngon(n=3,d=10,spin=90), bezier_path(sbez));
+	path_sweep(regular_ngon(n=3,d=10,spin=90), bezpath_curve(sbez));
 
 	recolor("#0bf")
 	translate([-15,-35,0])
@@ -44,10 +44,9 @@ xdistribute(50) {
 	xdistribute(24) {
 		screw("M12,70", head="hex", anchor="origin", orient=BACK)
 			attach(BOT,CENTER)
-				nut("M12", thickness=10, diameter=20, details=true);
+				nut("M12", thickness=10);
 		screw("M12,70", head="hex", anchor="origin", orient=BACK)
 			attach(BOT,CENTER)
-				nut("M12", thickness=10, diameter=20, details=true);
+				nut("M12", thickness=10);
 	}
 }
-

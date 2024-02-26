@@ -13,6 +13,8 @@ module test_quant() {
     assert_equal(quant(3,3), 3);
     assert_equal(quant(4,3), 3);
     assert_equal(quant(7,3), 6);
+    assert_equal(quant(12,2.5), 12.5);
+    assert_equal(quant(11,2.5), 10.0);
     assert_equal(quant([12,13,13.1,14,14.1,15,16],4), [12,12,12,16,16,16,16]);
     assert_equal(quant([9,10,10.4,10.5,11,12],3), [9,9,9,12,12,12]);
     assert_equal(quant([[9,10,10.4],[10.5,11,12]],3), [[9,9,9],[12,12,12]]);
@@ -31,6 +33,8 @@ module test_quantdn() {
     assert_equal(quantdn(3,3), 3);
     assert_equal(quantdn(4,3), 3);
     assert_equal(quantdn(7,3), 6);
+    assert_equal(quantdn(12,2.5), 10.0);
+    assert_equal(quantdn(11,2.5), 10.0);
     assert_equal(quantdn([12,13,13.1,14,14.1,15,16],4), [12,12,12,12,12,12,16]);
     assert_equal(quantdn([9,10,10.4,10.5,11,12],3), [9,9,9,9,9,12]);
     assert_equal(quantdn([[9,10,10.4],[10.5,11,12]],3), [[9,9,9],[9,9,12]]);
@@ -49,6 +53,8 @@ module test_quantup() {
     assert_equal(quantup(3,3), 3);
     assert_equal(quantup(4,3), 6);
     assert_equal(quantup(7,3), 9);
+    assert_equal(quantup(12,2.5), 12.5);
+    assert_equal(quantup(11,2.5), 12.5);
     assert_equal(quantup([12,13,13.1,14,14.1,15,16],4), [12,16,16,16,16,16,16]);
     assert_equal(quantup([9,10,10.4,10.5,11,12],3), [9,12,12,12,12,12]);
     assert_equal(quantup([[9,10,10.4],[10.5,11,12]],3), [[9,12,12],[12,12,12]]);
@@ -70,202 +76,27 @@ module test_constrain() {
 test_constrain();
 
 
-module test_is_matrix() {
-    assert(is_matrix([[2,3,4],[5,6,7],[8,9,10]]));
-    assert(is_matrix([[2,3],[5,6],[8,9]],3,2));
-    assert(is_matrix([[2,3],[5,6],[8,9]],m=3,n=2));
-    assert(is_matrix([[2,3,4],[5,6,7]],m=2,n=3));
-    assert(is_matrix([[2,3,4],[5,6,7]],2,3));
-    assert(is_matrix([[2,3,4],[5,6,7]],m=2));
-    assert(is_matrix([[2,3,4],[5,6,7]],2));
-    assert(is_matrix([[2,3,4],[5,6,7]],n=3));
-    assert(!is_matrix([[2,3,4],[5,6,7]],m=4));
-    assert(!is_matrix([[2,3,4],[5,6,7]],n=5));
-    assert(!is_matrix([[2,3],[5,6],[8,9]],m=2,n=3));
-    assert(!is_matrix([[2,3,4],[5,6,7]],m=3,n=2));
-    assert(!is_matrix(undef));
-    assert(!is_matrix(NAN));
-    assert(!is_matrix(INF));
-    assert(!is_matrix(-5));
-    assert(!is_matrix(0));
-    assert(!is_matrix(5));
-    assert(!is_matrix(""));
-    assert(!is_matrix("foo"));
-    assert(!is_matrix([3,4,5]));
-    assert(!is_matrix([]));
+
+module test_all_integer() {
+    assert(!all_integer(undef));
+    assert(!all_integer(true));
+    assert(!all_integer(false));
+    assert(!all_integer(4.3));
+    assert(!all_integer("foo"));
+    assert(!all_integer([]));
+    assert(!all_integer([3,4.1,5,7]));
+    assert(!all_integer([[1,2,3],[4,5,6],[7,8]]));
+    assert(all_integer(-4));
+    assert(all_integer(0));
+    assert(all_integer(5));
+    assert(all_integer([-3]));
+    assert(all_integer([0]));
+    assert(all_integer([3]));
+    assert(all_integer([2,-4,0,5,7,9876543210]));
 }
-test_is_matrix();
+test_all_integer();
 
 
-module test_all_zero() {
-    assert(all_zero(0));
-    assert(all_zero([0,0,0]));
-    assert(all_zero([[0,0,0],[0,0]]));
-    assert(all_zero([EPSILON/2,EPSILON/2,EPSILON/2]));
-    assert(!all_zero(1e-3));
-    assert(!all_zero([0,0,1e-3]));
-    assert(!all_zero([EPSILON*10,0,0]));
-    assert(!all_zero([0,EPSILON*10,0]));
-    assert(!all_zero([0,0,EPSILON*10]));
-    assert(!all_zero(true));
-    assert(!all_zero(false));
-    assert(!all_zero(INF));
-    assert(!all_zero(-INF));
-    assert(!all_zero(NAN));
-    assert(!all_zero("foo"));
-    assert(!all_zero([]));
-    assert(!all_zero([0:1:2]));
-}
-test_all_zero();
-
-
-module test_all_nonzero() {
-    assert(!all_nonzero(0));
-    assert(!all_nonzero([0,0,0]));
-    assert(!all_nonzero([[0,0,0],[0,0]]));
-    assert(!all_nonzero([EPSILON/2,EPSILON/2,EPSILON/2]));
-    assert(all_nonzero(1e-3));
-    assert(!all_nonzero([0,0,1e-3]));
-    assert(!all_nonzero([EPSILON*10,0,0]));
-    assert(!all_nonzero([0,EPSILON*10,0]));
-    assert(!all_nonzero([0,0,EPSILON*10]));
-    assert(all_nonzero([1e-3,1e-3,1e-3]));
-    assert(all_nonzero([EPSILON*10,EPSILON*10,EPSILON*10]));
-    assert(!all_nonzero(true));
-    assert(!all_nonzero(false));
-    assert(!all_nonzero(INF));
-    assert(!all_nonzero(-INF));
-    assert(!all_nonzero(NAN));
-    assert(!all_nonzero("foo"));
-    assert(!all_nonzero([]));
-    assert(!all_nonzero([0:1:2]));
-}
-test_all_nonzero();
-
-
-module test_all_positive() {
-    assert(!all_positive(-2));
-    assert(!all_positive(0));
-    assert(all_positive(2));
-    assert(!all_positive([0,0,0]));
-    assert(!all_positive([0,1,2]));
-    assert(all_positive([3,1,2]));
-    assert(!all_positive([3,-1,2]));
-    assert(!all_positive([]));
-    assert(!all_positive(true));
-    assert(!all_positive(false));
-    assert(!all_positive("foo"));
-    assert(!all_positive([0:1:2]));
-}
-test_all_positive();
-
-
-module test_all_negative() {
-    assert(all_negative(-2));
-    assert(!all_negative(0));
-    assert(!all_negative(2));
-    assert(!all_negative([0,0,0]));
-    assert(!all_negative([0,1,2]));
-    assert(!all_negative([3,1,2]));
-    assert(!all_negative([3,-1,2]));
-    assert(all_negative([-3,-1,-2]));
-    assert(!all_negative([-3,1,-2]));
-    assert(all_negative([[-5,-7],[-3,-1,-2]]));
-    assert(!all_negative([[-5,-7],[-3,1,-2]]));
-    assert(!all_negative([]));
-    assert(!all_negative(true));
-    assert(!all_negative(false));
-    assert(!all_negative("foo"));
-    assert(!all_negative([0:1:2]));
-}
-test_all_negative();
-
-
-module test_all_nonpositive() {
-    assert(all_nonpositive(-2));
-    assert(all_nonpositive(0));
-    assert(!all_nonpositive(2));
-    assert(all_nonpositive([0,0,0]));
-    assert(!all_nonpositive([0,1,2]));
-    assert(all_nonpositive([0,-1,-2]));
-    assert(!all_nonpositive([3,1,2]));
-    assert(!all_nonpositive([3,-1,2]));
-    assert(!all_nonpositive([]));
-    assert(!all_nonpositive(true));
-    assert(!all_nonpositive(false));
-    assert(!all_nonpositive("foo"));
-    assert(!all_nonpositive([0:1:2]));
-}
-test_all_nonpositive();
-
-
-module test_all_nonnegative() {
-    assert(!all_nonnegative(-2));
-    assert(all_nonnegative(0));
-    assert(all_nonnegative(2));
-    assert(all_nonnegative([0,0,0]));
-    assert(all_nonnegative([0,1,2]));
-    assert(all_nonnegative([3,1,2]));
-    assert(!all_nonnegative([3,-1,2]));
-    assert(!all_nonnegative([-3,-1,-2]));
-    assert(!all_nonnegative([[-5,-7],[-3,-1,-2]]));
-    assert(!all_nonnegative([[-5,-7],[-3,1,-2]]));
-    assert(!all_nonnegative([[5,7],[3,-1,2]]));
-    assert(all_nonnegative([[5,7],[3,1,2]]));
-    assert(!all_nonnegative([]));
-    assert(!all_nonnegative(true));
-    assert(!all_nonnegative(false));
-    assert(!all_nonnegative("foo"));
-    assert(!all_nonnegative([0:1:2]));
-}
-test_all_nonnegative();
-
-
-module test_approx() {
-    assert_equal(approx(PI, 3.141592653589793236), true);
-    assert_equal(approx(PI, 3.1415926), false);
-    assert_equal(approx(PI, 3.1415926, eps=1e-6), true);
-    assert_equal(approx(-PI, -3.141592653589793236), true);
-    assert_equal(approx(-PI, -3.1415926), false);
-    assert_equal(approx(-PI, -3.1415926, eps=1e-6), true);
-    assert_equal(approx(1/3, 0.3333333333), true);
-    assert_equal(approx(-1/3, -0.3333333333), true);
-    assert_equal(approx(10*[cos(30),sin(30)], 10*[sqrt(3)/2, 1/2]), true);
-    assert_equal(approx([1,[1,undef]], [1+1e-12,[1,true]]), false);
-    assert_equal(approx([1,[1,undef]], [1+1e-12,[1,undef]]), true);
-}
-test_approx();
-
-
-module test_min_index() {
-    vals = rands(-100,100,100,seed=75);
-    minval = min(vals);
-    minidx = min_index(vals);
-    assert_equal(vals[minidx], minval);
-    assert_equal(min_index([3,4,5,6]), 0);
-    assert_equal(min_index([4,3,5,6]), 1);
-    assert_equal(min_index([4,5,3,6]), 2);
-    assert_equal(min_index([4,5,6,3]), 3);
-    assert_equal(min_index([6,5,4,3]), 3);
-    assert_equal(min_index([6,3,4,5]), 1);
-    assert_equal(min_index([-56,72,-874,5]), 2);
-}
-test_min_index();
-
-
-module test_max_index() {
-    vals = rands(-100,100,100,seed=97);
-    maxval = max(vals);
-    maxidx = max_index(vals);
-    assert_equal(vals[maxidx], maxval);
-    assert_equal(max_index([3,4,5,6]), 3);
-    assert_equal(max_index([3,4,6,5]), 2);
-    assert_equal(max_index([3,6,4,5]), 1);
-    assert_equal(max_index([6,3,4,5]), 0);
-    assert_equal(max_index([5,6,4,3]), 1);
-    assert_equal(max_index([-56,72,-874,5]), 1);
-}
-test_max_index();
 
 
 module test_posmod() {
@@ -291,15 +122,6 @@ module test_modang() {
     assert_equal(modang(700), -20);
 }
 test_modang();
-
-
-module test_modrange() {
-    assert_equal(modrange(-5,5,3), [1,2]);
-    assert_equal(modrange(-1,4,3), [2,0,1]);
-    assert_equal(modrange(1,8,10,step=2), [1,3,5,7]);
-    assert_equal(modrange(5,12,10,step=2), [5,7,9,1]);
-}
-test_modrange();
 
 
 module test_sqr() {
@@ -337,36 +159,28 @@ test_rand_int();
 
 
 module test_gaussian_rands() {
-    nums1 = gaussian_rands(0,10,1000,seed=2132);
-    nums2 = gaussian_rands(0,10,1000,seed=2130);
-    nums3 = gaussian_rands(0,10,1000,seed=2132);
+    nums1 = gaussian_rands(1000,0,10,seed=2132);
+    nums2 = gaussian_rands(1000,0,10,seed=2130);
+    nums3 = gaussian_rands(1000,0,10,seed=2132);
     assert_equal(len(nums1), 1000);
     assert_equal(len(nums2), 1000);
     assert_equal(len(nums3), 1000);
     assert_equal(nums1, nums3);
     assert(nums1!=nums2);
+
+    R = [[4,2],[2,17]];
+    data = gaussian_rands(100000,[0,0],R,seed=49);
+    assert(approx(mean(data), [0,0], eps=1e-2));
+    assert(approx(transpose(data)*data/len(data), R, eps=2e-2));
+    
+    R2 = [[4,2,-1],[2,17,4],[-1,4,11]];
+    data3 = gaussian_rands(100000,[1,2,3],R2,seed=97);
+    assert(approx(mean(data3),[1,2,3], eps=1e-2));
+    cdata = move(-mean(data3),data3);    
+    assert(approx(transpose(cdata)*cdata/len(cdata),R2,eps=.1));
 }
 test_gaussian_rands();
 
-
-module test_log_rands() {
-    nums1 = log_rands(0,100,10,1000,seed=2189);
-    nums2 = log_rands(0,100,10,1000,seed=2310);
-    nums3 = log_rands(0,100,10,1000,seed=2189);
-    assert_equal(len(nums1), 1000);
-    assert_equal(len(nums2), 1000);
-    assert_equal(len(nums3), 1000);
-    assert_equal(nums1, nums3);
-    assert(nums1!=nums2);
-}
-test_log_rands();
-
-
-module test_segs() {
-    assert_equal(segs(50,$fn=8), 8);
-    assert_equal(segs(50,$fa=2,$fs=2), 158);
-}
-test_segs();
 
 
 module test_lerp() {
@@ -549,7 +363,9 @@ test_sum_of_sines();
 
 module test_deltas() {
     assert_equal(deltas([2,5,9,17]), [3,4,8]);
+    assert_equal(deltas([2,5,9,17],wrap=true), [3,4,8,-15]);
     assert_equal(deltas([[1,2,3], [3,6,8], [4,8,11]]), [[2,4,5], [1,2,3]]);
+    assert_equal(deltas([[1,2,3], [3,6,8], [4,8,11]],wrap=true), [[2,4,5], [1,2,3], [-3,-6,-8]]);
 }
 test_deltas();
 
@@ -571,13 +387,13 @@ module test_mean() {
 }
 test_mean();
 
-/*
+
 module test_median() {
-    assert_equal(median([2,3,7]), 4.5);
-    assert_equal(median([[1,2,3], [3,4,5], [8,9,10]]), [4.5,5.5,6.5]);
+    assert_equal(median([2,3,7]), 3);
+    assert_equal(median([2,4,5,8]), 4.5);
 }
 test_median();
-*/
+
 
 
 module test_convolve() {
@@ -585,158 +401,32 @@ module test_convolve() {
     assert_equal(convolve([1,1],[]), []);
     assert_equal(convolve([1,1],[1,2,1]), [1,3,3,1]);
     assert_equal(convolve([1,2,3],[1,2,1]), [1,4,8,8,3]);
+    assert_equal(convolve([1,2,3],[[1],[2],[1]]),  [[1], [4], [8], [8], [3]]);
+    assert_equal(convolve([[1],[2],[3]],[[1],[2],[1]]), [1,4,8,8,3]);
+    assert_equal(convolve([[1,0],[2,1],[3,2]],[[1,0],[2,1],[1,2]]), [1,4,9,12,7]);
+    assert_equal(convolve([1,2,3],[[1,0],[2,1],[1,2]]), [[1,0],[4,1],[8,4],[8,7],[3,6]]);
 }
 test_convolve();
 
 
 
-module test_matrix_inverse() {
-    assert_approx(matrix_inverse(rot([20,30,40])), [[0.663413948169,0.556670399226,-0.5,0],[-0.47302145844,0.829769465589,0.296198132726,0],[0.579769465589,0.0400087565481,0.813797681349,0],[0,0,0,1]]);
-}
-test_matrix_inverse();
-
-
-module test_det2() {
-    assert_equal(det2([[6,-2], [1,8]]), 50);
-    assert_equal(det2([[4,7], [3,2]]), -13);
-    assert_equal(det2([[4,3], [3,4]]), 7);
-}
-test_det2();
-
-
-module test_det3() {
-    M = [ [6,4,-2], [1,-2,8], [1,5,7] ];
-    assert_equal(det3(M), -334);
-}
-test_det3();
-
-
-module test_determinant() {
-    M = [ [6,4,-2,9], [1,-2,8,3], [1,5,7,6], [4,2,5,1] ];
-    assert_equal(determinant(M), 2267);
-}
-test_determinant();
-
-
-module test_matrix_trace() {
-    M = [ [6,4,-2,9], [1,-2,8,3], [1,5,7,6], [4,2,5,1] ];
-    assert_equal(matrix_trace(M), 6-2+7+1);
-}
-test_matrix_trace();
-
 
 // Logic
 
-
-module test_compare_vals() {
-    assert(compare_vals(-10,0) < 0);
-    assert(compare_vals(10,0) > 0);
-    assert(compare_vals(10,10) == 0);
-
-    assert(compare_vals("abc","abcd") < 0);
-    assert(compare_vals("abcd","abc") > 0);
-    assert(compare_vals("abcd","abcd") == 0);
-
-    assert(compare_vals(false,false) == 0);
-    assert(compare_vals(true,false) > 0);
-    assert(compare_vals(false,true) < 0);
-    assert(compare_vals(true,true) == 0);
-
-    assert(compare_vals([2,3,4], [2,3,4,5]) < 0);
-    assert(compare_vals([2,3,4,5], [2,3,4,5]) == 0);
-    assert(compare_vals([2,3,4,5], [2,3,4]) > 0);
-    assert(compare_vals([2,3,4,5], [2,3,5,5]) < 0);
-    assert(compare_vals([[2,3,4,5]], [[2,3,5,5]]) < 0);
-
-    assert(compare_vals([[2,3,4],[3,4,5]], [[2,3,4], [3,4,5]]) == 0);
-    assert(compare_vals([[2,3,4],[3,4,5]], [[2,3,4,5], [3,4,5]]) < 0);
-    assert(compare_vals([[2,3,4],[3,4,5]], [[2,3,4], [3,4,5,6]]) < 0);
-    assert(compare_vals([[2,3,4,5],[3,4,5]], [[2,3,4], [3,4,5]]) > 0);
-    assert(compare_vals([[2,3,4],[3,4,5,6]], [[2,3,4], [3,4,5]]) > 0);
-    assert(compare_vals([[2,3,4],[3,5,5]], [[2,3,4], [3,4,5]]) > 0);
-    assert(compare_vals([[2,3,4],[3,4,5]], [[2,3,4], [3,5,5]]) < 0);
-
-    assert(compare_vals(undef, undef) == 0);
-    assert(compare_vals(undef, true) < 0);
-    assert(compare_vals(undef, 0) < 0);
-    assert(compare_vals(undef, "foo") < 0);
-    assert(compare_vals(undef, [2,3,4]) < 0);
-    assert(compare_vals(undef, [0:3]) < 0);
-
-    assert(compare_vals(true, undef) > 0);
-    assert(compare_vals(true, true) == 0);
-    assert(compare_vals(true, 0) < 0);
-    assert(compare_vals(true, "foo") < 0);
-    assert(compare_vals(true, [2,3,4]) < 0);
-    assert(compare_vals(true, [0:3]) < 0);
-
-    assert(compare_vals(0, undef) > 0);
-    assert(compare_vals(0, true) > 0);
-    assert(compare_vals(0, 0) == 0);
-    assert(compare_vals(0, "foo") < 0);
-    assert(compare_vals(0, [2,3,4]) < 0);
-    assert(compare_vals(0, [0:3]) < 0);
-
-    assert(compare_vals(1, undef) > 0);
-    assert(compare_vals(1, true) > 0);
-    assert(compare_vals(1, 1) == 0);
-    assert(compare_vals(1, "foo") < 0);
-    assert(compare_vals(1, [2,3,4]) < 0);
-    assert(compare_vals(1, [0:3]) < 0);
-
-    assert(compare_vals("foo", undef) > 0);
-    assert(compare_vals("foo", true) > 0);
-    assert(compare_vals("foo", 1) > 0);
-    assert(compare_vals("foo", "foo") == 0);
-    assert(compare_vals("foo", [2,3,4]) < 0);
-    assert(compare_vals("foo", [0:3]) < 0);
-
-    assert(compare_vals([2,3,4], undef) > 0);
-    assert(compare_vals([2,3,4], true) > 0);
-    assert(compare_vals([2,3,4], 1) > 0);
-    assert(compare_vals([2,3,4], "foo") > 0);
-    assert(compare_vals([2,3,4], [2,3,4]) == 0);
-    assert(compare_vals([2,3,4], [0:3]) < 0);
-
-    assert(compare_vals([0:3], undef) > 0);
-    assert(compare_vals([0:3], true) > 0);
-    assert(compare_vals([0:3], 1) > 0);
-    assert(compare_vals([0:3], "foo") > 0);
-    assert(compare_vals([0:3], [2,3,4]) > 0);
-    assert(compare_vals([0:3], [0:3]) == 0);
-}
-test_compare_vals();
-
-
-module test_compare_lists() {
-    assert(compare_lists([2,3,4], [2,3,4,5]) < 0);
-    assert(compare_lists([2,3,4,5], [2,3,4,5]) == 0);
-    assert(compare_lists([2,3,4,5], [2,3,4]) > 0);
-    assert(compare_lists([2,3,4,5], [2,3,5,5]) < 0);
-
-    assert(compare_lists([[2,3,4],[3,4,5]], [[2,3,4], [3,4,5]]) == 0);
-    assert(compare_lists([[2,3,4],[3,4,5]], [[2,3,4,5], [3,4,5]]) < 0);
-    assert(compare_lists([[2,3,4],[3,4,5]], [[2,3,4], [3,4,5,6]]) < 0);
-    assert(compare_lists([[2,3,4,5],[3,4,5]], [[2,3,4], [3,4,5]]) > 0);
-    assert(compare_lists([[2,3,4],[3,4,5,6]], [[2,3,4], [3,4,5]]) > 0);
-    assert(compare_lists([[2,3,4],[3,5,5]], [[2,3,4], [3,4,5]]) > 0);
-    assert(compare_lists([[2,3,4],[3,4,5]], [[2,3,4], [3,5,5]]) < 0);
-
-    assert(compare_lists("cat", "bat") > 0);
-    assert(compare_lists(["cat"], ["bat"]) > 0);
-}
-test_compare_lists();
 
 
 module test_any() {
     assert_equal(any([0,false,undef]), false);
     assert_equal(any([1,false,undef]), true);
     assert_equal(any([1,5,true]), true);
-    assert_equal(any([[0,0], [0,0]]), false);
+    assert_equal(any([[0,0], [0,0]]), true);
     assert_equal(any([[0,0], [1,0]]), true);
     assert_equal(any([[false,false],[[false,[false],[[[true]]]],false],[false,false]]), true);
-    assert_equal(any([[false,false],[[false,[false],[[[false]]]],false],[false,false]]), false);
+    assert_equal(any([[false,false],[[false,[false],[[[false]]]],false],[false,false]]), true);
     assert_equal(any([]), false);
+    assert_equal(any([1,3,5,7,9], function (a) a%2==0),false);
+    assert_equal(any([1,3,6,7,9], function (a) a%2==0),true);
+    assert_equal(any([1,3,5,7,9], function (a) a%2!=0),true);
 }
 test_any();
 
@@ -745,27 +435,17 @@ module test_all() {
     assert_equal(all([0,false,undef]), false);
     assert_equal(all([1,false,undef]), false);
     assert_equal(all([1,5,true]), true);
-    assert_equal(all([[0,0], [0,0]]), false);
-    assert_equal(all([[0,0], [1,0]]), false);
+    assert_equal(all([[0,0], [0,0]]), true);
+    assert_equal(all([[0,0], [1,0]]), true);
     assert_equal(all([[1,1], [1,1]]), true);
-    assert_equal(all([[true,true],[[true,[true],[[[true]]]],true],[true,true]]), true);    
-    assert_equal(all([[true,true],[[true,[true],[[[false]]]],true],[true,true]]), false);
+    assert_equal(all([[true,true],[[true,[true],[[[true]]]],true],[true,true]]), true);
+    assert_equal(all([[true,true],[[true,[true],[[[false]]]],true],[true,true]]), true);
     assert_equal(all([]), true);
+    assert_equal(all([1,3,5,7,9], function (a) a%2==0),false);
+    assert_equal(all([1,3,6,8,9], function (a) a%2==0),false);
+    assert_equal(all([1,3,5,7,9], function (a) a%2!=0),true);
 }
 test_all();
-
-
-module test_count_true() {
-    assert_equal(count_true([0,false,undef]), 0);
-    assert_equal(count_true([1,false,undef]), 1);
-    assert_equal(count_true([1,5,false]), 2);
-    assert_equal(count_true([1,5,true]), 3);
-    assert_equal(count_true([[0,0], [0,0]]), 2);
-    assert_equal(count_true([[0,0], [1,0]]), 2);
-    assert_equal(count_true([[1,1], [1,1]]), 2);
-    assert_equal(count_true([1,1,1,1,1], nmax=3), 3);
-}
-test_count_true();
 
 
 module test_factorial() {
@@ -783,6 +463,7 @@ module test_factorial() {
 }
 test_factorial();
 
+
 module test_binomial() {
     assert_equal(binomial(1), [1,1]);
     assert_equal(binomial(2), [1,2,1]);
@@ -790,6 +471,7 @@ module test_binomial() {
     assert_equal(binomial(5), [1,5,10,10,5,1]);
 }
 test_binomial();
+
 
 module test_binomial_coefficient() {
     assert_equal(binomial_coefficient(2,1), 2);
@@ -809,8 +491,8 @@ module test_gcd() {
     assert_equal(gcd(39, 101),1);
     assert_equal(gcd(15,-25), 5);
     assert_equal(gcd(-15,25), 5);
-    assert_equal(gcd(5,0),5);
-    assert_equal(gcd(0,5),5);
+    assert_equal(gcd(5,0), 5);
+    assert_equal(gcd(0,5), 5);
 }
 test_gcd();
 
@@ -823,85 +505,106 @@ module test_lcm() {
 }
 test_lcm();
 
-
-module test_C_times() {
-    assert_equal(C_times([4,5],[9,-4]), [56,29]);
-    assert_equal(C_times([-7,2],[24,3]), [-174, 27]);
+module test_rational_approx()
+{
+   pq1 = rational_approx(PI,10);       // Returns: [22,7]
+   pq2 = rational_approx(PI,10000);    // Returns: [355, 113]
+   pq3 = rational_approx(221/323,500); // Returns: [13,19]
+   pq4 = rational_approx(0,50);        // Returns: [0,1]
+   assert_equal(pq1,[22,7]);
+   assert_equal(pq2,[355,113]);
+   assert_equal(pq3,[13,19]);
+   assert_equal(pq4,[0,1]);
+   assert_equal(rational_approx(-PI,10),[-22,7]);
+   assert_equal(rational_approx(7,10), [7,1]);
 }
-test_C_times();
+test_rational_approx();
 
 
-module test_C_div() {
-    assert_equal(C_div([56,29],[9,-4]), [4,5]);
-    assert_equal(C_div([-174,27],[-7,2]), [24,3]);
+
+
+
+module test_complex(){
+    assert_equal( complex(ident(4)), c_ident(4));
+    assert_equal( complex(3), [3,0]);
+    assert_equal( complex([1,2]), [[1,0],[2,0]]);
+    assert_equal( complex([[1,2],[3,4]]), [[ [1,0],[2,0] ], [ [3,0],[4,0]]]);
+}
+test_complex();
+
+module test_c_mul() {
+    assert_equal(c_mul([4,5],[9,-4]), [56,29]);
+    assert_equal(c_mul([-7,2],[24,3]), [-174, 27]);
+    assert_equal(c_mul([3,4], [[3,-7], [4,9], [4,8]]), [[37,-9],[-24,43], [-20,40]]);
+    assert_equal(c_mul([[3,-7], [4,9], [4,8]], [[1,1],[3,4],[-3,4]]), [-58,31]);
+    M = [
+           [ [3,4], [9,-1], [4,3] ],
+           [ [2,9], [4,9], [3,-1] ]
+        ];
+    assert_equal(c_mul(M, [ [3,4], [4,4],[5,5]]), [[38,91], [-30, 97]]);
+    assert_equal(c_mul([[4,4],[9,1]], M), [[5,111],[67,117], [32,22]]);
+    assert_equal(c_mul(M,transpose(M)), [  [[80,30], [30, 117]], [[30,117], [-134, 102]]]);
+    assert_equal(c_mul(transpose(M),M), [  [[-84,60],[-42,87],[15,50]], [[-42,87],[15,54],[60,46]], [[15,50],[60,46],[15,18]]]);
+}
+test_c_mul();
+
+
+module test_c_div() {
+    assert_equal(c_div([56,29],[9,-4]), [4,5]);
+    assert_equal(c_div([-174,27],[-7,2]), [24,3]);
 }    
-test_C_div();
+test_c_div();
 
-
-module test_back_substitute(){
-   R = [[12,4,3,2],
-        [0,2,-4,2],
-        [0,0,4,5],
-        [0,0,0,15]];
-   assert_approx(back_substitute(R, [1,2,3,3]), [-0.675, 1.8, 0.5, 0.2]);
-   assert_approx(back_substitute(R, [6, 3, 3.5, 37], transpose=true), [0.5, 0.5, 1, 2]);
-   assert_approx(back_substitute(R, [[38,101],[-6,-16], [31, 71], [45, 105]]), [[1, 4],[2,3],[4,9],[3,7]]);
-   assert_approx(back_substitute(R, [[12,48],[8,22],[11,36],[71,164]],transpose=true), [[1, 4],[2,3],[4,9],[3,7]]);
-   assert_approx(back_substitute([[2]], [4]), [2]);
-   sing1 =[[0,4,3,2],
-         [0,3,-4,2],
-         [0,0,4,5],
-         [0,0,0,15]];
-   sing2 =[[12,4,3,2],
-         [0,0,-4,2],
-         [0,0,4,5],
-         [0,0,0,15]];
-   sing3 = [[12,4,3,2],
-        [0,2,-4,2],
-        [0,0,4,5],
-        [0,0,0,0]];
-   assert_approx(back_substitute(sing1, [1,2,3,4]), []);
-   assert_approx(back_substitute(sing2, [1,2,3,4]), []);
-   assert_approx(back_substitute(sing3, [1,2,3,4]), []);
+module test_c_conj(){
+    assert_equal(c_conj([3,4]), [3,-4]);
+    assert_equal(c_conj(           [ [2,9], [4,9], [3,-1] ]),            [ [2,-9], [4,-9], [3,1] ]);
+    M = [
+           [ [3,4], [9,-1], [4,3] ],
+           [ [2,9], [4,9], [3,-1] ]
+        ];
+    Mc = [
+           [ [3,-4], [9,1], [4,-3] ],
+           [ [2,-9], [4,-9], [3,1] ]
+        ];
+    assert_equal(c_conj(M), Mc);
 }
-test_back_substitute();
+test_c_conj();
 
-
-
-module test_norm_fro(){
-  assert_approx(norm_fro([[2,3,4],[4,5,6]]), 10.29563014098700);
-
-} test_norm_fro();  
-
-
-module test_linear_solve(){
-  M = [[-2,-5,-1,3],
-       [3,7,6,2],
-       [6,5,-1,-6],
-       [-7,1,2,3]];
-  assert_approx(linear_solve(M, [-3,43,-11,13]), [1,2,3,4]);
-  assert_approx(linear_solve(M, [[-5,8],[18,-61],[4,7],[-1,-12]]), [[1,-2],[1,-3],[1,-4],[1,-5]]);
-  assert_approx(linear_solve([[2]],[4]), [2]);
-  assert_approx(linear_solve([[2]],[[4,8]]), [[2, 4]]);
-  assert_approx(linear_solve(select(M,0,2), [2,4,4]), [   2.254871220604705e+00,
-                                                         -8.378819388897780e-01,
-                                                          2.330507118860985e-01,
-                                                          8.511278195488737e-01]);
-  assert_approx(linear_solve(subindex(M,[0:2]), [2,4,4,4]),
-                 [-2.457142857142859e-01,
-                   5.200000000000000e-01,
-                   7.428571428571396e-02]);
-  assert_approx(linear_solve([[1,2,3,4]], [2]), [0.066666666666666, 0.13333333333, 0.2, 0.266666666666]);
-  assert_approx(linear_solve([[1],[2],[3],[4]], [4,3,2,1]), [2/3]);
-  rd = [[-2,-5,-1,3],
-        [3,7,6,2],
-        [3,7,6,2],
-        [-7,1,2,3]];
-  assert_equal(linear_solve(rd,[1,2,3,4]),[]);
-  assert_equal(linear_solve(select(rd,0,2), [2,4,4]), []);
-  assert_equal(linear_solve(transpose(select(rd,0,2)), [2,4,3,4]), []);
+module test_c_real(){
+    M = [
+           [ [3,4], [9,-1], [4,3] ],
+           [ [2,9], [4,9], [3,-1] ]
+        ];
+    assert_equal(c_real(M), [[3,9,4],[2,4,3]]);
+    assert_equal(c_real(           [ [3,4], [9,-1], [4,3] ]), [3,9,4]);
+    assert_equal(c_real([3,4]),3);
 }
-test_linear_solve();
+test_c_real();
+
+
+module test_c_imag(){
+    M = [
+           [ [3,4], [9,-1], [4,3] ],
+           [ [2,9], [4,9], [3,-1] ]
+        ];
+    assert_equal(c_imag(M), [[4,-1,3],[9,9,-1]]);
+    assert_equal(c_imag(           [ [3,4], [9,-1], [4,3] ]), [4,-1,3]);
+    assert_equal(c_imag([3,4]),4);
+}
+test_c_imag();
+
+
+module test_c_ident(){
+  assert_equal(c_ident(3), [[[1, 0], [0, 0], [0, 0]], [[0, 0], [1, 0], [0, 0]], [[0, 0], [0, 0], [1, 0]]]);
+}
+test_c_ident();
+
+module test_c_norm(){
+  assert_equal(c_norm([3,4]), 5);
+  assert_approx(c_norm([[3,4],[5,6]]), 9.273618495495704);
+}
+test_c_norm();
+
 
 
 module test_cumprod(){
@@ -917,21 +620,13 @@ module test_cumprod(){
                        ]),
                        [
                         [[1,2],[3,4]],
-                        [[8,13],[12,31]],
-                        [[124,15],[232,57]]
+                        [[11,12],[18,28]],
+                        [[45,24],[98,132]]
                        ]);
   assert_equal(cumprod([[[1,2],[3,4]]]), [[[1,2],[3,4]]]);
 }
 test_cumprod();
                          
-
-
-module test_outer_product(){
-  assert_equal(outer_product([1,2,3],[4,5,6]), [[4,5,6],[8,10,12],[12,15,18]]);
-  assert_equal(outer_product([1,2],[4,5,6]), [[4,5,6],[8,10,12]]);
-  assert_equal(outer_product([9],[7]), [[63]]);
-}
-test_outer_product();
 
 
 module test_deriv(){
@@ -1057,7 +752,7 @@ module test_real_roots(){
    // Wilkinson polynomial is a nasty test:
    assert_approx(
        sort(real_roots(poly_mult([[1,-1],[1,-2],[1,-3],[1,-4],[1,-5],[1,-6],[1,-7],[1,-8],[1,-9],[1,-10]]))),
-       list_range(n=10,s=1));
+       count(10,1));
    assert_equal(real_roots([3]), []);
    assert_equal(real_roots(poly_mult([[1,-2,5],[12,-24,24],[-2, -12, -20],[1,-10,50]])),[]);
    assert_equal(real_roots(poly_mult([[1,-2,5],[12,-24,24],[-2, -12, -20],[1,-10,50],[1,0,0]])),[0,0]);
@@ -1078,85 +773,6 @@ module test_quadratic_roots(){
 }
 test_quadratic_roots();
 
-
-module test_null_space(){
-    assert_equal(null_space([[3,2,1],[3,6,3],[3,9,-3]]),[]);
-
-    function nullcheck(A,dim) =
-      let(v=null_space(A))
-        len(v)==dim && all_zero(A*transpose(v),eps=1e-12);
-    
-   A = [[-1, 2, -5, 2],[-3,-1,3,-3],[5,0,5,0],[3,-4,11,-4]];
-   assert(nullcheck(A,1));
-
-   B = [
-        [  4,    1,    8,    6,   -2,    3],
-        [ 10,    5,   10,   10,    0,    5],
-        [  8,    1,    8,    8,   -6,    1],
-        [ -8,   -8,    6,   -1,   -8,   -1],
-        [  2,    2,    0,    1,    2,    1],
-        [  2,   -3,   10,    6,   -8,    1],
-       ];
-   assert(nullcheck(B,3));
-}
-test_null_space();
-
-module test_qr_factor() {
-  // Check that R is upper triangular
-  function is_ut(R) =
-     let(bad = [for(i=[1:1:len(R)-1], j=[0:min(i-1, len(R[0])-1)]) if (!approx(R[i][j],0)) 1])
-     bad == [];
-
-  // Test the R is upper trianglar, Q is orthogonal and qr=M
-  function qrok(qr,M) =
-     is_ut(qr[1]) && approx(qr[0]*transpose(qr[0]), ident(len(qr[0]))) && approx(qr[0]*qr[1],M) && qr[2]==ident(len(qr[2]));
-
-  // Test the R is upper trianglar, Q is orthogonal, R diagonal non-increasing and qrp=M
-  function qrokpiv(qr,M) =
-       is_ut(qr[1])
-    && approx(qr[0]*transpose(qr[0]), ident(len(qr[0])))
-    && approx(qr[0]*qr[1]*transpose(qr[2]),M)
-    && list_decreasing([for(i=[0:1:min(len(qr[1]),len(qr[1][0]))-1]) abs(qr[1][i][i])]);
-
-  
-  M = [[1,2,9,4,5],
-       [6,7,8,19,10],
-       [11,12,13,14,15],
-       [1,17,18,19,20],
-       [21,22,10,24,25]];
-  
-  assert(qrok(qr_factor(M),M));
-  assert(qrok(qr_factor(select(M,0,3)),select(M,0,3)));
-  assert(qrok(qr_factor(transpose(select(M,0,3))),transpose(select(M,0,3))));
-
-  A = [[1,2,9,4,5],
-       [6,7,8,19,10],
-       [0,0,0,0,0],
-       [1,17,18,19,20],
-       [21,22,10,24,25]];
-  assert(qrok(qr_factor(A),A));
-
-  B = [[1,2,0,4,5],
-       [6,7,0,19,10],
-       [0,0,0,0,0],
-       [1,17,0,19,20],
-       [21,22,0,24,25]];
-
-  assert(qrok(qr_factor(B),B));
-  assert(qrok(qr_factor([[7]]), [[7]]));
-  assert(qrok(qr_factor([[1,2,3]]), [[1,2,3]]));
-  assert(qrok(qr_factor([[1],[2],[3]]), [[1],[2],[3]]));
-
-
-  assert(qrokpiv(qr_factor(M,pivot=true),M));
-  assert(qrokpiv(qr_factor(select(M,0,3),pivot=true),select(M,0,3)));
-  assert(qrokpiv(qr_factor(transpose(select(M,0,3)),pivot=true),transpose(select(M,0,3))));
-  assert(qrokpiv(qr_factor(B,pivot=true),B));
-  assert(qrokpiv(qr_factor([[7]],pivot=true), [[7]]));
-  assert(qrokpiv(qr_factor([[1,2,3]],pivot=true), [[1,2,3]]));
-  assert(qrokpiv(qr_factor([[1],[2],[3]],pivot=true), [[1],[2],[3]]));
-}
-test_qr_factor();
 
 
 module test_poly_mult(){
@@ -1187,5 +803,37 @@ module test_poly_add(){
 //  assert_equal(poly_add([1,2,3],-[1,2,3]),[]);
 }
 test_poly_add();
+
+
+module test_root_find(){
+  flist = [
+      function(x) x*x*x-2*x-5,
+      function(x) 1-1/x/x,
+      function(x) pow(x-3,3),
+      function(x) pow(x-2,5),
+      function(x) (let(xi=0.61489) -3062*(1-xi)*exp(-x)/(xi+(1-xi)*exp(-x)) -1013 + 1628/x),
+      function(x) exp(x)-2-.01/x/x + .000002/x/x/x,
+  ];
+  fint=[
+        [0,4],
+        [1e-4, 4],
+        [0,6],
+        [0,4],
+        [1e-4,5],
+        [-1,4]
+  ];
+  answers = [2.094551481542328,
+             1,
+             3,
+             2,
+             1.037536033287040,
+             0.7032048403631350
+  ];
+  
+  roots = [for(i=idx(flist)) root_find(flist[i], fint[i][0], fint[i][1])];
+  assert_approx(roots, answers, 1e-10);
+}
+test_root_find();
+
 
 // vim: expandtab tabstop=4 shiftwidth=4 softtabstop=4 nowrap

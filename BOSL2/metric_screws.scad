@@ -4,12 +4,15 @@
 // Includes:
 //   include <BOSL2/std.scad>
 //   include <BOSL2/metric_screws.scad>
+// FileGroup: Threaded Parts
+// FileSummary: Metric screws, nuts, and screwholes.
 //////////////////////////////////////////////////////////////////////
 
 
 include <threading.scad>
-include <phillips_drive.scad>
-include <torx_drive.scad>
+include <screw_drive.scad>
+
+warn = echo("*** WARNING: metric_screws.scad is deprecated and may be removed in the future.  Use screws.scad instead. ***");
 
 
 // Section: Functions
@@ -357,33 +360,33 @@ function get_metric_nut_thickness(size) = lookup(size, [
 // Section: Modules
 
 
-// Module: screw()
+// Module: generic_screw()
 // Description:
 //   Makes a very simple screw model, useful for making screwholes.
 // Usage:
-//   screw(screwsize, screwlen, headsize, headlen)
+//   generic_screw(screwsize, screwlen, headsize, headlen)
 // Arguments:
 //   screwsize = diameter of threaded part of screw.
 //   screwlen = length of threaded part of screw.
 //   headsize = diameter of the screw head.
 //   headlen = length of the screw head.
-//   anchor = Translate so anchor point is at origin (0,0,0).  See [anchor](attachments.scad#anchor).  Default: `CENTER`
-//   spin = Rotate this many degrees around the Z axis after anchor.  See [spin](attachments.scad#spin).  Default: `0`
-//   orient = Vector to rotate top towards, after spin.  See [orient](attachments.scad#orient).  Default: `UP`
+//   anchor = Translate so anchor point is at origin (0,0,0).  See [anchor](attachments.scad#subsection-anchor).  Default: `CENTER`
+//   spin = Rotate this many degrees around the Z axis after anchor.  See [spin](attachments.scad#subsection-spin).  Default: `0`
+//   orient = Vector to rotate top towards, after spin.  See [orient](attachments.scad#subsection-orient).  Default: `UP`
 // Extra Anchors:
 //   "base" = At the base of the head.
 //   "countersunk" = At the head height that would be just barely exposed when countersunk.
 // Examples:
-//   screw(screwsize=3,screwlen=10,headsize=6,headlen=3, anchor="countersunk");
-//   screw(screwsize=3,screwlen=10,headsize=6,headlen=3, anchor="base");
-// Example(FlatSpin): Standard Anchors
-//   screw(screwsize=3,screwlen=10,headsize=6,headlen=3)
+//   generic_screw(screwsize=3,screwlen=10,headsize=6,headlen=3, anchor="countersunk");
+//   generic_screw(screwsize=3,screwlen=10,headsize=6,headlen=3, anchor="base");
+// Example(FlatSpin,VPD=75): Standard Anchors
+//   generic_screw(screwsize=3,screwlen=10,headsize=6,headlen=3)
 //       show_anchors(5, custom=false);
-// Example(FlatSpin): Standard Anchors
-//   show_internal_anchors()
-//     screw(screwsize=3,screwlen=10,headsize=6,headlen=3)
+// Example(FlatSpin,VPD=55): Custom Named Anchors
+//   expose_anchors()
+//     generic_screw(screwsize=3,screwlen=10,headsize=6,headlen=3)
 //       show_anchors(5, std=false);
-module screw(
+module generic_screw(
     screwsize=3,
     screwlen=10,
     headsize=6,
@@ -395,8 +398,8 @@ module screw(
 ) {
     sides = max(12, segs(screwsize/2));
     anchors = [
-        anchorpt("countersunk", [0,0,(headlen+screwlen)/2-0.01]),
-        anchorpt("base", [0,0,-headlen/2+screwlen/2])
+        named_anchor("countersunk", [0,0,(headlen+screwlen)/2-0.01]),
+        named_anchor("base", [0,0,-headlen/2+screwlen/2])
     ];
     attachable(anchor,spin,orient, d=screwsize, l=headlen+screwlen, anchors=anchors) {
         down(headlen/2-screwlen/2) {
@@ -428,9 +431,9 @@ module screw(
 //   flange = Radius of flange beyond the head.  Default = 0 (no flange)
 //   phillips = If given, the size of the phillips drive hole to add.  (ie: "#1", "#2", or "#3")
 //   torx = If given, the size of the torx drive hole to add.  (ie: 10, 20, 30, etc.)
-//   anchor = Translate so anchor point is at origin (0,0,0).  See [anchor](attachments.scad#anchor).  Default: `CENTER`
-//   spin = Rotate this many degrees around the Z axis after anchor.  See [spin](attachments.scad#spin).  Default: `0`
-//   orient = Vector to rotate top towards, after spin.  See [orient](attachments.scad#orient).  Default: `UP`
+//   anchor = Translate so anchor point is at origin (0,0,0).  See [anchor](attachments.scad#subsection-anchor).  Default: `CENTER`
+//   spin = Rotate this many degrees around the Z axis after anchor.  See [spin](attachments.scad#subsection-spin).  Default: `0`
+//   orient = Vector to rotate top towards, after spin.  See [orient](attachments.scad#subsection-orient).  Default: `UP`
 // Extra Anchors:
 //   "base" = At the base of the head.
 //   "countersunk" = At the head height that would be just barely exposed when countersunk.
@@ -467,11 +470,11 @@ module screw(
 //   metric_bolt(headtype="hex", size=10, l=15, phillips="#2");
 // Example: Hex Head with Torx
 //   metric_bolt(headtype="hex", size=10, l=15, torx=50);
-// Example(FlatSpin): Standard Anchors
+// Example(FlatSpin,VPD=100): Standard Anchors
 //   metric_bolt(headtype="oval", size=10, l=15, shank=5, details=true, phillips="#2")
 //       show_anchors(5, custom=false);
-// Example(FlatSpin): Custom Anchors
-//   show_internal_anchors(0.125)
+// Example(FlatSpin,VPD=100): Custom Named Anchors
+//   expose_anchors(0.125)
 //     metric_bolt(headtype="oval", size=10, l=15, shank=5, details=true, phillips="#2")
 //       show_anchors(5, std=false);
 module metric_bolt(
@@ -517,9 +520,9 @@ module metric_bolt(
     );
 
     anchors = [
-        anchorpt("countersunk", [0,0,base+sunklen]),
-        anchorpt("base",   [0,0,base]),
-        anchorpt("shank",  [0,0,base-shank])
+        named_anchor("countersunk", [0,0,base+sunklen]),
+        named_anchor("base",   [0,0,base]),
+        named_anchor("shank",  [0,0,base-shank])
     ];
 
     //color("silver")
@@ -607,13 +610,13 @@ module metric_bolt(
                 // Phillips drive hole
                 if (headtype != "socket" && phillips != undef) {
                     down(headtype != "hex"? H/6 : 0) {
-                        phillips_drive(size=phillips, shaft=D);
+                        phillips_mask(size=phillips); //, shaft=D);
                     }
                 }
 
                 // Torx drive hole
                 if (headtype != "socket" && torx != undef) {
-                    up(1) torx_drive(size=torx, l=H+0.1, center=false);
+                    up(1) torx_mask(size=torx, l=H+0.1, center=false);
                 }
             }
         }
@@ -631,9 +634,9 @@ module metric_bolt(
 //   pitch = pitch of threads in the hole.  No threads if not given.
 //   flange = radius of flange beyond the head.  Default = 0 (no flange)
 //   details = true if model should be rendered with extra details.  (Default: false)
-//   anchor = Translate so anchor point is at origin (0,0,0).  See [anchor](attachments.scad#anchor).  Default: `CENTER`
-//   spin = Rotate this many degrees around the Z axis after anchor.  See [spin](attachments.scad#spin).  Default: `0`
-//   orient = Vector to rotate top towards, after spin.  See [orient](attachments.scad#orient).  Default: `UP`
+//   anchor = Translate so anchor point is at origin (0,0,0).  See [anchor](attachments.scad#subsection-anchor).  Default: `CENTER`
+//   spin = Rotate this many degrees around the Z axis after anchor.  See [spin](attachments.scad#subsection-spin).  Default: `0`
+//   orient = Vector to rotate top towards, after spin.  See [orient](attachments.scad#subsection-orient).  Default: `UP`
 //   center = If true, centers the nut at the origin.  If false, sits on top of XY plane.  Overrides `anchor` if given.
 // Example: No details, No Hole.  Useful for a mask.
 //   metric_nut(size=10, hole=false);

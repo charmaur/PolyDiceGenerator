@@ -1,43 +1,6 @@
 include <../std.scad>
 
 
-module test_ident() {
-    assert(ident(3) == [[1,0,0],[0,1,0],[0,0,1]]);
-    assert(ident(4) == [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]);
-}
-test_ident();
-
-
-module test_is_2d_transform() {
-    assert(!is_2d_transform(affine2d_identity()));
-    assert(!is_2d_transform(affine2d_translate([5,8])));
-    assert(!is_2d_transform(affine2d_scale([3,4])));
-    assert(!is_2d_transform(affine2d_zrot(30)));
-    assert(!is_2d_transform(affine2d_mirror([-1,1])));
-    assert(!is_2d_transform(affine2d_skew(30,15)));
-
-    assert(is_2d_transform(affine3d_identity()));
-    assert(is_2d_transform(affine3d_translate([30,40,0])));
-    assert(!is_2d_transform(affine3d_translate([30,40,50])));
-    assert(is_2d_transform(affine3d_scale([3,4,1])));
-    assert(!is_2d_transform(affine3d_xrot(30)));
-    assert(!is_2d_transform(affine3d_yrot(30)));
-    assert(is_2d_transform(affine3d_zrot(30)));
-    assert(is_2d_transform(affine3d_skew(sxy=2)));
-    assert(is_2d_transform(affine3d_skew(syx=2)));
-    assert(!is_2d_transform(affine3d_skew(szx=2)));
-    assert(!is_2d_transform(affine3d_skew(szy=2)));
-}
-test_is_2d_transform();
-
-
-module test_affine2d_to_3d() {
-    assert(affine2d_to_3d(affine2d_identity()) == affine3d_identity());
-    assert(affine2d_to_3d(affine2d_zrot(30)) == affine3d_zrot(30));
-}
-test_affine2d_to_3d();
-
-
 // 2D
 
 module test_affine2d_identity() {
@@ -86,15 +49,6 @@ module test_affine2d_skew() {
     }
 }
 test_affine2d_skew();
-
-
-module test_affine2d_chain() {
-    t = affine2d_translate([15,30]);
-    s = affine2d_scale([1.5,2]);
-    r = affine2d_zrot(30);
-    assert(affine2d_chain([t,s,r]) == r * s * t);
-}
-test_affine2d_chain();
 
 
 // 3D
@@ -183,7 +137,7 @@ test_affine3d_skew();
 module test_affine3d_skew_xy() {
     for(ya = [-89:3:89]) {
         for(xa = [-89:3:89]) {
-            assert(affine3d_skew_xy(xa=xa, ya=ya) == [[1,0,tan(xa),0],[0,1,tan(ya),0],[0,0,1,0],[0,0,0,1]]);
+            assert(affine3d_skew_xy(xa=xa, ya=ya) == [[1,tan(xa),0,0],[tan(ya),1,0,0],[0,0,1,0],[0,0,0,1]]);
         }
     }
 }
@@ -193,7 +147,7 @@ test_affine3d_skew_xy();
 module test_affine3d_skew_xz() {
     for(za = [-89:3:89]) {
         for(xa = [-89:3:89]) {
-            assert(affine3d_skew_xz(xa=xa, za=za) == [[1,tan(xa),0,0],[0,1,0,0],[0,tan(za),1,0],[0,0,0,1]]);
+            assert(affine3d_skew_xz(xa=xa, za=za) == [[1,0,tan(xa),0],[0,1,0,0],[tan(za),0,1,0],[0,0,0,1]]);
         }
     }
 }
@@ -203,83 +157,14 @@ test_affine3d_skew_xz();
 module test_affine3d_skew_yz() {
     for(za = [-89:3:89]) {
         for(ya = [-89:3:89]) {
-            assert(affine3d_skew_yz(ya=ya, za=za) == [[1,0,0,0],[tan(ya),1,0,0],[tan(za),0,1,0],[0,0,0,1]]);
+            assert(affine3d_skew_yz(ya=ya, za=za) == [[1,0,0,0],[0,1,tan(ya),0],[0,tan(za),1,0],[0,0,0,1]]);
         }
     }
 }
 test_affine3d_skew_yz();
 
 
-module test_affine3d_chain() {
-    t = affine3d_translate([15,30,23]);
-    s = affine3d_scale([1.5,2,1.8]);
-    r = affine3d_zrot(30);
-    assert(affine3d_chain([t,s,r]) == r * s * t);
-}
-test_affine3d_chain();
-
-
 ////////////////////////////
-
-module test_affine_frame_map() {
-    assert(approx(affine_frame_map(x=[1,1,0], y=[-1,1,0]), affine3d_zrot(45)));
-}
-test_affine_frame_map();
-
-
-module test_apply() {
-    assert(approx(apply(affine3d_xrot(90),2*UP),2*FRONT));
-    assert(approx(apply(affine3d_yrot(90),2*UP),2*RIGHT));
-    assert(approx(apply(affine3d_zrot(90),2*UP),2*UP));
-    assert(approx(apply(affine3d_zrot(90),2*RIGHT),2*BACK));
-    assert(approx(apply(affine3d_zrot(90),2*BACK+2*RIGHT),2*BACK+2*LEFT));
-    assert(approx(apply(affine3d_xrot(135),2*BACK+2*UP),2*sqrt(2)*FWD));
-    assert(approx(apply(affine3d_yrot(135),2*RIGHT+2*UP),2*sqrt(2)*DOWN));
-    assert(approx(apply(affine3d_zrot(45),2*BACK+2*RIGHT),2*sqrt(2)*BACK));
-}
-test_apply();
-
-
-module test_apply_list() {
-    assert(approx(apply_list(25*(BACK+UP), []), 25*(BACK+UP)));
-    assert(approx(apply_list(25*(BACK+UP), [affine3d_xrot(135)]), 25*sqrt(2)*FWD));
-    assert(approx(apply_list(25*(RIGHT+UP), [affine3d_yrot(135)]), 25*sqrt(2)*DOWN));
-    assert(approx(apply_list(25*(BACK+RIGHT), [affine3d_zrot(45)]), 25*sqrt(2)*BACK));
-    assert(approx(apply_list(25*(BACK+UP), [affine3d_xrot(135), affine3d_translate([30,40,50])]), 25*sqrt(2)*FWD+[30,40,50]));
-    assert(approx(apply_list(25*(RIGHT+UP), [affine3d_yrot(135), affine3d_translate([30,40,50])]), 25*sqrt(2)*DOWN+[30,40,50]));
-    assert(approx(apply_list(25*(BACK+RIGHT), [affine3d_zrot(45), affine3d_translate([30,40,50])]), 25*sqrt(2)*BACK+[30,40,50]));
-}
-test_apply_list();
-
-
-module test_rot_decode() {
-   Tlist = [
-             rot(37),
-             xrot(49),
-             yrot(88),
-             rot(37,v=[1,3,3]),
-             rot(41,v=[2,-3,4]),
-             rot(180),
-             xrot(180),
-             yrot(180),
-             rot(180, v=[3,2,-5], cp=[3,5,18]),
-             rot(0.1, v=[1,2,3]),
-             rot(-47,v=[3,4,5],cp=[9,3,4]),
-             rot(197,v=[13,4,5],cp=[9,-3,4]),
-             move([3,4,5]),
-             move([3,4,5]) * rot(a=56, v=[5,3,-3], cp=[2,3,4]),
-             ident(4)
-           ];
-    errlist = [for(T = Tlist)
-                  let(
-                       parm = rot_decode(T),
-                       restore = move(parm[3])*rot(a=parm[0],v=parm[1],cp=parm[2])
-                  )
-                  norm_fro(restore-T)];
-    assert(max(errlist)<1e-13);
-}
-test_rot_decode();
-
 
 
 // vim: expandtab tabstop=4 shiftwidth=4 softtabstop=4 nowrap

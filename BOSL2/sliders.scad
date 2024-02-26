@@ -4,6 +4,8 @@
 // Includes:
 //   include <BOSL2/std.scad>
 //   include <BOSL2/sliders.scad>
+// FileGroup: Parts
+// FileSummary: Simple sliders and rails.
 //////////////////////////////////////////////////////////////////////
 
 
@@ -11,23 +13,29 @@
 
 
 // Module: slider()
+// Synopsis: Creates a V-groove slider.
+// SynTags: Geom
+// Topics: Parts, Sliders
+// See Also: rail()
+// Usage:
+//   slider(l, w, h, [base=], [wall=], [ang=], [$slop=]) [ATTACHMENTS];
 // Description:
 //   Creates a slider to match a V-groove rail.
-// Usage:
-//   slider(l, w, h, [base], [wall], [ang], [$slop])
 // Arguments:
 //   l = Length (long axis) of slider.
 //   w = Width of slider.
 //   h = Height of slider.
+//   ---
 //   base = Height of slider base.
 //   wall = Width of wall behind each side of the slider.
 //   ang = Overhang angle for slider, to facilitate supportless printig.
-//   anchor = Translate so anchor point is at origin (0,0,0).  See [anchor](attachments.scad#anchor).  Default: `CENTER`
-//   spin = Rotate this many degrees around the Z axis after anchor.  See [spin](attachments.scad#spin).  Default: `0`
-//   orient = Vector to rotate top towards, after spin.  See [orient](attachments.scad#orient).  Default: `UP`
+//   anchor = Translate so anchor point is at origin (0,0,0).  See [anchor](attachments.scad#subsection-anchor).  Default: `CENTER`
+//   spin = Rotate this many degrees around the Z axis after anchor.  See [spin](attachments.scad#subsection-spin).  Default: `0`
+//   orient = Vector to rotate top towards, after spin.  See [orient](attachments.scad#subsection-orient).  Default: `UP`
 //   $slop = The printer-specific slop value to make parts fit just right.
 // Example:
 //   slider(l=30, base=10, wall=4, $slop=0.2, spin=90);
+function slider(l=30, w=10, h=10, base=10, wall=5, ang=30, anchor=BOTTOM, spin=0, orient=UP) = no_function("slider");
 module slider(l=30, w=10, h=10, base=10, wall=5, ang=30, anchor=BOTTOM, spin=0, orient=UP)
 {
     full_width = w + 2*wall;
@@ -37,16 +45,16 @@ module slider(l=30, w=10, h=10, base=10, wall=5, ang=30, anchor=BOTTOM, spin=0, 
         zrot(90)
         down(base+h/2) {
             // Base
-            cuboid([full_width, l, base-$slop], chamfer=2, edges=edges([FRONT,BACK], except=BOT), anchor=BOTTOM);
+            cuboid([full_width, l, base-get_slop()], chamfer=2, edges=[FRONT,BACK], except_edges=BOT, anchor=BOTTOM);
 
             // Wall
-            xflip_copy(offset=w/2+$slop) {
-                cuboid([wall, l, full_height], chamfer=2, edges=edges(RIGHT, except=BOT), anchor=BOTTOM+LEFT);
+            xflip_copy(offset=w/2+get_slop()) {
+                cuboid([wall, l, full_height], chamfer=2, edges=RIGHT, except_edges=BOT, anchor=BOTTOM+LEFT);
             }
 
             // Sliders
             up(base+h/2) {
-                xflip_copy(offset=w/2+$slop+0.02) {
+                xflip_copy(offset=w/2+get_slop()+0.02) {
                     bev_h = h/2*tan(ang);
                     prismoid([h, l], [0, l-w], h=bev_h+0.01, orient=LEFT, anchor=BOT);
                 }
@@ -59,21 +67,27 @@ module slider(l=30, w=10, h=10, base=10, wall=5, ang=30, anchor=BOTTOM, spin=0, 
 
 
 // Module: rail()
+// Synopsis: Creates a V-groove rail.
+// SynTags: Geom
+// Topics: Parts, Sliders
+// See Also: slider()
+// Usage:
+//   rail(l, w, h, [chamfer=], [ang=]) [ATTACHMENTS];
 // Description:
 //   Creates a V-groove rail.
-// Usage:
-//   rail(l, w, h, [chamfer], [ang])
 // Arguments:
 //   l = Length (long axis) of slider.
 //   w = Width of slider.
 //   h = Height of slider.
 //   chamfer = Size of chamfer at end of rail.
-//   ang = Overhang angle for slider, to facilitate supportless printig.
-//   anchor = Translate so anchor point is at origin (0,0,0).  See [anchor](attachments.scad#anchor).  Default: `BOTTOM`
-//   spin = Rotate this many degrees around the Z axis after anchor.  See [spin](attachments.scad#spin).  Default: `0`
-//   orient = Vector to rotate top towards, after spin.  See [orient](attachments.scad#orient).  Default: `UP`
+//   ang = Overhang angle for slider, to facilitate supportless printing.
+//   ---
+//   anchor = Translate so anchor point is at origin (0,0,0).  See [anchor](attachments.scad#subsection-anchor).  Default: `BOTTOM`
+//   spin = Rotate this many degrees around the Z axis after anchor.  See [spin](attachments.scad#subsection-spin).  Default: `0`
+//   orient = Vector to rotate top towards, after spin.  See [orient](attachments.scad#subsection-orient).  Default: `UP`
 // Example:
 //   rail(l=100, w=10, h=10);
+function rail(l=30, w=10, h=10, chamfer=1.0, ang=30, anchor=BOTTOM, spin=0, orient=UP) = no_function("rail");
 module rail(l=30, w=10, h=10, chamfer=1.0, ang=30, anchor=BOTTOM, spin=0, orient=UP)
 {
     attack_ang = 30;
